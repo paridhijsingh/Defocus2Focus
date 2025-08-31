@@ -1,0 +1,16 @@
+# Defocus2Focus Game Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core game engine
+pygame>=2.5.0
+
+# Optional dependencies for enhanced features
+# numpy>=1.21.0          # For advanced math operations
+# pillow>=9.0.0          # For image processing (if needed)
+# pymunk>=6.6.0          # For physics simulation (if needed)
+
+# Development dependencies (uncomment if developing)
+# pytest>=7.0.0          # For testing
+# black>=22.0.0          # For code formatting
+# flake8>=4.0.0          # For linting
+# mypy>=0.950            # For type checking
