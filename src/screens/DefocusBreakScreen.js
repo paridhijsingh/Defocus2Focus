@@ -43,7 +43,9 @@ const DefocusBreakScreen = ({ navigation }) => {
     getDefocusLockStatus,
     resetDefocusSessionState,
     clearAllUserData,
-    manualSaveUserData
+    manualSaveUserData,
+    testSetDefocusCompleted,
+    checkAsyncStorageState
   } = useUserData();
 
   // Timer state
@@ -104,6 +106,17 @@ const DefocusBreakScreen = ({ navigation }) => {
     userData.defocusAbusePrevention.lastFocusSessionDate,
     userData.defocusAbusePrevention.lastDefocusSessionDate
   ]);
+
+  // Force re-evaluation when userData changes
+  useEffect(() => {
+    console.log('🔄 UserData changed, re-evaluating lock status');
+    const lockStatus = getDefocusLockStatus();
+    if (lockStatus.locked) {
+      setShowLockedModal(true);
+    } else {
+      setShowLockedModal(false);
+    }
+  }, [userData]);
 
   // Force refresh function for testing
   const forceRefresh = () => {
@@ -689,6 +702,18 @@ const DefocusBreakScreen = ({ navigation }) => {
             onPress={manualSaveUserData}
           >
             <Text style={styles.debugButtonText}>Manual Save</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.debugButton, { backgroundColor: '#7c3aed', marginTop: 8 }]}
+            onPress={testSetDefocusCompleted}
+          >
+            <Text style={styles.debugButtonText}>Test Lock State</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.debugButton, { backgroundColor: '#0891b2', marginTop: 8 }]}
+            onPress={checkAsyncStorageState}
+          >
+            <Text style={styles.debugButtonText}>Check Storage</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.debugButton, { backgroundColor: '#dc2626', marginTop: 8 }]}
