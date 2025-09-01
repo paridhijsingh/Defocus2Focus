@@ -1,177 +1,195 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Initial state
-const initialState = {
-  user: {
-    name: 'Focus Master',
-    level: 1,
-    experience: 0,
-    totalPoints: 0,
-    currentStreak: 0,
-    longestStreak: 0,
-  },
-  sessions: [],
-  stats: {
-    totalFocusTime: 0,
-    totalSessions: 0,
-    averageSessionLength: 0,
-    weeklyGoal: 1200, // 20 hours in minutes
-    weeklyProgress: 0,
-  },
-  settings: {
-    focusDuration: 25, // minutes
-    breakDuration: 5, // minutes
-    longBreakDuration: 15, // minutes
-    sessionsBeforeLongBreak: 4,
-  }
-};
-
-// Action types
-const ACTIONS = {
-  ADD_SESSION: 'ADD_SESSION',
-  UPDATE_USER: 'UPDATE_USER',
-  UPDATE_STATS: 'UPDATE_STATS',
-  UPDATE_SETTINGS: 'UPDATE_SETTINGS',
-  LOAD_DATA: 'LOAD_DATA',
-  SAVE_DATA: 'SAVE_DATA',
-};
-
-// Reducer function
-function userDataReducer(state, action) {
-  switch (action.type) {
-    case ACTIONS.ADD_SESSION:
-      const newSession = action.payload;
-      const updatedSessions = [...state.sessions, newSession];
-      
-      // Calculate new stats
-      const totalFocusTime = updatedSessions.reduce((sum, session) => sum + session.duration, 0);
-      const totalSessions = updatedSessions.length;
-      const averageSessionLength = totalSessions > 0 ? totalFocusTime / totalSessions : 0;
-      
-      // Calculate weekly progress (simplified - just last 7 days)
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      const weeklySessions = updatedSessions.filter(session => 
-        new Date(session.date) > oneWeekAgo
-      );
-      const weeklyProgress = weeklySessions.reduce((sum, session) => sum + session.duration, 0);
-      
-      // Update user experience and level
-      const pointsEarned = Math.floor(newSession.duration / 5) + (newSession.completed ? 10 : 0);
-      const newTotalPoints = state.user.totalPoints + pointsEarned;
-      const newExperience = state.user.experience + pointsEarned;
-      const newLevel = Math.floor(newExperience / 100) + 1;
-      
-      // Update streak
-      const today = new Date().toDateString();
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toDateString();
-      
-      let newStreak = state.user.currentStreak;
-      if (newSession.completed) {
-        if (state.sessions.length === 0 || 
-            new Date(state.sessions[state.sessions.length - 1].date).toDateString() === yesterdayStr) {
-          newStreak += 1;
-        } else if (new Date(state.sessions[state.sessions.length - 1].date).toDateString() !== today) {
-          newStreak = 1;
-        }
-      }
-      
-      return {
-        ...state,
-        sessions: updatedSessions,
-        user: {
-          ...state.user,
-          totalPoints: newTotalPoints,
-          experience: newExperience,
-          level: newLevel,
-          currentStreak: newStreak,
-          longestStreak: Math.max(newStreak, state.user.longestStreak),
-        },
-        stats: {
-          ...state.stats,
-          totalFocusTime,
-          totalSessions,
-          averageSessionLength,
-          weeklyProgress,
-        }
-      };
-      
-    case ACTIONS.UPDATE_USER:
-      return {
-        ...state,
-        user: { ...state.user, ...action.payload }
-      };
-      
-    case ACTIONS.UPDATE_STATS:
-      return {
-        ...state,
-        stats: { ...state.stats, ...action.payload }
-      };
-      
-    case ACTIONS.UPDATE_SETTINGS:
-      return {
-        ...state,
-        settings: { ...state.settings, ...action.payload }
-      };
-      
-    case ACTIONS.LOAD_DATA:
-      return { ...state, ...action.payload };
-      
-    default:
-      return state;
-  }
-}
-
-// Create context
 const UserDataContext = createContext();
 
-// Provider component
-export function UserDataProvider({ children }) {
-  const [state, dispatch] = useReducer(userDataReducer, initialState);
+export const useUserData = () => {
+  const context = useContext(UserDataContext);
+  if (!context) {
+    throw new Error('useUserData must be used within a UserDataProvider');
+  }
+  return context;
+};
 
-  // Load data from localStorage on mount
+export const UserDataProvider = ({ children }) => {
+  const [userData, setUserData] = useState({
+    coins: 0,
+    points: 0,
+    level: 1,
+    completedTasks: 0,
+    streak: 0,
+    lastLoginDate: null,
+    totalFocusTime: 0,
+    weeklyGoal: 5,
+    achievements: [],
+    currentTask: null,
+    todoList: [],
+    defocusTime: 10, // minutes
+    pomodoroLength: 25, // minutes
+    breakLength: 5, // minutes
+  });
+
+  // Load user data from AsyncStorage on app start
   useEffect(() => {
-    const savedData = localStorage.getItem('defocus2focus_data');
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        dispatch({ type: ACTIONS.LOAD_DATA, payload: parsedData });
-      } catch (error) {
-        console.error('Error loading saved data:', error);
-      }
-    }
+    loadUserData();
   }, []);
 
-  // Save data to localStorage whenever state changes
+  // Save user data to AsyncStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('defocus2focus_data', JSON.stringify(state));
-  }, [state]);
+    saveUserData();
+  }, [userData]);
 
-  // Action creators
-  const addSession = (session) => {
-    dispatch({ type: ACTIONS.ADD_SESSION, payload: session });
+  const loadUserData = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem('userData');
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setUserData(prevData => ({ ...prevData, ...parsedData }));
+      }
+    } catch (error) {
+      console.log('Error loading user data:', error);
+    }
   };
 
-  const updateUser = (userData) => {
-    dispatch({ type: ACTIONS.UPDATE_USER, payload: userData });
+  const saveUserData = async () => {
+    try {
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+    } catch (error) {
+      console.log('Error saving user data:', error);
+    }
   };
 
-  const updateStats = (statsData) => {
-    dispatch({ type: ACTIONS.UPDATE_STATS, payload: statsData });
+  // Add coins to user's balance
+  const addCoins = (amount) => {
+    setUserData(prev => ({
+      ...prev,
+      coins: prev.coins + amount
+    }));
   };
 
-  const updateSettings = (settingsData) => {
-    dispatch({ type: ACTIONS.UPDATE_SETTINGS, payload: settingsData });
+  // Add points and check for level up
+  const addPoints = (amount) => {
+    setUserData(prev => {
+      const newPoints = prev.points + amount;
+      const newLevel = Math.floor(newPoints / 100) + 1;
+      
+      return {
+        ...prev,
+        points: newPoints,
+        level: newLevel,
+        completedTasks: prev.completedTasks + 1
+      };
+    });
+  };
+
+  // Complete a task and award points/coins
+  const completeTask = (taskId) => {
+    setUserData(prev => {
+      const updatedTodoList = prev.todoList.filter(task => task.id !== taskId);
+      const pointsEarned = 10;
+      const coinsEarned = 5;
+      
+      return {
+        ...prev,
+        todoList: updatedTodoList,
+        points: prev.points + pointsEarned,
+        coins: prev.coins + coinsEarned,
+        completedTasks: prev.completedTasks + 1
+      };
+    });
+  };
+
+  // Add task to todo list
+  const addTask = (task) => {
+    const newTask = {
+      id: Date.now().toString(),
+      text: task,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+    
+    setUserData(prev => ({
+      ...prev,
+      todoList: [...prev.todoList, newTask]
+    }));
+  };
+
+  // Remove task from todo list
+  const removeTask = (taskId) => {
+    setUserData(prev => ({
+      ...prev,
+      todoList: prev.todoList.filter(task => task.id !== taskId)
+    }));
+  };
+
+  // Update defocus time setting
+  const updateDefocusTime = (minutes) => {
+    setUserData(prev => ({
+      ...prev,
+      defocusTime: minutes
+    }));
+  };
+
+  // Update pomodoro length setting
+  const updatePomodoroLength = (minutes) => {
+    setUserData(prev => ({
+      ...prev,
+      pomodoroLength: minutes
+    }));
+  };
+
+  // Add focus time
+  const addFocusTime = (minutes) => {
+    setUserData(prev => ({
+      ...prev,
+      totalFocusTime: prev.totalFocusTime + minutes
+    }));
+  };
+
+  // Check and update streak
+  const updateStreak = () => {
+    const today = new Date().toDateString();
+    setUserData(prev => {
+      if (prev.lastLoginDate !== today) {
+        return {
+          ...prev,
+          streak: prev.streak + 1,
+          lastLoginDate: today
+        };
+      }
+      return prev;
+    });
+  };
+
+  // Add achievement
+  const addAchievement = (achievement) => {
+    setUserData(prev => ({
+      ...prev,
+      achievements: [...prev.achievements, achievement]
+    }));
+  };
+
+  // Set current task
+  const setCurrentTask = (task) => {
+    setUserData(prev => ({
+      ...prev,
+      currentTask: task
+    }));
   };
 
   const value = {
-    ...state,
-    addSession,
-    updateUser,
-    updateStats,
-    updateSettings,
+    userData,
+    addCoins,
+    addPoints,
+    completeTask,
+    addTask,
+    removeTask,
+    updateDefocusTime,
+    updatePomodoroLength,
+    addFocusTime,
+    updateStreak,
+    addAchievement,
+    setCurrentTask,
   };
 
   return (
@@ -179,13 +197,4 @@ export function UserDataProvider({ children }) {
       {children}
     </UserDataContext.Provider>
   );
-}
-
-// Custom hook to use the context
-export function useUserData() {
-  const context = useContext(UserDataContext);
-  if (!context) {
-    throw new Error('useUserData must be used within a UserDataProvider');
-  }
-  return context;
-}
+};

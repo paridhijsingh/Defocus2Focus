@@ -1,5 +1,10 @@
 import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
+/**
+ * StatCard Component
+ * Displays statistics in a card format with customizable colors and themes
+ */
 const StatCard = ({ 
   title, 
   value, 
@@ -7,69 +12,139 @@ const StatCard = ({
   icon, 
   color = 'primary',
   trend = null,
-  onClick = null 
+  onPress = null 
 }) => {
-  const colorClasses = {
+  // Color mapping for different themes
+  const colorMap = {
     primary: {
-      bg: 'bg-primary-50',
-      text: 'text-primary-600',
-      border: 'border-primary-200'
+      bg: '#f0f9ff',
+      text: '#0ea5e9',
+      border: '#bae6fd'
     },
     focus: {
-      bg: 'bg-focus-50',
-      text: 'text-focus-600',
-      border: 'border-focus-200'
+      bg: '#fef7ee',
+      text: '#f3771e',
+      border: '#fbd7a9'
     },
     defocus: {
-      bg: 'bg-defocus-50',
-      text: 'text-defocus-600',
-      border: 'border-defocus-200'
+      bg: '#f0fdf4',
+      text: '#22c55e',
+      border: '#bbf7d0'
     },
     accent: {
-      bg: 'bg-accent-50',
-      text: 'text-accent-600',
-      border: 'border-accent-200'
+      bg: '#fdf4ff',
+      text: '#d946ef',
+      border: '#f5d0fe'
     },
     neutral: {
-      bg: 'bg-neutral-50',
-      text: 'text-neutral-600',
-      border: 'border-neutral-200'
+      bg: '#fafafa',
+      text: '#737373',
+      border: '#e5e5e5'
     }
   };
 
-  const classes = colorClasses[color];
+  const colors = colorMap[color] || colorMap.primary;
+
+  const CardContainer = onPress ? TouchableOpacity : View;
 
   return (
-    <div 
-      className={`card-hover ${classes.bg} ${classes.border} ${onClick ? 'cursor-pointer' : ''}`}
-      onClick={onClick}
+    <CardContainer 
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.bg,
+          borderColor: colors.border,
+        },
+        onPress && styles.cardPressable
+      ]}
+      onPress={onPress}
+      activeOpacity={0.7}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <div className="flex items-center mb-2">
-            <span className="text-2xl mr-2">{icon}</span>
-            <h3 className={`font-semibold ${classes.text}`}>{title}</h3>
-          </div>
-          <div className="text-3xl font-bold text-neutral-900 mb-1">
-            {value}
-          </div>
-          {subtitle && (
-            <p className="text-sm text-neutral-600">{subtitle}</p>
-          )}
-          {trend && (
-            <div className={`flex items-center mt-2 text-sm ${
-              trend > 0 ? 'text-defocus-600' : 'text-focus-600'
-            }`}>
-              <span className="mr-1">
-                {trend > 0 ? '↗' : '↘'}
-              </span>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.icon}>{icon}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+        </View>
+        
+        <Text style={styles.value}>{value}</Text>
+        
+        {subtitle && (
+          <Text style={styles.subtitle}>{subtitle}</Text>
+        )}
+        
+        {trend && (
+          <View style={styles.trendContainer}>
+            <Text style={styles.trendIcon}>
+              {trend > 0 ? '↗' : '↘'}
+            </Text>
+            <Text style={[
+              styles.trendText,
+              { color: trend > 0 ? '#22c55e' : '#f3771e' }
+            ]}>
               {Math.abs(trend)}% from last week
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+            </Text>
+          </View>
+        )}
+      </View>
+    </CardContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  cardPressable: {
+    // Additional styles for pressable cards
+  },
+  content: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  icon: {
+    fontSize: 24,
+    marginRight: 8,
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  value: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#171717',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: '#737373',
+  },
+  trendContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  trendIcon: {
+    marginRight: 4,
+    fontSize: 12,
+  },
+  trendText: {
+    fontSize: 12,
+  },
+});
 
 export default StatCard;

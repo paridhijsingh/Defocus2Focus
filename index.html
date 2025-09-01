@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Defocus2Focus - Gamified Productivity App</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
+        min-height: 100vh;
+        color: white;
+        overflow-x: hidden;
+      }
+
+      .container {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .splash-screen {
+        text-align: center;
+        animation: fadeIn 1s ease-in;
+      }
+
+      .app-name {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .tagline {
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+        font-style: italic;
+        opacity: 0.9;
+      }
+
+      .subtitle {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-bottom: 40px;
+      }
+
+      .start-button {
+        background: linear-gradient(45deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      }
+
+      .start-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+      }
+
+      .main-screen {
+        display: none;
+        text-align: center;
+      }
+
+      .welcome-text {
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .menu-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 30px;
+      }
+
+      .menu-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .menu-item:hover {
+        transform: translateY(-3px);
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .menu-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+      }
+
+      .menu-text {
+        font-size: 0.9rem;
+        font-weight: bold;
+      }
+
+      .status-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.1);
+        padding: 10px 20px;
+        backdrop-filter: blur(10px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+      }
+
+      .stats {
+        display: flex;
+        gap: 20px;
+      }
+
+      .stat {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          padding: 15px;
+        }
+
+        .app-name {
+          font-size: 2rem;
+        }
+
+        .menu-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="status-bar">
+      <div>Defocus2Focus</div>
+      <div class="stats">
+        <div class="stat">⭐ Level 1</div>
+        <div class="stat">🪙 0</div>
+        <div class="stat">🔥 0</div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div id="splash-screen" class="splash-screen">
+        <div class="app-name pulse">Defocus2Focus</div>
+        <div class="tagline">Where Procrastination Meets Play</div>
+        <div class="subtitle">Gamified Focus & Productivity App</div>
+        <button class="start-button" onclick="startApp()">
+          Start Your Journey
+        </button>
+      </div>
+
+      <div id="main-screen" class="main-screen">
+        <div class="welcome-text">Welcome to Defocus2Focus!</div>
+        <div class="subtitle">Choose your next adventure</div>
+
+        <div class="menu-grid">
+          <div class="menu-item" onclick="showFeature('defocus')">
+            <div class="menu-icon">🌿</div>
+            <div class="menu-text">Defocus Time</div>
+          </div>
+          <div class="menu-item" onclick="showFeature('todo')">
+            <div class="menu-icon">✅</div>
+            <div class="menu-text">My Tasks</div>
+          </div>
+          <div class="menu-item" onclick="showFeature('pomodoro')">
+            <div class="menu-icon">⏰</div>
+            <div class="menu-text">Focus Session</div>
+          </div>
+          <div class="menu-item" onclick="showFeature('music')">
+            <div class="menu-icon">🎵</div>
+            <div class="menu-text">Music & Relax</div>
+          </div>
+          <div class="menu-item" onclick="showFeature('break')">
+            <div class="menu-icon">☕</div>
+            <div class="menu-text">Break Time</div>
+          </div>
+          <div class="menu-item" onclick="showFeature('rewards')">
+            <div class="menu-icon">🏆</div>
+            <div class="menu-text">Rewards</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function startApp() {
+        document.getElementById("splash-screen").style.display = "none";
+        document.getElementById("main-screen").style.display = "block";
+        document.getElementById("main-screen").style.animation =
+          "fadeIn 0.5s ease-in";
+      }
+
+      function showFeature(feature) {
+        alert(
+          `🎮 ${
+            feature.charAt(0).toUpperCase() + feature.slice(1)
+          } feature coming soon!\n\nThis is a working prototype of Defocus2Focus. The full app will include:\n\n• Interactive timers and mini-games\n• Task management with rewards\n• Music and relaxation features\n• Progress tracking and achievements\n\nStay tuned for the complete gamified productivity experience!`
+        );
+      }
+
+      // Simulate loading
+      setTimeout(() => {
+        document.querySelector(".pulse").classList.remove("pulse");
+      }, 3000);
+    </script>
+  </body>
+</html>

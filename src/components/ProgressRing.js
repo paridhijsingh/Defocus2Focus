@@ -1,5 +1,11 @@
 import React from 'react';
+import { View, Text } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 
+/**
+ * ProgressRing Component
+ * Displays a circular progress indicator with customizable colors and content
+ */
 const ProgressRing = ({ 
   progress, 
   size = 120, 
@@ -8,65 +14,73 @@ const ProgressRing = ({
   showPercentage = true,
   children 
 }) => {
+  // Calculate circle dimensions
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
-  const colorClasses = {
-    primary: 'stroke-primary-500',
-    focus: 'stroke-focus-500',
-    defocus: 'stroke-defocus-500',
-    accent: 'stroke-accent-500',
-    neutral: 'stroke-neutral-500'
+  // Color mapping for different themes
+  const colorMap = {
+    primary: '#0ea5e9',
+    focus: '#f3771e',
+    defocus: '#22c55e',
+    accent: '#d946ef',
+    neutral: '#737373'
   };
 
+  const selectedColor = colorMap[color] || colorMap.primary;
+
   return (
-    <div className="relative inline-flex items-center justify-center">
-      <svg
-        width={size}
-        height={size}
-        className="transform -rotate-90"
-      >
+    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
         {/* Background circle */}
-        <circle
+        <Circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="currentColor"
+          stroke="#e5e5e5"
           strokeWidth={strokeWidth}
           fill="transparent"
-          className="text-neutral-200"
         />
         
         {/* Progress circle */}
-        <circle
+        <Circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="currentColor"
+          stroke={selectedColor}
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={strokeDasharray}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          className={`transition-all duration-500 ease-in-out ${colorClasses[color]}`}
         />
-      </svg>
+      </Svg>
       
       {/* Content inside the ring */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <View style={{
+        position: 'absolute',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: size,
+        height: size,
+      }}>
         {children || (
           showPercentage && (
-            <div className="text-center">
-              <div className={`text-2xl font-bold ${colorClasses[color].replace('stroke-', 'text-')}`}>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{
+                fontSize: 24,
+                fontWeight: 'bold',
+                color: selectedColor,
+              }}>
                 {Math.round(progress)}%
-              </div>
-            </div>
+              </Text>
+            </View>
           )
         )}
-      </div>
-    </div>
+      </View>
+    </View>
   );
 };
 
