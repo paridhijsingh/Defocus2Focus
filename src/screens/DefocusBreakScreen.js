@@ -48,6 +48,18 @@ const DefocusBreakScreen = ({ navigation }) => {
     checkAsyncStorageState
   } = useUserData();
 
+  // Test if functions are working
+  console.log('🧪 DefocusBreakScreen loaded with functions:', {
+    hasAddDefocusSession: typeof addDefocusSession === 'function',
+    hasCanAccessDefocus: typeof canAccessDefocus === 'function',
+    hasGetDefocusLockStatus: typeof getDefocusLockStatus === 'function',
+    hasResetDefocusSessionState: typeof resetDefocusSessionState === 'function',
+    hasTestSetDefocusCompleted: typeof testSetDefocusCompleted === 'function',
+    hasCheckAsyncStorageState: typeof checkAsyncStorageState === 'function',
+    userDataKeys: Object.keys(userData),
+    defocusAbusePrevention: userData.defocusAbusePrevention
+  });
+
   // Timer state
   const [timeLeft, setTimeLeft] = useState(userData.settings.defocusTimeLimit * 60);
   const [isRunning, setIsRunning] = useState(false);
@@ -673,6 +685,12 @@ const DefocusBreakScreen = ({ navigation }) => {
         {/* Debug Section - Remove in production */}
         <View style={styles.debugContainer}>
           <Text style={styles.debugTitle}>Debug Info</Text>
+          <TouchableOpacity
+            style={[styles.debugButton, { backgroundColor: '#10b981', marginBottom: 8 }]}
+            onPress={() => Alert.alert('Test', 'Debug section is working!')}
+          >
+            <Text style={styles.debugButtonText}>Test Debug Section</Text>
+          </TouchableOpacity>
           <Text style={styles.debugText}>
             Defocus Completed: {userData.defocusAbusePrevention.defocusSessionCompleted ? 'Yes' : 'No'}
           </Text>
@@ -681,6 +699,9 @@ const DefocusBreakScreen = ({ navigation }) => {
           </Text>
           <Text style={styles.debugText}>
             Lock Status: {getDefocusLockStatus().locked ? 'Locked' : 'Unlocked'}
+          </Text>
+          <Text style={styles.debugText}>
+            Lock Reason: {getDefocusLockStatus().reason || 'None'}
           </Text>
           <TouchableOpacity
             style={styles.debugButton}

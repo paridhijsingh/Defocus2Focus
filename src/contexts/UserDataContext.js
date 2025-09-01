@@ -380,11 +380,10 @@ export const UserDataProvider = ({ children }) => {
     
     // If no defocus session completed yet, check if user has completed a focus session today
     const today = new Date().toDateString();
-    const lastFocusDate = userData.defocusAbusePrevention.lastFocusSessionDate 
-      ? new Date(userData.defocusAbusePrevention.lastFocusSessionDate).toDateString()
-      : null;
+    const lastFocusDate = userData.defocusAbusePrevention.lastFocusSessionDate;
+    const hasFocusToday = lastFocusDate ? new Date(lastFocusDate).toDateString() === today : false;
     
-    if (lastFocusDate === today) {
+    if (hasFocusToday) {
       console.log('✅ ALLOWING ACCESS: Focus session completed today');
       return true;
     }
@@ -724,7 +723,7 @@ export const UserDataProvider = ({ children }) => {
     
     // If no defocus session completed, check if user has focus session today
     const today = new Date().toDateString();
-    const hasFocusToday = lastFocusDate === today;
+    const hasFocusToday = lastFocusDate ? new Date(lastFocusDate).toDateString() === today : false;
     
     if (!hasFocusToday) {
       console.log('🔒 Locked: no_focus_session reason');
