@@ -82,7 +82,14 @@ export const UserDataProvider = ({ children }) => {
       const savedData = await AsyncStorage.getItem('userData');
       if (savedData) {
         const parsedData = JSON.parse(savedData);
+        console.log('📱 Loading saved user data:', {
+          defocusSessionCompleted: parsedData.defocusAbusePrevention?.defocusSessionCompleted,
+          lastDefocusSessionDate: parsedData.defocusAbusePrevention?.lastDefocusSessionDate,
+          lastFocusSessionDate: parsedData.defocusAbusePrevention?.lastFocusSessionDate
+        });
         setUserData(prevData => ({ ...prevData, ...parsedData }));
+      } else {
+        console.log('📱 No saved user data found, using defaults');
       }
     } catch (error) {
       console.log('Error loading user data:', error);
@@ -91,6 +98,11 @@ export const UserDataProvider = ({ children }) => {
 
   const saveUserData = async () => {
     try {
+      console.log('💾 Saving user data:', {
+        defocusSessionCompleted: userData.defocusAbusePrevention.defocusSessionCompleted,
+        lastDefocusSessionDate: userData.defocusAbusePrevention.lastDefocusSessionDate,
+        lastFocusSessionDate: userData.defocusAbusePrevention.lastFocusSessionDate
+      });
       await AsyncStorage.setItem('userData', JSON.stringify(userData));
     } catch (error) {
       console.log('Error saving user data:', error);
@@ -296,6 +308,8 @@ export const UserDataProvider = ({ children }) => {
 
   // Add defocus session with abuse prevention
   const addDefocusSession = (sessionData) => {
+    console.log('🔒 Adding defocus session:', sessionData);
+    
     const newDefocusSession = {
       id: Date.now(),
       ...sessionData,
@@ -321,7 +335,7 @@ export const UserDataProvider = ({ children }) => {
         coinsEarned = Math.floor(sessionData.duration / 5); // 1 coin per 5 minutes
       }
       
-      return {
+      const updatedData = {
         ...prev,
         defocusSessions: [...prev.defocusSessions, newDefocusSession],
         points: prev.points + pointsEarned,
@@ -336,6 +350,11 @@ export const UserDataProvider = ({ children }) => {
           lastDefocusSessionDate: new Date().toISOString(), // Track when defocus was completed
         }
       };
+      
+      console.log('🔒 Updated user data - defocusSessionCompleted:', updatedData.defocusAbusePrevention.defocusSessionCompleted);
+      console.log('🔒 Updated user data - lastDefocusSessionDate:', updatedData.defocusAbusePrevention.lastDefocusSessionDate);
+      
+      return updatedData;
     });
   };
 
@@ -349,32 +368,60 @@ export const UserDataProvider = ({ children }) => {
       ? new Date(userData.defocusAbusePrevention.lastDefocusSessionDate).toDateString()
       : null;
     
-    // NEW FLOW: After completing a defocus session, user MUST complete a focus session
+    console.log('🔍 canAccessDefocus check:', {
+      defocusSessionCompleted: userData.defocusAbusePrevention.defocusSessionCompleted,
+      lastFocusDate,
+      lastDefocusDate,
+      today
+    });
+    
+    // SIMPLIFIED LOGIC: After completing a defocus session, user MUST complete a focus session
     if (userData.defocusAbusePrevention.defocusSessionCompleted) {
-      // Check if user has completed a focus session after the defocus session
+      console.log('🔒 Defocus session completed - checking if focus session was completed AFTER');
+      // User has completed a defocus session - check if they've completed a focus session AFTER
       if (lastFocusDate && lastDefocusDate) {
         const focusTime = new Date(lastFocusDate).getTime();
         const defocusTime = new Date(lastDefocusDate).getTime();
         
+        console.log('🔍 Time comparison:', {
+          focusTime: new Date(focusTime),
+          defocusTime: new Date(defocusTime),
+          focusAfterDefocus: focusTime > defocusTime
+        });
+        
         // Only allow access if focus session was completed AFTER the defocus session
         if (focusTime > defocusTime) {
+          console.log('✅ Focus session completed after defocus - allowing access');
           return true; // User completed focus session after defocus, can defocus again
         }
       }
-      return false; // User completed defocus but hasn't completed focus session yet
+      console.log('❌ No focus session completed after defocus - blocking access');
+      // User completed defocus but hasn't completed focus session yet - BLOCK ACCESS
+      return false;
     }
     
-    // LEGACY LOGIC: For users who haven't completed any defocus sessions yet
-    // Allow access if:
-    // 1. User has completed a focus session today, OR
-    // 2. User hasn't exceeded daily defocus time limit
+    console.log('🔍 No defocus session completed yet - checking focus session requirement');
+    // For users who haven't completed any defocus sessions yet
+    // Only allow access if they've completed a focus session today
     const hasCompletedFocusToday = lastFocusDate === today;
-    const hasExceededDailyLimit = userData.defocusAbusePrevention.defocusTimeUsed >= userData.defocusAbusePrevention.maxDefocusTimePerDay;
     
-    // Additional abuse prevention: if user has taken too many consecutive defocus sessions without focus
+    if (!hasCompletedFocusToday) {
+      console.log('❌ No focus session today - blocking access');
+      return false; // No focus session today - block access
+    }
+    
+    console.log('✅ Focus session completed today - allowing access');
+    // Additional safety checks
+    const hasExceededDailyLimit = userData.defocusAbusePrevention.defocusTimeUsed >= userData.defocusAbusePrevention.maxDefocusTimePerDay;
     const hasTooManyConsecutiveDefocus = userData.defocusAbusePrevention.consecutiveDefocusSessions >= 3;
     
-    return (hasCompletedFocusToday || !hasExceededDailyLimit) && !hasTooManyConsecutiveDefocus;
+    const finalResult = !hasExceededDailyLimit && !hasTooManyConsecutiveDefocus;
+    console.log('🔍 Final access result:', finalResult, {
+      hasExceededDailyLimit,
+      hasTooManyConsecutiveDefocus
+    });
+    
+    return finalResult;
   };
 
   // Get motivational message based on user behavior
@@ -562,6 +609,93 @@ export const UserDataProvider = ({ children }) => {
     }));
   };
 
+  // Reset defocus session state (for testing)
+  const resetDefocusSessionState = () => {
+    setUserData(prev => ({
+      ...prev,
+      defocusAbusePrevention: {
+        ...prev.defocusAbusePrevention,
+        defocusSessionCompleted: false,
+        lastDefocusSessionDate: null,
+      }
+    }));
+  };
+
+  // Clear all user data (for testing)
+  const clearAllUserData = async () => {
+    try {
+      await AsyncStorage.removeItem('userData');
+      setUserData({
+        coins: 0,
+        points: 0,
+        level: 1,
+        completedTasks: 0,
+        streak: 0,
+        lastLoginDate: null,
+        totalFocusTime: 0,
+        weeklyGoal: 5,
+        achievements: [],
+        currentTask: null,
+        todoList: [],
+        completedTasks: [],
+        defocusTime: 10,
+        pomodoroLength: 25,
+        breakLength: 5,
+        focusDuration: 25,
+        settings: {
+          focusDuration: 25,
+          breakDuration: 5,
+          longBreakDuration: 15,
+          sessionsUntilLongBreak: 4,
+          autoStartBreaks: false,
+          autoStartSessions: false,
+          soundEnabled: true,
+          vibrationEnabled: true,
+          defocusTimeLimit: 10,
+        },
+        sessions: [],
+        defocusSessions: [],
+        journalEntries: [],
+        aiTherapistData: [],
+        games: {
+          unlocked: false,
+          highScore: 0,
+          gamesPlayed: 0,
+        },
+        focusSessionCompleted: false,
+        defocusAbusePrevention: {
+          consecutiveDefocusSessions: 0,
+          lastFocusSessionDate: null,
+          defocusTimeUsed: 0,
+          maxDefocusTimePerDay: 60,
+          defocusSessionCompleted: false,
+          lastDefocusSessionDate: null,
+        },
+        categories: [
+          { id: 'work', name: 'Work', color: '#3b82f6', icon: 'briefcase' },
+          { id: 'personal', name: 'Personal', color: '#10b981', icon: 'person' },
+          { id: 'study', name: 'Study', color: '#8b5cf6', icon: 'school' },
+          { id: 'health', name: 'Health', color: '#ef4444', icon: 'fitness' },
+          { id: 'shopping', name: 'Shopping', color: '#f59e0b', icon: 'cart' },
+        ],
+      });
+      console.log('🧹 All user data cleared');
+    } catch (error) {
+      console.log('Error clearing user data:', error);
+    }
+  };
+
+  // Manual save function (for testing)
+  const manualSaveUserData = async () => {
+    try {
+      console.log('💾 Manual save triggered');
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      console.log('✅ Manual save completed');
+    } catch (error) {
+      console.log('Error in manual save:', error);
+    }
+  };
+
   // Get defocus lock status for UI display
   const getDefocusLockStatus = () => {
     const canAccess = canAccessDefocus();
@@ -569,7 +703,15 @@ export const UserDataProvider = ({ children }) => {
     const lastDefocusDate = userData.defocusAbusePrevention.lastDefocusSessionDate;
     const lastFocusDate = userData.defocusAbusePrevention.lastFocusSessionDate;
     
+    console.log('🔒 getDefocusLockStatus:', {
+      canAccess,
+      defocusCompleted,
+      lastDefocusDate,
+      lastFocusDate
+    });
+    
     if (!canAccess && defocusCompleted) {
+      console.log('🔒 Locked: defocus_completed reason');
       return {
         locked: true,
         reason: 'defocus_completed',
@@ -581,6 +723,7 @@ export const UserDataProvider = ({ children }) => {
     }
     
     if (!canAccess && !defocusCompleted) {
+      console.log('🔒 Locked: no_focus_session reason');
       return {
         locked: true,
         reason: 'no_focus_session',
@@ -591,6 +734,7 @@ export const UserDataProvider = ({ children }) => {
       };
     }
     
+    console.log('🔓 Unlocked: no lock reason');
     return {
       locked: false,
       reason: null,
@@ -661,6 +805,9 @@ export const UserDataProvider = ({ children }) => {
     hasExhaustedDefocusPrivileges,
     getDefocusAbuseStatus,
     getDefocusLockStatus,
+    resetDefocusSessionState,
+    clearAllUserData,
+    manualSaveUserData,
   };
 
   return (

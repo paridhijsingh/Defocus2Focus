@@ -40,7 +40,10 @@ const DefocusBreakScreen = ({ navigation }) => {
     updateSettings,
     getDefocusAbuseStatus,
     hasExhaustedDefocusPrivileges,
-    getDefocusLockStatus
+    getDefocusLockStatus,
+    resetDefocusSessionState,
+    clearAllUserData,
+    manualSaveUserData
   } = useUserData();
 
   // Timer state
@@ -81,10 +84,37 @@ const DefocusBreakScreen = ({ navigation }) => {
   // Check access on component mount and monitor lock status
   useEffect(() => {
     const lockStatus = getDefocusLockStatus();
+    console.log('🔒 Defocus Lock Status:', lockStatus);
+    console.log('📊 User Data State:', {
+      defocusSessionCompleted: userData.defocusAbusePrevention.defocusSessionCompleted,
+      lastFocusSessionDate: userData.defocusAbusePrevention.lastFocusSessionDate,
+      lastDefocusSessionDate: userData.defocusAbusePrevention.lastDefocusSessionDate,
+      canAccess: canAccessDefocus()
+    });
+    
+    if (lockStatus.locked) {
+      console.log('🔒 Showing locked modal');
+      setShowLockedModal(true);
+    } else {
+      console.log('🔓 Hiding locked modal');
+      setShowLockedModal(false);
+    }
+  }, [
+    userData.defocusAbusePrevention.defocusSessionCompleted, 
+    userData.defocusAbusePrevention.lastFocusSessionDate,
+    userData.defocusAbusePrevention.lastDefocusSessionDate
+  ]);
+
+  // Force refresh function for testing
+  const forceRefresh = () => {
+    console.log('🔄 Force refreshing lock status');
+    const lockStatus = getDefocusLockStatus();
     if (lockStatus.locked) {
       setShowLockedModal(true);
+    } else {
+      setShowLockedModal(false);
     }
-  }, [userData.defocusAbusePrevention.defocusSessionCompleted, userData.defocusAbusePrevention.lastFocusSessionDate]);
+  };
 
   // Format time as MM:SS
   const formatTime = (seconds) => {
@@ -113,7 +143,7 @@ const DefocusBreakScreen = ({ navigation }) => {
             }
             
             // Save defocus session
-            const sessionDuration = userData.settings.defocusTimeLimit * 60 - prevTime;
+            const sessionDuration = selectedTimeLimit * 60; // Use the selected time limit, not settings
             const sessionData = {
               type: 'defocus',
               duration: sessionDuration,
@@ -121,6 +151,7 @@ const DefocusBreakScreen = ({ navigation }) => {
               completed: true,
               date: new Date().toISOString(),
             };
+            console.log('💾 Saving defocus session:', sessionData);
             addDefocusSession(sessionData);
             
             // Show completion modal
@@ -141,8 +172,12 @@ const DefocusBreakScreen = ({ navigation }) => {
   // Start defocus timer
   const startDefocusTimer = (activity) => {
     const lockStatus = getDefocusLockStatus();
+    console.log('🚀 Starting Defocus Timer for:', activity);
+    console.log('🔒 Lock Status:', lockStatus);
+    console.log('✅ Can Access Defocus:', canAccessDefocus());
     
     if (lockStatus.locked) {
+      console.log('❌ Access blocked - showing lock alert');
       if (lockStatus.reason === 'defocus_completed') {
         Alert.alert(
           'Defocus Time is Over!',
@@ -621,6 +656,60 @@ const DefocusBreakScreen = ({ navigation }) => {
             <Text style={styles.statLabel}>Coins</Text>
           </View>
         </View>
+
+        {/* Debug Section - Remove in production */}
+        <View style={styles.debugContainer}>
+          <Text style={styles.debugTitle}>Debug Info</Text>
+          <Text style={styles.debugText}>
+            Defocus Completed: {userData.defocusAbusePrevention.defocusSessionCompleted ? 'Yes' : 'No'}
+          </Text>
+          <Text style={styles.debugText}>
+            Can Access: {canAccessDefocus() ? 'Yes' : 'No'}
+          </Text>
+          <Text style={styles.debugText}>
+            Lock Status: {getDefocusLockStatus().locked ? 'Locked' : 'Unlocked'}
+          </Text>
+          <TouchableOpacity
+            style={styles.debugButton}
+            onPress={() => {
+              resetDefocusSessionState();
+              Alert.alert('Reset', 'Defocus session state reset for testing');
+            }}
+          >
+            <Text style={styles.debugButtonText}>Reset Defocus State</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.debugButton, { backgroundColor: '#3b82f6', marginTop: 8 }]}
+            onPress={forceRefresh}
+          >
+            <Text style={styles.debugButtonText}>Force Refresh</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.debugButton, { backgroundColor: '#059669', marginTop: 8 }]}
+            onPress={manualSaveUserData}
+          >
+            <Text style={styles.debugButtonText}>Manual Save</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.debugButton, { backgroundColor: '#dc2626', marginTop: 8 }]}
+            onPress={() => {
+              Alert.alert(
+                'Clear All Data',
+                'This will clear all user data. Are you sure?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { 
+                    text: 'Clear All', 
+                    style: 'destructive',
+                    onPress: clearAllUserData
+                  }
+                ]
+              );
+            }}
+          >
+            <Text style={styles.debugButtonText}>Clear All Data</Text>
+          </TouchableOpacity>
+        </View>
       </Animated.View>
 
       {/* Locked Access Modal */}
@@ -963,6 +1052,38 @@ const styles = StyleSheet.create({
   lockedStatusText: {
     color: '#f59e0b',
     fontWeight: '600',
+  },
+  debugContainer: {
+    backgroundColor: '#f3f4f6',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  debugTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  debugText: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  debugButton: {
+    backgroundColor: '#ef4444',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  debugButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   timerContainer: {
     alignItems: 'center',
