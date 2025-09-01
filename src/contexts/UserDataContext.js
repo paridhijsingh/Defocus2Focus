@@ -347,7 +347,10 @@ export const UserDataProvider = ({ children }) => {
     const hasCompletedFocusToday = lastFocusDate === today;
     const hasExceededDailyLimit = userData.defocusAbusePrevention.defocusTimeUsed >= userData.defocusAbusePrevention.maxDefocusTimePerDay;
     
-    return hasCompletedFocusToday || !hasExceededDailyLimit;
+    // Additional abuse prevention: if user has taken too many consecutive defocus sessions without focus
+    const hasTooManyConsecutiveDefocus = userData.defocusAbusePrevention.consecutiveDefocusSessions >= 3;
+    
+    return (hasCompletedFocusToday || !hasExceededDailyLimit) && !hasTooManyConsecutiveDefocus;
   };
 
   // Get motivational message based on user behavior
@@ -355,13 +358,27 @@ export const UserDataProvider = ({ children }) => {
     const overdueTasks = getOverdueTasks().length;
     const incompleteTasks = userData.todoList.length;
     const consecutiveDefocus = userData.defocusAbusePrevention.consecutiveDefocusSessions;
+    const defocusTimeUsed = userData.defocusAbusePrevention.defocusTimeUsed;
+    const maxDefocusTime = userData.defocusAbusePrevention.maxDefocusTimePerDay;
     
-    if (consecutiveDefocus > 2) {
+    // Check for defocus abuse patterns
+    if (consecutiveDefocus >= 3) {
+      return {
+        type: 'urgent',
+        title: 'Break Time Limit Reached! 🚫',
+        message: 'You\'ve taken too many breaks without focusing. Complete a focus session to unlock more defocus activities.',
+        action: 'Start Focus Session',
+        requiresAction: true
+      };
+    }
+    
+    if (defocusTimeUsed >= maxDefocusTime * 0.8) {
       return {
         type: 'warning',
-        title: 'Time to Focus! 🎯',
-        message: 'You\'ve been taking a lot of breaks. Remember, balance is key! Try completing a focus session to unlock more rewards.',
-        action: 'Start Focus Session'
+        title: 'Approaching Daily Limit! ⚠️',
+        message: `You've used ${Math.floor(defocusTimeUsed)} minutes of your ${maxDefocusTime} minute daily defocus allowance.`,
+        action: 'Manage Time',
+        requiresAction: false
       };
     }
     
@@ -370,7 +387,8 @@ export const UserDataProvider = ({ children }) => {
         type: 'urgent',
         title: 'Tasks Need Attention! ⚠️',
         message: `You have ${overdueTasks} overdue task${overdueTasks > 1 ? 's' : ''}. Let's tackle them together!`,
-        action: 'View Tasks'
+        action: 'View Tasks',
+        requiresAction: true
       };
     }
     
@@ -379,7 +397,18 @@ export const UserDataProvider = ({ children }) => {
         type: 'info',
         title: 'Stay Organized! 📝',
         message: `You have ${incompleteTasks} tasks pending. Consider breaking them down into smaller, manageable pieces.`,
-        action: 'Organize Tasks'
+        action: 'Organize Tasks',
+        requiresAction: false
+      };
+    }
+    
+    if (consecutiveDefocus > 0) {
+      return {
+        type: 'info',
+        title: 'Balance is Key! ⚖️',
+        message: 'You\'ve been taking breaks. Remember to complete a focus session to maintain productivity balance.',
+        action: 'Start Focus Session',
+        requiresAction: false
       };
     }
     
@@ -387,7 +416,8 @@ export const UserDataProvider = ({ children }) => {
       type: 'success',
       title: 'You\'re Doing Great! 🌟',
       message: 'Keep up the good work! Remember to take breaks and stay hydrated.',
-      action: null
+      action: null,
+      requiresAction: false
     };
   };
 
@@ -502,8 +532,36 @@ export const UserDataProvider = ({ children }) => {
       defocusAbusePrevention: {
         ...prev.defocusAbusePrevention,
         defocusTimeUsed: 0,
+        consecutiveDefocusSessions: 0, // Reset consecutive count daily
       }
     }));
+  };
+
+  // Check if user has exhausted defocus privileges
+  const hasExhaustedDefocusPrivileges = () => {
+    const consecutiveDefocus = userData.defocusAbusePrevention.consecutiveDefocusSessions;
+    const defocusTimeUsed = userData.defocusAbusePrevention.defocusTimeUsed;
+    const maxDefocusTime = userData.defocusAbusePrevention.maxDefocusTimePerDay;
+    
+    return consecutiveDefocus >= 3 || defocusTimeUsed >= maxDefocusTime;
+  };
+
+  // Get defocus abuse prevention status
+  const getDefocusAbuseStatus = () => {
+    const consecutiveDefocus = userData.defocusAbusePrevention.consecutiveDefocusSessions;
+    const defocusTimeUsed = userData.defocusAbusePrevention.defocusTimeUsed;
+    const maxDefocusTime = userData.defocusAbusePrevention.maxDefocusTimePerDay;
+    const lastFocusDate = userData.defocusAbusePrevention.lastFocusSessionDate;
+    
+    return {
+      consecutiveDefocus,
+      defocusTimeUsed,
+      maxDefocusTime,
+      remainingTime: Math.max(0, maxDefocusTime - defocusTimeUsed),
+      lastFocusDate,
+      canAccess: canAccessDefocus(),
+      needsFocusSession: consecutiveDefocus >= 2 || defocusTimeUsed >= maxDefocusTime * 0.8
+    };
   };
 
   const value = {
@@ -536,6 +594,8 @@ export const UserDataProvider = ({ children }) => {
     addAchievement,
     setCurrentTask,
     resetDailyDefocusTime,
+    hasExhaustedDefocusPrivileges,
+    getDefocusAbuseStatus,
   };
 
   return (

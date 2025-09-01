@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useUserData } from '../contexts/UserDataContext';
 import ProgressRing from '../components/ProgressRing';
+import MiniGame from '../components/MiniGame';
 
 /**
  * Enhanced Defocus Break Screen
@@ -36,7 +37,9 @@ const DefocusBreakScreen = ({ navigation }) => {
     getMotivationalMessage,
     addJournalEntry,
     addAITherapistData,
-    updateSettings
+    updateSettings,
+    getDefocusAbuseStatus,
+    hasExhaustedDefocusPrivileges
   } = useUserData();
 
   // Timer state
@@ -225,25 +228,52 @@ const DefocusBreakScreen = ({ navigation }) => {
   const completeDefocusSession = () => {
     setShowCompleteModal(false);
     
-    const motivationalMessage = getMotivationalMessage();
+    // Check if user should be encouraged to start a focus session
+    const abuseStatus = getDefocusAbuseStatus();
+    const shouldEncourageFocus = abuseStatus.needsFocusSession || 
+                                userData.defocusAbusePrevention.consecutiveDefocusSessions > 0;
     
-    Alert.alert(
-      'Break Complete! 🎉',
-      'Great job taking a proper break! Ready to focus again?',
-      [
-        { 
-          text: 'Start Focus Session', 
-          onPress: () => navigation.navigate('FocusSession')
-        },
-        { 
-          text: 'Continue Break', 
-          onPress: () => {
-            setTimeLeft(selectedTimeLimit * 60);
-            setCurrentActivity(null);
+    if (shouldEncourageFocus) {
+      Alert.alert(
+        'Break Complete! 🎉',
+        'Great job taking a proper break! To maintain productivity balance and unlock more rewards, consider starting a focus session.',
+        [
+          { 
+            text: 'Start Focus Session', 
+            style: 'default',
+            onPress: () => navigation.navigate('FocusSession')
+          },
+          { 
+            text: 'Take Another Break', 
+            style: 'cancel',
+            onPress: () => {
+              setTimeLeft(selectedTimeLimit * 60);
+              setCurrentActivity(null);
+            }
           }
-        }
-      ]
-    );
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Break Complete! 🎉',
+        'Great job taking a proper break! Ready to focus again?',
+        [
+          { 
+            text: 'Start Focus Session', 
+            style: 'default',
+            onPress: () => navigation.navigate('FocusSession')
+          },
+          { 
+            text: 'Continue Break', 
+            style: 'cancel',
+            onPress: () => {
+              setTimeLeft(selectedTimeLimit * 60);
+              setCurrentActivity(null);
+            }
+          }
+        ]
+      );
+    }
   };
 
   // Save journal entry
@@ -366,6 +396,45 @@ const DefocusBreakScreen = ({ navigation }) => {
           <View style={styles.motivationalContent}>
             <Text style={styles.motivationalTitle}>{motivationalMessage.title}</Text>
             <Text style={styles.motivationalText}>{motivationalMessage.message}</Text>
+            {motivationalMessage.requiresAction && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  if (motivationalMessage.action === 'Start Focus Session') {
+                    navigation.navigate('FocusSession');
+                  } else if (motivationalMessage.action === 'View Tasks') {
+                    navigation.navigate('Todo');
+                  }
+                }}
+              >
+                <Text style={styles.actionButtonText}>{motivationalMessage.action}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        {/* Abuse Prevention Status */}
+        <View style={styles.abusePreventionCard}>
+          <Text style={styles.abusePreventionTitle}>Break Balance Status</Text>
+          <View style={styles.abusePreventionStats}>
+            <View style={styles.abusePreventionStat}>
+              <Ionicons name="time" size={16} color="#6b7280" />
+              <Text style={styles.abusePreventionStatText}>
+                {Math.floor(userData.defocusAbusePrevention.defocusTimeUsed)}/{userData.defocusAbusePrevention.maxDefocusTimePerDay}m used
+              </Text>
+            </View>
+            <View style={styles.abusePreventionStat}>
+              <Ionicons name="refresh" size={16} color="#6b7280" />
+              <Text style={styles.abusePreventionStatText}>
+                {userData.defocusAbusePrevention.consecutiveDefocusSessions} consecutive breaks
+              </Text>
+            </View>
+            <View style={styles.abusePreventionStat}>
+              <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+              <Text style={styles.abusePreventionStatText}>
+                {userData.defocusAbusePrevention.lastFocusSessionDate ? 'Focus session completed' : 'No focus session yet'}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -663,39 +732,27 @@ const DefocusBreakScreen = ({ navigation }) => {
       <Modal
         visible={showGameModal}
         animationType="slide"
-        transparent={true}
+        transparent={false}
         onRequestClose={() => setShowGameModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Mini Game</Text>
-              <TouchableOpacity onPress={() => setShowGameModal(false)}>
-                <Ionicons name="close" size={24} color="#6b7280" />
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.modalBody}>
-              <View style={styles.gamePlaceholder}>
-                <Ionicons name="game-controller" size={48} color="#9ca3af" />
-                <Text style={styles.gamePlaceholderTitle}>Game Coming Soon!</Text>
-                <Text style={styles.gamePlaceholderText}>
-                  Lightweight mini-games will be available here to help you relax and refresh.
-                </Text>
-              </View>
-            </View>
-            
-            <View style={styles.modalFooter}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.primaryButton]}
-                onPress={() => setShowGameModal(false)}
-              >
-                <Text style={[styles.modalButtonText, styles.primaryButtonText]}>
-                  Got it!
-                </Text>
-              </TouchableOpacity>
-            </View>
+        <View style={styles.gameModalContainer}>
+          <View style={styles.gameModalHeader}>
+            <TouchableOpacity onPress={() => setShowGameModal(false)}>
+              <Ionicons name="close" size={24} color="#6b7280" />
+            </TouchableOpacity>
           </View>
+          
+          <MiniGame
+            onComplete={(gameResults) => {
+              // Handle game completion - could award bonus points
+              Alert.alert(
+                'Game Complete! 🎮',
+                `Great job! You scored ${gameResults.score} points with ${gameResults.accuracy}% accuracy.`,
+                [{ text: 'Continue', onPress: () => setShowGameModal(false) }]
+              );
+            }}
+            onClose={() => setShowGameModal(false)}
+          />
         </View>
       </Modal>
 
@@ -725,6 +782,16 @@ const DefocusBreakScreen = ({ navigation }) => {
                 <Text style={styles.sessionCompleteStat}>
                   Rewards: +{Math.floor(selectedTimeLimit / 2)} points, +{Math.floor(selectedTimeLimit / 5)} coins
                 </Text>
+                {userData.defocusAbusePrevention.consecutiveDefocusSessions > 0 && (
+                  <Text style={[styles.sessionCompleteStat, styles.warningText]}>
+                    ⚠️ You've taken {userData.defocusAbusePrevention.consecutiveDefocusSessions} consecutive breaks
+                  </Text>
+                )}
+                {userData.defocusAbusePrevention.defocusTimeUsed >= userData.defocusAbusePrevention.maxDefocusTimePerDay * 0.8 && (
+                  <Text style={[styles.sessionCompleteStat, styles.warningText]}>
+                    ⚠️ Daily break time: {Math.floor(userData.defocusAbusePrevention.defocusTimeUsed)}/{userData.defocusAbusePrevention.maxDefocusTimePerDay}m
+                  </Text>
+                )}
               </View>
               
               <TouchableOpacity
@@ -805,6 +872,49 @@ const styles = StyleSheet.create({
   motivationalText: {
     fontSize: 14,
     color: '#374151',
+    marginBottom: 8,
+  },
+  actionButton: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  actionButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  abusePreventionCard: {
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  abusePreventionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  abusePreventionStats: {
+    gap: 8,
+  },
+  abusePreventionStat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  abusePreventionStatText: {
+    fontSize: 14,
+    color: '#6b7280',
   },
   timerContainer: {
     alignItems: 'center',
@@ -1099,6 +1209,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  gameModalContainer: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  gameModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
   modalFooter: {
     flexDirection: 'row',
     padding: 20,
@@ -1164,6 +1285,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#374151',
     marginBottom: 4,
+  },
+  warningText: {
+    color: '#f59e0b',
+    fontWeight: '600',
   },
   sessionCompleteButton: {
     backgroundColor: '#10b981',
