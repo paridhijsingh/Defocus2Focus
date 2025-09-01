@@ -58,15 +58,43 @@ Dynamic motivational messages based on user behavior:
 - **Contextual Alerts**: Smart notifications based on user behavior patterns
 - **Balance Monitoring**: Real-time tracking of focus-defocus ratio
 - **Preventive Measures**: Early warnings before limits are reached
+- **Flow Enforcement**: Users MUST complete a focus session after defocus before they can defocus again
+
+## 🔄 New Defocus Flow (Core Feature)
+
+### Flow Enforcement
+
+The app now enforces a strict flow that prevents users from abusing defocus sessions:
+
+1. **Defocus Session Completion**: When a defocus session ends, the user receives the message "Defocus time is over. Time to Focus now!"
+2. **Automatic Lock**: The defocus button and all activities are automatically disabled
+3. **Focus Session Requirement**: User MUST complete a focus session (set to-do list, 25+ min timer, mark tasks complete/move to next day)
+4. **Unlock After Focus**: Only after completing the focus session can the user access defocus activities again
+5. **Rewards for Honesty**: Users receive points for completed tasks and smaller points for honestly marking unfinished tasks
+
+### User Experience
+
+- **Clear Messaging**: "You need to finish a Focus session before defocusing again"
+- **Visual Indicators**: Locked activities show appropriate lock icons and messages
+- **Seamless Navigation**: Direct buttons to start focus sessions
+- **Progress Tracking**: Real-time status of lock/unlock conditions
+
+### Technical Implementation
+
+- **State Tracking**: `defocusSessionCompleted` flag tracks when defocus is locked
+- **Time Validation**: Ensures focus session was completed AFTER defocus session
+- **UI Updates**: All activities, time selectors, and controls are properly disabled
+- **Modal Management**: Different lock messages based on lock reason
 
 ## 🛡️ Abuse Prevention Mechanisms
 
 ### Primary Prevention
 
 1. **Focus Session Gate**: Defocus activities locked until first focus session completion
-2. **Daily Time Caps**: Hard limit on total defocus time per day
-3. **Consecutive Session Limits**: Prevents endless break loops
-4. **Reward Conditioning**: No rewards without maintaining balance
+2. **Flow Enforcement**: Users MUST complete focus session after defocus before defocusing again
+3. **Daily Time Caps**: Hard limit on total defocus time per day
+4. **Consecutive Session Limits**: Prevents endless break loops
+5. **Reward Conditioning**: No rewards without maintaining balance
 
 ### Secondary Prevention
 
@@ -113,6 +141,14 @@ Dynamic motivational messages based on user behavior:
 2. **Guidance**: Clear instructions to complete focus session first
 3. **Unlock Process**: Games and activities unlock after focus completion
 4. **Tutorial**: Built-in guidance for proper usage patterns
+
+### Defocus-Focus Flow Users
+
+1. **Defocus Session**: Complete time-boxed defocus activity
+2. **Automatic Lock**: Defocus activities locked after completion
+3. **Focus Session**: Must complete focus session with to-do list
+4. **Unlock**: Defocus activities unlocked after focus completion
+5. **Repeat Cycle**: Maintains healthy work-break balance
 
 ### Regular Users
 
@@ -222,9 +258,10 @@ The implementation includes extensive comments explaining:
 This enhanced Defocus2Focus app successfully implements a comprehensive system that:
 
 - ✅ Prevents abuse through multiple layers of protection
+- ✅ Enforces strict defocus-focus flow (users MUST complete focus after defocus)
 - ✅ Encourages healthy work-break balance
 - ✅ Provides engaging activities for proper breaks
 - ✅ Maintains user engagement through smart rewards
 - ✅ Tracks productivity for continuous improvement
 
-The system ensures users can enjoy defocus activities while maintaining productivity and preventing the common pitfall of endless procrastination disguised as "productive breaks."
+The system ensures users can enjoy defocus activities while maintaining productivity and preventing the common pitfall of endless procrastination disguised as "productive breaks." The new flow enforcement ensures users cannot immediately start new defocus sessions, requiring them to complete productive focus work first.

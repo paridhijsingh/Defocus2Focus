@@ -55,6 +55,8 @@ export const UserDataProvider = ({ children }) => {
       lastFocusSessionDate: null, // Track when last focus session was completed
       defocusTimeUsed: 0, // Track total defocus time used today
       maxDefocusTimePerDay: 60, // Maximum defocus time allowed per day (minutes)
+      defocusSessionCompleted: false, // Track if defocus session was completed and needs focus session
+      lastDefocusSessionDate: null, // Track when last defocus session was completed
     },
     categories: [
       { id: 'work', name: 'Work', color: '#3b82f6', icon: 'briefcase' },
@@ -283,6 +285,7 @@ export const UserDataProvider = ({ children }) => {
         ...prev.defocusAbusePrevention,
         consecutiveDefocusSessions: 0, // Reset consecutive defocus sessions
         lastFocusSessionDate: new Date().toISOString(), // Update last focus session date
+        defocusSessionCompleted: false, // Reset defocus session completed flag - user can defocus again
       },
       games: {
         ...prev.games,
@@ -329,6 +332,8 @@ export const UserDataProvider = ({ children }) => {
             ? 0 
             : prev.defocusAbusePrevention.consecutiveDefocusSessions + 1,
           defocusTimeUsed: prev.defocusAbusePrevention.defocusTimeUsed + sessionData.duration,
+          defocusSessionCompleted: true, // Mark that defocus session was completed
+          lastDefocusSessionDate: new Date().toISOString(), // Track when defocus was completed
         }
       };
     });
@@ -340,7 +345,26 @@ export const UserDataProvider = ({ children }) => {
     const lastFocusDate = userData.defocusAbusePrevention.lastFocusSessionDate 
       ? new Date(userData.defocusAbusePrevention.lastFocusSessionDate).toDateString()
       : null;
+    const lastDefocusDate = userData.defocusAbusePrevention.lastDefocusSessionDate
+      ? new Date(userData.defocusAbusePrevention.lastDefocusSessionDate).toDateString()
+      : null;
     
+    // NEW FLOW: After completing a defocus session, user MUST complete a focus session
+    if (userData.defocusAbusePrevention.defocusSessionCompleted) {
+      // Check if user has completed a focus session after the defocus session
+      if (lastFocusDate && lastDefocusDate) {
+        const focusTime = new Date(lastFocusDate).getTime();
+        const defocusTime = new Date(lastDefocusDate).getTime();
+        
+        // Only allow access if focus session was completed AFTER the defocus session
+        if (focusTime > defocusTime) {
+          return true; // User completed focus session after defocus, can defocus again
+        }
+      }
+      return false; // User completed defocus but hasn't completed focus session yet
+    }
+    
+    // LEGACY LOGIC: For users who haven't completed any defocus sessions yet
     // Allow access if:
     // 1. User has completed a focus session today, OR
     // 2. User hasn't exceeded daily defocus time limit
@@ -533,8 +557,48 @@ export const UserDataProvider = ({ children }) => {
         ...prev.defocusAbusePrevention,
         defocusTimeUsed: 0,
         consecutiveDefocusSessions: 0, // Reset consecutive count daily
+        defocusSessionCompleted: false, // Reset defocus session completed flag daily
       }
     }));
+  };
+
+  // Get defocus lock status for UI display
+  const getDefocusLockStatus = () => {
+    const canAccess = canAccessDefocus();
+    const defocusCompleted = userData.defocusAbusePrevention.defocusSessionCompleted;
+    const lastDefocusDate = userData.defocusAbusePrevention.lastDefocusSessionDate;
+    const lastFocusDate = userData.defocusAbusePrevention.lastFocusSessionDate;
+    
+    if (!canAccess && defocusCompleted) {
+      return {
+        locked: true,
+        reason: 'defocus_completed',
+        message: 'Defocus time is over. Time to Focus now!',
+        tooltip: 'You need to finish a Focus session before defocusing again.',
+        lastDefocus: lastDefocusDate,
+        lastFocus: lastFocusDate,
+      };
+    }
+    
+    if (!canAccess && !defocusCompleted) {
+      return {
+        locked: true,
+        reason: 'no_focus_session',
+        message: 'Complete a Focus session to unlock Defocus activities',
+        tooltip: 'You need to complete a focus session first to access defocus activities.',
+        lastDefocus: lastDefocusDate,
+        lastFocus: lastFocusDate,
+      };
+    }
+    
+    return {
+      locked: false,
+      reason: null,
+      message: null,
+      tooltip: null,
+      lastDefocus: lastDefocusDate,
+      lastFocus: lastFocusDate,
+    };
   };
 
   // Check if user has exhausted defocus privileges
@@ -596,6 +660,7 @@ export const UserDataProvider = ({ children }) => {
     resetDailyDefocusTime,
     hasExhaustedDefocusPrivileges,
     getDefocusAbuseStatus,
+    getDefocusLockStatus,
   };
 
   return (

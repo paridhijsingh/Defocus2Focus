@@ -39,7 +39,8 @@ const DefocusBreakScreen = ({ navigation }) => {
     addAITherapistData,
     updateSettings,
     getDefocusAbuseStatus,
-    hasExhaustedDefocusPrivileges
+    hasExhaustedDefocusPrivileges,
+    getDefocusLockStatus
   } = useUserData();
 
   // Timer state
@@ -77,12 +78,13 @@ const DefocusBreakScreen = ({ navigation }) => {
     }).start();
   }, []);
 
-  // Check access on component mount
+  // Check access on component mount and monitor lock status
   useEffect(() => {
-    if (!canAccessDefocus()) {
+    const lockStatus = getDefocusLockStatus();
+    if (lockStatus.locked) {
       setShowLockedModal(true);
     }
-  }, []);
+  }, [userData.defocusAbusePrevention.defocusSessionCompleted, userData.defocusAbusePrevention.lastFocusSessionDate]);
 
   // Format time as MM:SS
   const formatTime = (seconds) => {
@@ -138,12 +140,25 @@ const DefocusBreakScreen = ({ navigation }) => {
 
   // Start defocus timer
   const startDefocusTimer = (activity) => {
-    if (!canAccessDefocus()) {
-      Alert.alert(
-        'Access Restricted',
-        'You need to complete a focus session first to access defocus activities.',
-        [{ text: 'OK' }]
-      );
+    const lockStatus = getDefocusLockStatus();
+    
+    if (lockStatus.locked) {
+      if (lockStatus.reason === 'defocus_completed') {
+        Alert.alert(
+          'Defocus Time is Over!',
+          lockStatus.message,
+          [
+            { text: 'Start Focus Session', onPress: () => navigation.navigate('FocusSession') },
+            { text: 'OK', style: 'cancel' }
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Access Restricted',
+          lockStatus.message,
+          [{ text: 'OK' }]
+        );
+      }
       return;
     }
 
@@ -228,52 +243,22 @@ const DefocusBreakScreen = ({ navigation }) => {
   const completeDefocusSession = () => {
     setShowCompleteModal(false);
     
-    // Check if user should be encouraged to start a focus session
-    const abuseStatus = getDefocusAbuseStatus();
-    const shouldEncourageFocus = abuseStatus.needsFocusSession || 
-                                userData.defocusAbusePrevention.consecutiveDefocusSessions > 0;
-    
-    if (shouldEncourageFocus) {
-      Alert.alert(
-        'Break Complete! 🎉',
-        'Great job taking a proper break! To maintain productivity balance and unlock more rewards, consider starting a focus session.',
-        [
-          { 
-            text: 'Start Focus Session', 
-            style: 'default',
-            onPress: () => navigation.navigate('FocusSession')
-          },
-          { 
-            text: 'Take Another Break', 
-            style: 'cancel',
-            onPress: () => {
-              setTimeLeft(selectedTimeLimit * 60);
-              setCurrentActivity(null);
-            }
-          }
-        ]
-      );
-    } else {
-      Alert.alert(
-        'Break Complete! 🎉',
-        'Great job taking a proper break! Ready to focus again?',
-        [
-          { 
-            text: 'Start Focus Session', 
-            style: 'default',
-            onPress: () => navigation.navigate('FocusSession')
-          },
-          { 
-            text: 'Continue Break', 
-            style: 'cancel',
-            onPress: () => {
-              setTimeLeft(selectedTimeLimit * 60);
-              setCurrentActivity(null);
-            }
-          }
-        ]
-      );
-    }
+    // NEW FLOW: After defocus session, user MUST complete a focus session
+    Alert.alert(
+      'Defocus Time is Over! 🎯',
+      'Great job taking a proper break! Now it\'s time to focus and be productive. You need to complete a focus session before you can defocus again.',
+      [
+        { 
+          text: 'Start Focus Session', 
+          style: 'default',
+          onPress: () => navigation.navigate('FocusSession')
+        },
+        { 
+          text: 'OK', 
+          style: 'cancel'
+        }
+      ]
+    );
   };
 
   // Save journal entry
@@ -435,6 +420,14 @@ const DefocusBreakScreen = ({ navigation }) => {
                 {userData.defocusAbusePrevention.lastFocusSessionDate ? 'Focus session completed' : 'No focus session yet'}
               </Text>
             </View>
+            {userData.defocusAbusePrevention.defocusSessionCompleted && (
+              <View style={styles.abusePreventionStat}>
+                <Ionicons name="lock-closed" size={16} color="#f59e0b" />
+                <Text style={[styles.abusePreventionStatText, styles.lockedStatusText]}>
+                  Defocus locked - Complete focus session to unlock
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -490,23 +483,31 @@ const DefocusBreakScreen = ({ navigation }) => {
           <View style={styles.timeLimitContainer}>
             <Text style={styles.timeLimitTitle}>Break Duration</Text>
             <View style={styles.timeLimitOptions}>
-              {[5, 10, 15, 20].map(minutes => (
-                <TouchableOpacity
-                  key={minutes}
-                  style={[
-                    styles.timeLimitOption,
-                    selectedTimeLimit === minutes && styles.selectedTimeLimitOption
-                  ]}
-                  onPress={() => setSelectedTimeLimit(minutes)}
-                >
-                  <Text style={[
-                    styles.timeLimitOptionText,
-                    selectedTimeLimit === minutes && styles.selectedTimeLimitOptionText
-                  ]}>
-                    {minutes}m
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {[5, 10, 15, 20].map(minutes => {
+                const lockStatus = getDefocusLockStatus();
+                const isDisabled = lockStatus.locked;
+                
+                return (
+                  <TouchableOpacity
+                    key={minutes}
+                    style={[
+                      styles.timeLimitOption,
+                      selectedTimeLimit === minutes && styles.selectedTimeLimitOption,
+                      isDisabled && styles.disabledTimeLimitOption
+                    ]}
+                    onPress={() => !isDisabled && setSelectedTimeLimit(minutes)}
+                    disabled={isDisabled}
+                  >
+                    <Text style={[
+                      styles.timeLimitOptionText,
+                      selectedTimeLimit === minutes && styles.selectedTimeLimitOptionText,
+                      isDisabled && styles.disabledTimeLimitOptionText
+                    ]}>
+                      {minutes}m
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         )}
@@ -517,17 +518,36 @@ const DefocusBreakScreen = ({ navigation }) => {
             <Text style={styles.activitiesTitle}>Choose Your Break Activity</Text>
             <View style={styles.activitiesGrid}>
               {defocusActivities.map(activity => {
+                const lockStatus = getDefocusLockStatus();
                 const isLocked = activity.requiresFocusSession && !userData.games.unlocked;
+                const isDefocusLocked = lockStatus.locked;
                 
                 return (
                   <TouchableOpacity
                     key={activity.id}
                     style={[
                       styles.activityCard,
-                      isLocked && styles.lockedActivityCard
+                      (isLocked || isDefocusLocked) && styles.lockedActivityCard
                     ]}
                     onPress={() => {
-                      if (isLocked) {
+                      if (isDefocusLocked) {
+                        if (lockStatus.reason === 'defocus_completed') {
+                          Alert.alert(
+                            'Defocus Time is Over!',
+                            lockStatus.message,
+                            [
+                              { text: 'Start Focus Session', onPress: () => navigation.navigate('FocusSession') },
+                              { text: 'OK', style: 'cancel' }
+                            ]
+                          );
+                        } else {
+                          Alert.alert(
+                            'Access Restricted',
+                            lockStatus.message,
+                            [{ text: 'OK' }]
+                          );
+                        }
+                      } else if (isLocked) {
                         Alert.alert(
                           'Activity Locked',
                           'Complete a focus session first to unlock this activity.',
@@ -543,7 +563,7 @@ const DefocusBreakScreen = ({ navigation }) => {
                         startDefocusTimer(activity.id);
                       }
                     }}
-                    disabled={isLocked}
+                    disabled={isLocked || isDefocusLocked}
                   >
                     <View style={[styles.activityIcon, { backgroundColor: activity.color + '20' }]}>
                       <Ionicons 
@@ -551,23 +571,27 @@ const DefocusBreakScreen = ({ navigation }) => {
                         size={24} 
                         color={isLocked ? '#9ca3af' : activity.color} 
                       />
-                      {isLocked && (
+                      {(isLocked || isDefocusLocked) && (
                         <View style={styles.lockOverlay}>
-                          <Ionicons name="lock-closed" size={12} color="#9ca3af" />
+                          <Ionicons 
+                            name={isDefocusLocked ? "time" : "lock-closed"} 
+                            size={12} 
+                            color={isDefocusLocked ? "#f59e0b" : "#9ca3af"} 
+                          />
                         </View>
                       )}
                     </View>
                     <Text style={[
                       styles.activityTitle,
-                      isLocked && styles.lockedActivityTitle
+                      (isLocked || isDefocusLocked) && styles.lockedActivityTitle
                     ]}>
                       {activity.title}
                     </Text>
                     <Text style={[
                       styles.activityDescription,
-                      isLocked && styles.lockedActivityDescription
+                      (isLocked || isDefocusLocked) && styles.lockedActivityDescription
                     ]}>
-                      {activity.description}
+                      {isDefocusLocked ? 'Complete a focus session to unlock' : activity.description}
                     </Text>
                     <Text style={styles.activityTime}>{activity.timeRequired}m</Text>
                   </TouchableOpacity>
@@ -608,21 +632,48 @@ const DefocusBreakScreen = ({ navigation }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.lockedModal}>
-            <Ionicons name="lock-closed" size={64} color="#ef4444" />
-            <Text style={styles.lockedModalTitle}>Access Restricted</Text>
-            <Text style={styles.lockedModalText}>
-              You need to complete a focus session first to access defocus activities. 
-              This helps maintain a healthy balance between work and breaks.
-            </Text>
-            <TouchableOpacity
-              style={styles.lockedModalButton}
-              onPress={() => {
-                setShowLockedModal(false);
-                navigation.navigate('FocusSession');
-              }}
-            >
-              <Text style={styles.lockedModalButtonText}>Start Focus Session</Text>
-            </TouchableOpacity>
+            {(() => {
+              const lockStatus = getDefocusLockStatus();
+              const isDefocusCompleted = lockStatus.reason === 'defocus_completed';
+              
+              return (
+                <>
+                  <Ionicons 
+                    name={isDefocusCompleted ? "time" : "lock-closed"} 
+                    size={64} 
+                    color={isDefocusCompleted ? "#f59e0b" : "#ef4444"} 
+                  />
+                  <Text style={styles.lockedModalTitle}>
+                    {isDefocusCompleted ? "Defocus Time is Over!" : "Access Restricted"}
+                  </Text>
+                  <Text style={styles.lockedModalText}>
+                    {lockStatus.message}
+                    {isDefocusCompleted && (
+                      <Text style={styles.lockedModalHighlight}>
+                        {"\n\n"}You need to complete a focus session before you can defocus again.
+                      </Text>
+                    )}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.lockedModalButton}
+                    onPress={() => {
+                      setShowLockedModal(false);
+                      navigation.navigate('FocusSession');
+                    }}
+                  >
+                    <Text style={styles.lockedModalButtonText}>Start Focus Session</Text>
+                  </TouchableOpacity>
+                  {isDefocusCompleted && (
+                    <TouchableOpacity
+                      style={styles.lockedModalSecondaryButton}
+                      onPress={() => setShowLockedModal(false)}
+                    >
+                      <Text style={styles.lockedModalSecondaryButtonText}>Close</Text>
+                    </TouchableOpacity>
+                  )}
+                </>
+              );
+            })()}
           </View>
         </View>
       </Modal>
@@ -782,16 +833,9 @@ const DefocusBreakScreen = ({ navigation }) => {
                 <Text style={styles.sessionCompleteStat}>
                   Rewards: +{Math.floor(selectedTimeLimit / 2)} points, +{Math.floor(selectedTimeLimit / 5)} coins
                 </Text>
-                {userData.defocusAbusePrevention.consecutiveDefocusSessions > 0 && (
-                  <Text style={[styles.sessionCompleteStat, styles.warningText]}>
-                    ⚠️ You've taken {userData.defocusAbusePrevention.consecutiveDefocusSessions} consecutive breaks
-                  </Text>
-                )}
-                {userData.defocusAbusePrevention.defocusTimeUsed >= userData.defocusAbusePrevention.maxDefocusTimePerDay * 0.8 && (
-                  <Text style={[styles.sessionCompleteStat, styles.warningText]}>
-                    ⚠️ Daily break time: {Math.floor(userData.defocusAbusePrevention.defocusTimeUsed)}/{userData.defocusAbusePrevention.maxDefocusTimePerDay}m
-                  </Text>
-                )}
+                <Text style={[styles.sessionCompleteStat, styles.infoText]}>
+                  ℹ️ Next step: Complete a focus session to unlock defocus again
+                </Text>
               </View>
               
               <TouchableOpacity
@@ -916,6 +960,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
   },
+  lockedStatusText: {
+    color: '#f59e0b',
+    fontWeight: '600',
+  },
   timerContainer: {
     alignItems: 'center',
     marginBottom: 30,
@@ -1005,6 +1053,14 @@ const styles = StyleSheet.create({
   },
   selectedTimeLimitOptionText: {
     color: '#ffffff',
+  },
+  disabledTimeLimitOption: {
+    backgroundColor: '#f3f4f6',
+    borderColor: '#d1d5db',
+    opacity: 0.6,
+  },
+  disabledTimeLimitOptionText: {
+    color: '#9ca3af',
   },
   activitiesContainer: {
     flex: 1,
@@ -1140,11 +1196,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
+    marginBottom: 12,
   },
   lockedModalButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+  },
+  lockedModalSecondaryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  lockedModalSecondaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  lockedModalHighlight: {
+    fontWeight: '600',
+    color: '#1f2937',
   },
   modalContent: {
     backgroundColor: '#ffffff',
@@ -1288,6 +1361,10 @@ const styles = StyleSheet.create({
   },
   warningText: {
     color: '#f59e0b',
+    fontWeight: '600',
+  },
+  infoText: {
+    color: '#3b82f6',
     fontWeight: '600',
   },
   sessionCompleteButton: {
