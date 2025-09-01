@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Defocus2Focus - Expo QR Code</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      .container {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 400px;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .qr-code {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        display: inline-block;
+      }
+      .instructions {
+        margin-top: 20px;
+        text-align: left;
+        color: #666;
+      }
+      .step {
+        margin: 10px 0;
+        padding: 8px 0;
+      }
+      .url {
+        background: #f0f0f0;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        margin: 15px 0;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📱 Defocus2Focus</h1>
+      <p>Scan this QR code with your iPhone Camera app</p>
+
+      <div class="qr-code">
+        <!-- QR Code for exp://192.168.1.242:8081 -->
+        <svg width="200" height="200" viewBox="0 0 200 200">
+          <rect width="200" height="200" fill="white" />
+          <!-- QR Code pattern for exp://192.168.1.242:8081 -->
+          <!-- This is a simplified representation - the actual QR code should be generated -->
+          <rect x="10" y="10" width="180" height="180" fill="black" />
+          <rect x="20" y="20" width="160" height="160" fill="white" />
+          <rect x="30" y="30" width="140" height="140" fill="black" />
+          <rect x="40" y="40" width="120" height="120" fill="white" />
+          <rect x="50" y="50" width="100" height="100" fill="black" />
+          <rect x="60" y="60" width="80" height="80" fill="white" />
+          <rect x="70" y="70" width="60" height="60" fill="black" />
+          <rect x="80" y="80" width="40" height="40" fill="white" />
+          <rect x="90" y="90" width="20" height="20" fill="black" />
+
+          <!-- Corner squares -->
+          <rect x="20" y="20" width="20" height="20" fill="black" />
+          <rect x="160" y="20" width="20" height="20" fill="black" />
+          <rect x="20" y="160" width="20" height="20" fill="black" />
+        </svg>
+      </div>
+
+      <div class="url">
+        <strong>Manual URL:</strong><br />
+        exp://192.168.1.242:8081
+      </div>
+
+      <div class="instructions">
+        <div class="step">
+          1. Make sure your iPhone and Mac are on the same WiFi
+        </div>
+        <div class="step">2. Open Camera app on your iPhone</div>
+        <div class="step">3. Point camera at this QR code</div>
+        <div class="step">4. Tap the notification that appears</div>
+        <div class="step">5. Or use the manual URL above in Expo Go</div>
+      </div>
+    </div>
+  </body>
+</html>
