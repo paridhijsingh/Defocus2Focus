@@ -416,8 +416,22 @@ const DefocusBreakScreen = ({ navigation }) => {
 
   const motivationalMessage = getMotivationalMessage();
 
+  // Simple debug log
+  console.log('🧪 DefocusBreakScreen rendering with debug test');
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Simple Debug Test - Remove this */}
+      <View style={{ backgroundColor: 'red', padding: 10, margin: 10 }}>
+        <Text style={{ color: 'white', textAlign: 'center' }}>DEBUG TEST - IF YOU SEE THIS, COMPONENT IS RENDERING</Text>
+        <TouchableOpacity 
+          style={{ backgroundColor: 'white', padding: 5, marginTop: 5, borderRadius: 5 }}
+          onPress={() => Alert.alert('Test', 'Debug test button works!')}
+        >
+          <Text style={{ textAlign: 'center' }}>Test Button</Text>
+        </TouchableOpacity>
+      </View>
+      
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {/* Header */}
         <View style={styles.header}>
