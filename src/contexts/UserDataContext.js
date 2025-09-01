@@ -57,6 +57,10 @@ export const UserDataProvider = ({ children }) => {
       maxDefocusTimePerDay: 60, // Maximum defocus time allowed per day (minutes)
       defocusSessionCompleted: false, // Track if defocus session was completed and needs focus session
       lastDefocusSessionDate: null, // Track when last defocus session was completed
+      focusSessionRequirements: {
+        duration: 25, // Minimum duration for a valid focus session
+        hasTasks: true, // Must have at least one task to be considered a valid focus session
+      },
     },
     categories: [
       { id: 'work', name: 'Work', color: '#3b82f6', icon: 'briefcase' },
@@ -288,6 +292,11 @@ export const UserDataProvider = ({ children }) => {
       date: new Date().toISOString(),
     };
     
+    // Check if this session meets the minimum requirements for unlocking defocus
+    const sessionDuration = sessionData.duration || 0;
+    const hasMinimumFocusTime = sessionDuration >= 25; // Minimum 25 minutes recommended
+    const hasTasks = userData.todoList.length > 0; // User should have tasks set
+    
     setUserData(prev => ({
       ...prev,
       sessions: [...prev.sessions, newSession],
@@ -298,12 +307,33 @@ export const UserDataProvider = ({ children }) => {
         consecutiveDefocusSessions: 0, // Reset consecutive defocus sessions
         lastFocusSessionDate: new Date().toISOString(), // Update last focus session date
         defocusSessionCompleted: false, // Reset defocus session completed flag - user can defocus again
+        focusSessionRequirements: {
+          hasMinimumFocusTime,
+          hasTasks,
+          completedAt: new Date().toISOString(),
+          duration: sessionDuration
+        }
       },
       games: {
         ...prev.games,
         unlocked: true, // Unlock games after completing focus session
       }
     }));
+  };
+
+  // Check if focus session meets requirements to unlock defocus
+  const checkFocusSessionRequirements = () => {
+    const lastFocus = userData.defocusAbusePrevention.lastFocusSessionDate;
+    if (!lastFocus) return false;
+    
+    const focusData = userData.defocusAbusePrevention.focusSessionRequirements;
+    if (!focusData) return false;
+    
+    // Check if focus session was completed today and meets requirements
+    const today = new Date().toDateString();
+    const focusDate = new Date(lastFocus).toDateString();
+    
+    return today === focusDate && focusData.hasMinimumFocusTime && focusData.hasTasks;
   };
 
   // Add defocus session with abuse prevention
@@ -369,7 +399,8 @@ export const UserDataProvider = ({ children }) => {
     console.log('🔍 canAccessDefocus check - Current state:', {
       defocusSessionCompleted: userData.defocusAbusePrevention.defocusSessionCompleted,
       lastFocusSessionDate: userData.defocusAbusePrevention.lastFocusSessionDate,
-      lastDefocusSessionDate: userData.defocusAbusePrevention.lastDefocusSessionDate
+      lastDefocusSessionDate: userData.defocusAbusePrevention.lastDefocusSessionDate,
+      focusSessionRequirements: userData.defocusAbusePrevention.focusSessionRequirements
     });
     
     // SIMPLE LOGIC: If defocus session was completed, user MUST complete a focus session
@@ -378,17 +409,15 @@ export const UserDataProvider = ({ children }) => {
       return false;
     }
     
-    // If no defocus session completed yet, check if user has completed a focus session today
-    const today = new Date().toDateString();
-    const lastFocusDate = userData.defocusAbusePrevention.lastFocusSessionDate;
-    const hasFocusToday = lastFocusDate ? new Date(lastFocusDate).toDateString() === today : false;
+    // Check if user has completed a focus session today that meets requirements
+    const hasValidFocusSession = checkFocusSessionRequirements();
     
-    if (hasFocusToday) {
-      console.log('✅ ALLOWING ACCESS: Focus session completed today');
+    if (hasValidFocusSession) {
+      console.log('✅ ALLOWING ACCESS: Valid focus session completed today');
       return true;
     }
     
-    console.log('🔒 BLOCKING ACCESS: No focus session completed today');
+    console.log('🔒 BLOCKING ACCESS: No valid focus session completed today');
     return false;
   };
 
@@ -701,11 +730,13 @@ export const UserDataProvider = ({ children }) => {
     const defocusCompleted = userData.defocusAbusePrevention.defocusSessionCompleted;
     const lastDefocusDate = userData.defocusAbusePrevention.lastDefocusSessionDate;
     const lastFocusDate = userData.defocusAbusePrevention.lastFocusSessionDate;
+    const focusRequirements = userData.defocusAbusePrevention.focusSessionRequirements;
     
     console.log('🔒 getDefocusLockStatus:', {
       defocusCompleted,
       lastDefocusDate,
-      lastFocusDate
+      lastFocusDate,
+      focusRequirements
     });
     
     // If defocus session was completed, user is locked until focus session
@@ -718,26 +749,57 @@ export const UserDataProvider = ({ children }) => {
         tooltip: 'You need to finish a Focus session before defocusing again.',
         lastDefocus: lastDefocusDate,
         lastFocus: lastFocusDate,
+        requirements: {
+          needsFocusSession: true,
+          minimumTime: 25,
+          needsTasks: true
+        }
       };
     }
     
-    // If no defocus session completed, check if user has focus session today
-    const today = new Date().toDateString();
-    const hasFocusToday = lastFocusDate ? new Date(lastFocusDate).toDateString() === today : false;
+    // Check if user has completed a focus session today that meets requirements
+    const hasValidFocusSession = checkFocusSessionRequirements();
     
-    if (!hasFocusToday) {
-      console.log('🔒 Locked: no_focus_session reason');
-      return {
-        locked: true,
-        reason: 'no_focus_session',
-        message: 'Complete a Focus session to unlock Defocus activities',
-        tooltip: 'You need to complete a focus session first to access defocus activities.',
-        lastDefocus: lastDefocusDate,
-        lastFocus: lastFocusDate,
-      };
+    if (!hasValidFocusSession) {
+      console.log('🔒 Locked: no_valid_focus_session reason');
+      const today = new Date().toDateString();
+      const hasFocusToday = lastFocusDate ? new Date(lastFocusDate).toDateString() === today : false;
+      
+      if (!hasFocusToday) {
+        return {
+          locked: true,
+          reason: 'no_focus_session',
+          message: 'Complete a Focus session to unlock Defocus activities',
+          tooltip: 'You need to complete a focus session first to access defocus activities.',
+          lastDefocus: lastDefocusDate,
+          lastFocus: lastFocusDate,
+          requirements: {
+            needsFocusSession: true,
+            minimumTime: 25,
+            needsTasks: true
+          }
+        };
+      } else {
+        // Has focus session but doesn't meet requirements
+        return {
+          locked: true,
+          reason: 'focus_session_incomplete',
+          message: 'Focus session incomplete. Need 25+ minutes and tasks.',
+          tooltip: 'Your focus session must be at least 25 minutes and you must have tasks set.',
+          lastDefocus: lastDefocusDate,
+          lastFocus: lastFocusDate,
+          requirements: {
+            needsFocusSession: false,
+            minimumTime: 25,
+            needsTasks: true,
+            currentFocusTime: focusRequirements?.duration || 0,
+            hasTasks: focusRequirements?.hasTasks || false
+          }
+        };
+      }
     }
     
-    console.log('🔓 Unlocked: has focus session today');
+    console.log('🔓 Unlocked: has valid focus session today');
     return {
       locked: false,
       reason: null,
@@ -745,6 +807,11 @@ export const UserDataProvider = ({ children }) => {
       tooltip: null,
       lastDefocus: lastDefocusDate,
       lastFocus: lastFocusDate,
+      requirements: {
+        needsFocusSession: false,
+        minimumTime: 25,
+        needsTasks: true
+      }
     };
   };
 
@@ -813,6 +880,7 @@ export const UserDataProvider = ({ children }) => {
     manualSaveUserData,
     testSetDefocusCompleted,
     checkAsyncStorageState,
+    checkFocusSessionRequirements,
   };
 
   return (

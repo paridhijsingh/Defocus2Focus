@@ -306,8 +306,13 @@ const DefocusBreakScreen = ({ navigation }) => {
     // NEW FLOW: After defocus session, user MUST complete a focus session
     Alert.alert(
       'Defocus Time is Over! 🎯',
-      'Great job taking a proper break! Now it\'s time to focus and be productive. You need to complete a focus session before you can defocus again.',
+      'Great job taking a proper break! Now it\'s time to focus and be productive. You need to complete a focus session before you can defocus again.\n\nRequirements:\n• Set at least 1 task in your to-do list\n• Complete a focus session of 25+ minutes',
       [
+        { 
+          text: 'Set Tasks First', 
+          style: 'default',
+          onPress: () => navigation.navigate('Todo')
+        },
         { 
           text: 'Start Focus Session', 
           style: 'default',
@@ -502,6 +507,20 @@ const DefocusBreakScreen = ({ navigation }) => {
                 </Text>
               </View>
             )}
+            {(() => {
+              const lockStatus = getDefocusLockStatus();
+              if (lockStatus.reason === 'focus_session_incomplete') {
+                return (
+                  <View style={styles.abusePreventionStat}>
+                    <Ionicons name="alert-circle" size={16} color="#f59e0b" />
+                    <Text style={[styles.abusePreventionStatText, styles.lockedStatusText]}>
+                      Focus session incomplete - Need 25+ min and tasks
+                    </Text>
+                  </View>
+                );
+              }
+              return null;
+            })()}
           </View>
         </View>
 
@@ -784,16 +803,18 @@ const DefocusBreakScreen = ({ navigation }) => {
             {(() => {
               const lockStatus = getDefocusLockStatus();
               const isDefocusCompleted = lockStatus.reason === 'defocus_completed';
+              const isFocusIncomplete = lockStatus.reason === 'focus_session_incomplete';
               
               return (
                 <>
                   <Ionicons 
-                    name={isDefocusCompleted ? "time" : "lock-closed"} 
+                    name={isDefocusCompleted ? "time" : isFocusIncomplete ? "alert-circle" : "lock-closed"} 
                     size={64} 
-                    color={isDefocusCompleted ? "#f59e0b" : "#ef4444"} 
+                    color={isDefocusCompleted ? "#f59e0b" : isFocusIncomplete ? "#f59e0b" : "#ef4444"} 
                   />
                   <Text style={styles.lockedModalTitle}>
-                    {isDefocusCompleted ? "Defocus Time is Over!" : "Access Restricted"}
+                    {isDefocusCompleted ? "Defocus Time is Over!" : 
+                     isFocusIncomplete ? "Focus Session Incomplete" : "Access Restricted"}
                   </Text>
                   <Text style={styles.lockedModalText}>
                     {lockStatus.message}
@@ -802,17 +823,42 @@ const DefocusBreakScreen = ({ navigation }) => {
                         {"\n\n"}You need to complete a focus session before you can defocus again.
                       </Text>
                     )}
+                    {isFocusIncomplete && (
+                      <Text style={styles.lockedModalHighlight}>
+                        {"\n\n"}Your focus session must be at least 25 minutes and you must have tasks set in your to-do list.
+                      </Text>
+                    )}
                   </Text>
+                  
+                  {isFocusIncomplete && lockStatus.requirements && (
+                    <View style={styles.requirementsInfo}>
+                      <Text style={styles.requirementsTitle}>Current Status:</Text>
+                      <Text style={styles.requirementText}>
+                        ⏱️ Focus Time: {lockStatus.requirements.currentFocusTime || 0}/25 minutes
+                      </Text>
+                      <Text style={styles.requirementText}>
+                        📝 Tasks Set: {lockStatus.requirements.hasTasks ? "✅ Yes" : "❌ No"}
+                      </Text>
+                    </View>
+                  )}
+                  
                   <TouchableOpacity
                     style={styles.lockedModalButton}
                     onPress={() => {
                       setShowLockedModal(false);
-                      navigation.navigate('FocusSession');
+                      if (isFocusIncomplete) {
+                        navigation.navigate('Todo');
+                      } else {
+                        navigation.navigate('FocusSession');
+                      }
                     }}
                   >
-                    <Text style={styles.lockedModalButtonText}>Start Focus Session</Text>
+                    <Text style={styles.lockedModalButtonText}>
+                      {isFocusIncomplete ? 'Set Tasks' : 'Start Focus Session'}
+                    </Text>
                   </TouchableOpacity>
-                  {isDefocusCompleted && (
+                  
+                  {(isDefocusCompleted || isFocusIncomplete) && (
                     <TouchableOpacity
                       style={styles.lockedModalSecondaryButton}
                       onPress={() => setShowLockedModal(false)}
@@ -984,6 +1030,9 @@ const DefocusBreakScreen = ({ navigation }) => {
                 </Text>
                 <Text style={[styles.sessionCompleteStat, styles.infoText]}>
                   ℹ️ Next step: Complete a focus session to unlock defocus again
+                </Text>
+                <Text style={[styles.sessionCompleteStat, styles.warningText]}>
+                  ⚠️ Focus session must be 25+ minutes and include tasks
                 </Text>
               </View>
               
@@ -1399,6 +1448,25 @@ const styles = StyleSheet.create({
   lockedModalHighlight: {
     fontWeight: '600',
     color: '#1f2937',
+  },
+  requirementsInfo: {
+    backgroundColor: '#f3f4f6',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 20,
+    width: '100%',
+    alignItems: 'center',
+  },
+  requirementsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  requirementText: {
+    fontSize: 13,
+    color: '#6b7280',
+    marginBottom: 4,
   },
   modalContent: {
     backgroundColor: '#ffffff',

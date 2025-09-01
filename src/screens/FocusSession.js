@@ -95,8 +95,16 @@ const FocusSession = ({ onNavigate }) => {
     
     addSession(sessionData);
     
-    // Show completion message
-    alert(timeLeft === 0 ? '🎉 Focus session completed! Great job!' : 'Session ended early. Keep trying!');
+    // Show completion message with requirements info
+    if (timeLeft === 0) {
+      if (sessionDuration >= 25) {
+        alert('🎉 Focus session completed! Great job! You can now access defocus activities.');
+      } else {
+        alert('🎯 Focus session completed! However, you need at least 25 minutes to unlock defocus activities.');
+      }
+    } else {
+      alert('Session ended early. Keep trying! You need to complete a full session to unlock defocus activities.');
+    }
     
     // Reset timer
     setTimeLeft(settings.focusDuration * 60);
