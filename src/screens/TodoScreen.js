@@ -8,17 +8,44 @@ import {
   TextInput,
   Alert,
   Animated,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useUserData } from '../contexts/UserDataContext';
 
 const TodoScreen = ({ navigation }) => {
-  const { userData, addTask, removeTask, completeTask } = useUserData();
+  const { 
+    userData, 
+    addTask, 
+    removeTask, 
+    completeTask, 
+    updateTask,
+    addSubtask,
+    completeSubtask,
+    getTasksByCategory,
+    getTasksByPriority,
+    getOverdueTasks,
+    getTasksDueToday
+  } = useUserData();
+  
   const [newTask, setNewTask] = useState('');
+  const [newTaskDescription, setNewTaskDescription] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('personal');
+  const [selectedPriority, setSelectedPriority] = useState('medium');
+  const [selectedDueDate, setSelectedDueDate] = useState(null);
+  const [estimatedTime, setEstimatedTime] = useState('');
   const [editingTask, setEditingTask] = useState(null);
   const [editText, setEditText] = useState('');
+  const [editDescription, setEditDescription] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all'); // all, today, overdue, category, priority
+  const [filterValue, setFilterValue] = useState('');
+  const [newSubtask, setNewSubtask] = useState('');
+  const [expandedTasks, setExpandedTasks] = useState(new Set());
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -30,31 +57,44 @@ const TodoScreen = ({ navigation }) => {
 
   const handleAddTask = () => {
     if (newTask.trim()) {
-      addTask(newTask.trim());
+      const taskData = {
+        text: newTask.trim(),
+        description: newTaskDescription.trim(),
+        category: selectedCategory,
+        priority: selectedPriority,
+        dueDate: selectedDueDate,
+        estimatedTime: estimatedTime ? parseInt(estimatedTime) : null,
+      };
+      
+      addTask(taskData);
       setNewTask('');
+      setNewTaskDescription('');
+      setSelectedCategory('personal');
+      setSelectedPriority('medium');
+      setSelectedDueDate(null);
+      setEstimatedTime('');
+      setShowAddModal(false);
     }
   };
 
   const handleEditTask = (task) => {
-    setEditingTask(task.id);
+    setEditingTask(task);
     setEditText(task.text);
+    setEditDescription(task.description || '');
+    setShowEditModal(true);
   };
 
   const handleSaveEdit = () => {
-    if (editText.trim()) {
-      // Update the task in the context
-      const updatedTasks = userData.todoList.map(task =>
-        task.id === editingTask ? { ...task, text: editText.trim() } : task
-      );
-      // This would need to be implemented in the context
+    if (editText.trim() && editingTask) {
+      updateTask(editingTask.id, {
+        text: editText.trim(),
+        description: editDescription.trim(),
+      });
+      setShowEditModal(false);
       setEditingTask(null);
       setEditText('');
+      setEditDescription('');
     }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingTask(null);
-    setEditText('');
   };
 
   const handleDeleteTask = (taskId) => {
@@ -62,15 +102,8 @@ const TodoScreen = ({ navigation }) => {
       'Delete Task',
       'Are you sure you want to delete this task?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => removeTask(taskId),
-        },
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => removeTask(taskId) },
       ]
     );
   };
@@ -79,63 +112,237 @@ const TodoScreen = ({ navigation }) => {
     completeTask(taskId);
   };
 
+  const handleAddSubtask = (taskId) => {
+    if (newSubtask.trim()) {
+      addSubtask(taskId, newSubtask.trim());
+      setNewSubtask('');
+    }
+  };
+
+  const handleCompleteSubtask = (taskId, subtaskId) => {
+    completeSubtask(taskId, subtaskId);
+  };
+
+  const toggleTaskExpansion = (taskId) => {
+    const newExpanded = new Set(expandedTasks);
+    if (newExpanded.has(taskId)) {
+      newExpanded.delete(taskId);
+    } else {
+      newExpanded.add(taskId);
+    }
+    setExpandedTasks(newExpanded);
+  };
+
+  const getFilteredTasks = () => {
+    switch (activeFilter) {
+      case 'today':
+        return getTasksDueToday();
+      case 'overdue':
+        return getOverdueTasks();
+      case 'category':
+        return getTasksByCategory(filterValue);
+      case 'priority':
+        return getTasksByPriority(filterValue);
+      default:
+        return userData.todoList;
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'urgent': return '#ef4444';
+      case 'high': return '#f59e0b';
+      case 'medium': return '#3b82f6';
+      case 'low': return '#10b981';
+      default: return '#6b7280';
+    }
+  };
+
+  const getPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'urgent': return 'alert-circle';
+      case 'high': return 'chevron-up';
+      case 'medium': return 'remove';
+      case 'low': return 'chevron-down';
+      default: return 'remove';
+    }
+  };
+
+  const formatDueDate = (dueDate) => {
+    if (!dueDate) return null;
+    const date = new Date(dueDate);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return 'Tomorrow';
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
+  const isOverdue = (dueDate) => {
+    if (!dueDate) return false;
+    return new Date(dueDate) < new Date();
+  };
+
+  const renderSubtask = (subtask, taskId) => (
+    <View key={subtask.id} style={styles.subtaskItem}>
+      <TouchableOpacity
+        style={styles.subtaskCheckbox}
+        onPress={() => handleCompleteSubtask(taskId, subtask.id)}
+      >
+        <Ionicons
+          name={subtask.completed ? "checkmark-circle" : "ellipse-outline"}
+          size={20}
+          color={subtask.completed ? "#10b981" : "#6b7280"}
+        />
+      </TouchableOpacity>
+      <Text style={[
+        styles.subtaskText,
+        subtask.completed && styles.completedText
+      ]}>
+        {subtask.text}
+      </Text>
+    </View>
+  );
+
   const renderTask = (task) => {
-    const isEditing = editingTask === task.id;
+    const isExpanded = expandedTasks.has(task.id);
+    const category = userData.categories.find(c => c.id === task.category);
+    const dueDateText = formatDueDate(task.dueDate);
+    const overdue = isOverdue(task.dueDate);
 
     return (
       <Animated.View
         key={task.id}
         style={[styles.taskItem, { opacity: fadeAnim }]}
       >
-        {isEditing ? (
-          <View style={styles.editContainer}>
-            <TextInput
-              style={styles.editInput}
-              value={editText}
-              onChangeText={setEditText}
-              autoFocus
-            />
-            <View style={styles.editButtons}>
-              <TouchableOpacity
-                style={[styles.editButton, styles.saveButton]}
-                onPress={handleSaveEdit}
-              >
-                <Ionicons name="checkmark" size={20} color="#ffffff" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.editButton, styles.cancelButton]}
-                onPress={handleCancelEdit}
-              >
-                <Ionicons name="close" size={20} color="#ffffff" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.taskContent}>
+        <View style={styles.taskHeader}>
+          <View style={styles.taskMainInfo}>
+            <TouchableOpacity
+              style={styles.taskCheckbox}
+              onPress={() => handleCompleteTask(task.id)}
+            >
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={24}
+                color="#10b981"
+              />
+            </TouchableOpacity>
+            
             <View style={styles.taskTextContainer}>
               <Text style={styles.taskText}>{task.text}</Text>
-              <Text style={styles.taskDate}>
-                {new Date(task.createdAt).toLocaleDateString()}
-              </Text>
+              {task.description && (
+                <Text style={styles.taskDescription}>{task.description}</Text>
+              )}
+              
+              <View style={styles.taskMeta}>
+                {category && (
+                  <View style={[styles.categoryTag, { backgroundColor: category.color + '20' }]}>
+                    <Ionicons name={category.icon} size={12} color={category.color} />
+                    <Text style={[styles.categoryText, { color: category.color }]}>
+                      {category.name}
+                    </Text>
+                  </View>
+                )}
+                
+                <View style={[styles.priorityTag, { backgroundColor: getPriorityColor(task.priority) + '20' }]}>
+                  <Ionicons 
+                    name={getPriorityIcon(task.priority)} 
+                    size={12} 
+                    color={getPriorityColor(task.priority)} 
+                  />
+                  <Text style={[styles.priorityText, { color: getPriorityColor(task.priority) }]}>
+                    {task.priority}
+                  </Text>
+                </View>
+                
+                {dueDateText && (
+                  <View style={[
+                    styles.dueDateTag, 
+                    { backgroundColor: overdue ? '#ef444420' : '#3b82f620' }
+                  ]}>
+                    <Ionicons 
+                      name="calendar" 
+                      size={12} 
+                      color={overdue ? '#ef4444' : '#3b82f6'} 
+                    />
+                    <Text style={[
+                      styles.dueDateText, 
+                      { color: overdue ? '#ef4444' : '#3b82f6' }
+                    ]}>
+                      {dueDateText}
+                    </Text>
+                  </View>
+                )}
+                
+                {task.estimatedTime && (
+                  <View style={styles.timeTag}>
+                    <Ionicons name="time" size={12} color="#6b7280" />
+                    <Text style={styles.timeText}>{task.estimatedTime}m</Text>
+                  </View>
+                )}
+              </View>
             </View>
-            <View style={styles.taskActions}>
+          </View>
+          
+          <View style={styles.taskActions}>
+            {task.subtasks.length > 0 && (
               <TouchableOpacity
-                style={[styles.actionButton, styles.completeButton]}
-                onPress={() => handleCompleteTask(task.id)}
+                style={styles.expandButton}
+                onPress={() => toggleTaskExpansion(task.id)}
               >
-                <Ionicons name="checkmark-circle" size={24} color="#10b981" />
+                <Ionicons
+                  name={isExpanded ? "chevron-up" : "chevron-down"}
+                  size={20}
+                  color="#6b7280"
+                />
               </TouchableOpacity>
+            )}
+            
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => handleEditTask(task)}
+            >
+              <Ionicons name="pencil" size={20} color="#6366f1" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => handleDeleteTask(task.id)}
+            >
+              <Ionicons name="trash" size={20} color="#ef4444" />
+            </TouchableOpacity>
+          </View>
+        </View>
+        
+        {isExpanded && task.subtasks.length > 0 && (
+          <View style={styles.subtasksContainer}>
+            <Text style={styles.subtasksTitle}>Subtasks</Text>
+            {task.subtasks.map(subtask => renderSubtask(subtask, task.id))}
+            
+            <View style={styles.addSubtaskContainer}>
+              <TextInput
+                style={styles.subtaskInput}
+                placeholder="Add subtask..."
+                value={newSubtask}
+                onChangeText={setNewSubtask}
+                onSubmitEditing={() => handleAddSubtask(task.id)}
+              />
               <TouchableOpacity
-                style={[styles.actionButton, styles.editActionButton]}
-                onPress={() => handleEditTask(task)}
+                style={styles.addSubtaskButton}
+                onPress={() => handleAddSubtask(task.id)}
+                disabled={!newSubtask.trim()}
               >
-                <Ionicons name="pencil" size={20} color="#6366f1" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.deleteButton]}
-                onPress={() => handleDeleteTask(task.id)}
-              >
-                <Ionicons name="trash" size={20} color="#ef4444" />
+                <Ionicons
+                  name="add"
+                  size={16}
+                  color={newSubtask.trim() ? "#10b981" : "#9ca3af"}
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -143,6 +350,30 @@ const TodoScreen = ({ navigation }) => {
       </Animated.View>
     );
   };
+
+  const renderFilterButton = (filter, label, icon) => (
+    <TouchableOpacity
+      style={[
+        styles.filterButton,
+        activeFilter === filter && styles.activeFilterButton
+      ]}
+      onPress={() => setActiveFilter(filter)}
+    >
+      <Ionicons
+        name={icon}
+        size={16}
+        color={activeFilter === filter ? "#ffffff" : "#6b7280"}
+      />
+      <Text style={[
+        styles.filterButtonText,
+        activeFilter === filter && styles.activeFilterButtonText
+      ]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const filteredTasks = getFilteredTasks();
 
   return (
     <View style={styles.container}>
@@ -152,65 +383,234 @@ const TodoScreen = ({ navigation }) => {
           <View style={styles.header}>
             <Text style={styles.title}>My Tasks</Text>
             <Text style={styles.subtitle}>
-              {userData.todoList.length} task{userData.todoList.length !== 1 ? 's' : ''} remaining
+              {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''} 
+              {activeFilter !== 'all' && ` (${userData.todoList.length} total)`}
             </Text>
           </View>
 
-          {/* Add Task Section */}
-          <View style={styles.addTaskSection}>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.taskInput}
-                placeholder="Add a new task..."
-                value={newTask}
-                onChangeText={setNewTask}
-                onSubmitEditing={handleAddTask}
-                returnKeyType="done"
-              />
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={handleAddTask}
-                disabled={!newTask.trim()}
-              >
-                <Ionicons
-                  name="add"
-                  size={24}
-                  color={newTask.trim() ? '#ffffff' : '#9ca3af'}
-                />
-              </TouchableOpacity>
-            </View>
+          {/* Filters */}
+          <View style={styles.filtersContainer}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {renderFilterButton('all', 'All', 'list')}
+              {renderFilterButton('today', 'Today', 'today')}
+              {renderFilterButton('overdue', 'Overdue', 'alert-circle')}
+              {userData.categories.map(category => 
+                renderFilterButton('category', category.name, category.icon)
+              )}
+              {['urgent', 'high', 'medium', 'low'].map(priority => 
+                renderFilterButton('priority', priority, getPriorityIcon(priority))
+              )}
+            </ScrollView>
           </View>
+
+          {/* Add Task Button */}
+          <TouchableOpacity
+            style={styles.addTaskButton}
+            onPress={() => setShowAddModal(true)}
+          >
+            <LinearGradient
+              colors={['#3b82f6', '#1d4ed8']}
+              style={styles.addTaskGradient}
+            >
+              <Ionicons name="add" size={24} color="#ffffff" />
+              <Text style={styles.addTaskButtonText}>Add New Task</Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
           {/* Tasks List */}
           <View style={styles.tasksSection}>
-            <Text style={styles.sectionTitle}>Your Tasks</Text>
-            {userData.todoList.length === 0 ? (
+            {filteredTasks.length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="checkmark-circle-outline" size={64} color="#9ca3af" />
-                <Text style={styles.emptyStateTitle}>No tasks yet!</Text>
+                <Text style={styles.emptyStateTitle}>
+                  {activeFilter === 'all' ? 'No tasks yet!' : 'No tasks found'}
+                </Text>
                 <Text style={styles.emptyStateText}>
-                  Add your first task above to get started
+                  {activeFilter === 'all' 
+                    ? 'Add your first task to get started'
+                    : 'Try changing your filters or add a new task'
+                  }
                 </Text>
               </View>
             ) : (
               <View style={styles.tasksList}>
-                {userData.todoList.map(renderTask)}
+                {filteredTasks.map(renderTask)}
               </View>
             )}
           </View>
-
-          {/* Navigation */}
-          <View style={styles.navigationSection}>
-            <TouchableOpacity
-              style={styles.navButton}
-              onPress={() => navigation.navigate('Pomodoro')}
-            >
-              <Text style={styles.navButtonText}>Start Focus Session</Text>
-              <Ionicons name="arrow-forward" size={20} color="#ffffff" />
-            </TouchableOpacity>
-          </View>
         </Animated.View>
       </ScrollView>
+
+      {/* Add Task Modal */}
+      <Modal
+        visible={showAddModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowAddModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add New Task</Text>
+              <TouchableOpacity onPress={() => setShowAddModal(false)}>
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.modalBody}>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Task title"
+                value={newTask}
+                onChangeText={setNewTask}
+              />
+              
+              <TextInput
+                style={[styles.modalInput, styles.textArea]}
+                placeholder="Description (optional)"
+                value={newTaskDescription}
+                onChangeText={setNewTaskDescription}
+                multiline
+                numberOfLines={3}
+              />
+              
+              <Text style={styles.modalSectionTitle}>Category</Text>
+              <View style={styles.categoryOptions}>
+                {userData.categories.map(category => (
+                  <TouchableOpacity
+                    key={category.id}
+                    style={[
+                      styles.categoryOption,
+                      selectedCategory === category.id && styles.selectedCategoryOption
+                    ]}
+                    onPress={() => setSelectedCategory(category.id)}
+                  >
+                    <Ionicons 
+                      name={category.icon} 
+                      size={20} 
+                      color={selectedCategory === category.id ? "#ffffff" : category.color} 
+                    />
+                    <Text style={[
+                      styles.categoryOptionText,
+                      selectedCategory === category.id && styles.selectedCategoryOptionText
+                    ]}>
+                      {category.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              
+              <Text style={styles.modalSectionTitle}>Priority</Text>
+              <View style={styles.priorityOptions}>
+                {['low', 'medium', 'high', 'urgent'].map(priority => (
+                  <TouchableOpacity
+                    key={priority}
+                    style={[
+                      styles.priorityOption,
+                      selectedPriority === priority && { backgroundColor: getPriorityColor(priority) }
+                    ]}
+                    onPress={() => setSelectedPriority(priority)}
+                  >
+                    <Ionicons 
+                      name={getPriorityIcon(priority)} 
+                      size={16} 
+                      color={selectedPriority === priority ? "#ffffff" : getPriorityColor(priority)} 
+                    />
+                    <Text style={[
+                      styles.priorityOptionText,
+                      selectedPriority === priority && styles.selectedPriorityOptionText
+                    ]}>
+                      {priority}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              
+              <Text style={styles.modalSectionTitle}>Estimated Time (minutes)</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g., 30"
+                value={estimatedTime}
+                onChangeText={setEstimatedTime}
+                keyboardType="numeric"
+              />
+            </ScrollView>
+            
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setShowAddModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.primaryButton]}
+                onPress={handleAddTask}
+                disabled={!newTask.trim()}
+              >
+                <Text style={[styles.modalButtonText, styles.primaryButtonText]}>
+                  Add Task
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Task Modal */}
+      <Modal
+        visible={showEditModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowEditModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Task</Text>
+              <TouchableOpacity onPress={() => setShowEditModal(false)}>
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Task title"
+                value={editText}
+                onChangeText={setEditText}
+              />
+              
+              <TextInput
+                style={[styles.modalInput, styles.textArea]}
+                placeholder="Description (optional)"
+                value={editDescription}
+                onChangeText={setEditDescription}
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+            
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setShowEditModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.primaryButton]}
+                onPress={handleSaveEdit}
+                disabled={!editText.trim()}
+              >
+                <Text style={[styles.modalButtonText, styles.primaryButtonText]}>
+                  Save Changes
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -227,59 +627,219 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-    marginBottom: 30,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
     color: '#6b7280',
   },
-  addTaskSection: {
-    marginBottom: 30,
+  filtersContainer: {
+    marginBottom: 20,
   },
-  inputContainer: {
+  filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  taskInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#1f2937',
-    paddingVertical: 12,
-  },
-  addButton: {
-    width: 40,
-    height: 40,
+    marginRight: 8,
     borderRadius: 20,
-    backgroundColor: '#6366f1',
-    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  activeFilterButton: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
+  },
+  filterButtonText: {
+    marginLeft: 6,
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  activeFilterButtonText: {
+    color: '#ffffff',
+  },
+  addTaskButton: {
+    marginBottom: 20,
+  },
+  addTaskGradient: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  addTaskButtonText: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   tasksSection: {
-    marginBottom: 30,
+    flex: 1,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  tasksList: {
+    gap: 12,
+  },
+  taskItem: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  taskHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  taskMainInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  taskCheckbox: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  taskTextContainer: {
+    flex: 1,
+  },
+  taskText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#1f2937',
-    marginBottom: 16,
+    marginBottom: 4,
+  },
+  taskDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  taskMeta: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  categoryTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  categoryText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  priorityTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  priorityText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  dueDateTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  dueDateText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  timeTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
+    gap: 4,
+  },
+  timeText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6b7280',
+  },
+  taskActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  expandButton: {
+    padding: 4,
+  },
+  actionButton: {
+    padding: 4,
+  },
+  subtasksContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+  },
+  subtasksTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  subtaskItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  subtaskCheckbox: {
+    marginRight: 8,
+  },
+  subtaskText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#374151',
+  },
+  completedText: {
+    textDecorationLine: 'line-through',
+    color: '#9ca3af',
+  },
+  addSubtaskContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingHorizontal: 8,
+  },
+  subtaskInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#374151',
+    paddingVertical: 8,
+  },
+  addSubtaskButton: {
+    padding: 4,
   },
   emptyState: {
     alignItems: 'center',
@@ -287,7 +847,7 @@ const styles = StyleSheet.create({
   },
   emptyStateTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#6b7280',
     marginTop: 16,
     marginBottom: 8,
@@ -297,110 +857,132 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     textAlign: 'center',
   },
-  tasksList: {
-    gap: 12,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
   },
-  taskItem: {
+  modalContent: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
   },
-  taskContent: {
+  modalHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
-  taskTextContainer: {
-    flex: 1,
-    marginRight: 12,
-  },
-  taskText: {
-    fontSize: 16,
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     color: '#1f2937',
-    marginBottom: 4,
   },
-  taskDate: {
-    fontSize: 12,
-    color: '#9ca3af',
+  modalBody: {
+    padding: 20,
   },
-  taskActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  actionButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  completeButton: {
-    backgroundColor: '#f0fdf4',
-  },
-  editActionButton: {
-    backgroundColor: '#f0f9ff',
-  },
-  deleteButton: {
-    backgroundColor: '#fef2f2',
-  },
-  editContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  editInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#1f2937',
+  modalInput: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: '#e5e7eb',
     borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 16,
+    backgroundColor: '#ffffff',
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  modalSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  categoryOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  categoryOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginRight: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    backgroundColor: '#ffffff',
+    gap: 6,
   },
-  editButtons: {
+  selectedCategoryOption: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
+  },
+  categoryOptionText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  selectedCategoryOptionText: {
+    color: '#ffffff',
+  },
+  priorityOptions: {
     flexDirection: 'row',
     gap: 8,
+    marginBottom: 16,
   },
-  editButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  saveButton: {
-    backgroundColor: '#10b981',
-  },
-  cancelButton: {
-    backgroundColor: '#ef4444',
-  },
-  navigationSection: {
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  navButton: {
-    backgroundColor: '#6366f1',
+  priorityOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 25,
-    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    backgroundColor: '#ffffff',
+    gap: 6,
   },
-  navButtonText: {
+  priorityOptionText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  selectedPriorityOptionText: {
     color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+  },
+  primaryButton: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  primaryButtonText: {
+    color: '#ffffff',
   },
 });
 
