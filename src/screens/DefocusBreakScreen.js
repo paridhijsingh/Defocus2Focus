@@ -45,6 +45,7 @@ const DefocusBreakScreen = ({ navigation }) => {
     clearAllUserData,
     manualSaveUserData,
     testSetDefocusCompleted,
+    testSetValidFocusSession,
     checkAsyncStorageState
   } = useUserData();
 
@@ -762,6 +763,12 @@ const DefocusBreakScreen = ({ navigation }) => {
             onPress={testSetDefocusCompleted}
           >
             <Text style={styles.debugButtonText}>Test Lock State</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.debugButton, { backgroundColor: '#059669', marginTop: 8 }]}
+            onPress={testSetValidFocusSession}
+          >
+            <Text style={styles.debugButtonText}>Test Valid Focus Session</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.debugButton, { backgroundColor: '#0891b2', marginTop: 8 }]}

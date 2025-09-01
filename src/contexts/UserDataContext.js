@@ -57,10 +57,7 @@ export const UserDataProvider = ({ children }) => {
       maxDefocusTimePerDay: 60, // Maximum defocus time allowed per day (minutes)
       defocusSessionCompleted: false, // Track if defocus session was completed and needs focus session
       lastDefocusSessionDate: null, // Track when last defocus session was completed
-      focusSessionRequirements: {
-        duration: 25, // Minimum duration for a valid focus session
-        hasTasks: true, // Must have at least one task to be considered a valid focus session
-      },
+      focusSessionRequirements: null, // Track requirements for unlocking defocus
     },
     categories: [
       { id: 'work', name: 'Work', color: '#3b82f6', icon: 'briefcase' },
@@ -324,16 +321,28 @@ export const UserDataProvider = ({ children }) => {
   // Check if focus session meets requirements to unlock defocus
   const checkFocusSessionRequirements = () => {
     const lastFocus = userData.defocusAbusePrevention.lastFocusSessionDate;
-    if (!lastFocus) return false;
+    console.log('🔍 checkFocusSessionRequirements - lastFocus:', lastFocus);
+    if (!lastFocus) {
+      console.log('🔍 No lastFocus date found');
+      return false;
+    }
     
     const focusData = userData.defocusAbusePrevention.focusSessionRequirements;
-    if (!focusData) return false;
+    console.log('🔍 checkFocusSessionRequirements - focusData:', focusData);
+    if (!focusData) {
+      console.log('🔍 No focusData found');
+      return false;
+    }
     
     // Check if focus session was completed today and meets requirements
     const today = new Date().toDateString();
     const focusDate = new Date(lastFocus).toDateString();
+    console.log('🔍 Date check - today:', today, 'focusDate:', focusDate);
+    console.log('🔍 Requirements check - hasMinimumFocusTime:', focusData.hasMinimumFocusTime, 'hasTasks:', focusData.hasTasks);
     
-    return today === focusDate && focusData.hasMinimumFocusTime && focusData.hasTasks;
+    const result = today === focusDate && focusData.hasMinimumFocusTime && focusData.hasTasks;
+    console.log('🔍 checkFocusSessionRequirements result:', result);
+    return result;
   };
 
   // Add defocus session with abuse prevention
@@ -411,6 +420,7 @@ export const UserDataProvider = ({ children }) => {
     
     // Check if user has completed a focus session today that meets requirements
     const hasValidFocusSession = checkFocusSessionRequirements();
+    console.log('🔍 hasValidFocusSession result:', hasValidFocusSession);
     
     if (hasValidFocusSession) {
       console.log('✅ ALLOWING ACCESS: Valid focus session completed today');
@@ -667,6 +677,7 @@ export const UserDataProvider = ({ children }) => {
           maxDefocusTimePerDay: 60,
           defocusSessionCompleted: false,
           lastDefocusSessionDate: null,
+          focusSessionRequirements: null,
         },
         categories: [
           { id: 'work', name: 'Work', color: '#3b82f6', icon: 'briefcase' },
@@ -702,6 +713,25 @@ export const UserDataProvider = ({ children }) => {
         ...prev.defocusAbusePrevention,
         defocusSessionCompleted: true,
         lastDefocusSessionDate: new Date().toISOString(),
+      }
+    }));
+  };
+
+  // Test function to manually set a valid focus session (for testing)
+  const testSetValidFocusSession = () => {
+    console.log('🧪 Manually setting valid focus session for testing');
+    setUserData(prev => ({
+      ...prev,
+      todoList: [{ id: 'test', text: 'Test task', completed: false }], // Add a test task
+      defocusAbusePrevention: {
+        ...prev.defocusAbusePrevention,
+        lastFocusSessionDate: new Date().toISOString(),
+        focusSessionRequirements: {
+          hasMinimumFocusTime: true,
+          hasTasks: true,
+          completedAt: new Date().toISOString(),
+          duration: 25
+        }
       }
     }));
   };
@@ -879,6 +909,7 @@ export const UserDataProvider = ({ children }) => {
     clearAllUserData,
     manualSaveUserData,
     testSetDefocusCompleted,
+    testSetValidFocusSession,
     checkAsyncStorageState,
     checkFocusSessionRequirements,
   };
