@@ -1119,6 +1119,528 @@
         opacity: 0.8;
       }
 
+      /* Break Time & Rewards Styles */
+      .break-time-screen, .rewards-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        z-index: 1000;
+        overflow-y: auto;
+      }
+
+      .screen-header {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+      }
+
+      .back-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-right: 16px;
+        transition: all 0.3s ease;
+      }
+
+      .back-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateX(-2px);
+      }
+
+      .screen-header h2 {
+        color: white;
+        margin: 0;
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      .break-content, .rewards-content {
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      /* Break Type Selector */
+      .break-type-selector {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .break-type-selector h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .break-types {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+      }
+
+      .break-type {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        min-width: 120px;
+      }
+
+      .break-type:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      .break-type.selected {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        border-color: #4CAF50;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+      }
+
+      .break-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+
+      .break-name {
+        font-weight: bold;
+        margin-bottom: 4px;
+      }
+
+      .break-duration {
+        font-size: 14px;
+        opacity: 0.8;
+      }
+
+      /* Break Timer */
+      .break-timer {
+        background: white;
+        border-radius: 20px;
+        padding: 32px;
+        margin-bottom: 24px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .timer-display {
+        margin-bottom: 32px;
+      }
+
+      .timer-time {
+        font-size: 48px;
+        font-weight: bold;
+        color: #333;
+        font-family: 'Courier New', monospace;
+        margin-bottom: 16px;
+      }
+
+      .timer-progress {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+      }
+
+      .progress-bar {
+        height: 8px;
+        background: #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4CAF50, #45a049);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+      }
+
+      .timer-controls {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+      }
+
+      .control-btn {
+        background: #4CAF50;
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        min-width: 120px;
+      }
+
+      .control-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+      }
+
+      .control-btn.pause-btn {
+        background: #FF9800;
+      }
+
+      .control-btn.stop-btn {
+        background: #F44336;
+      }
+
+      /* Break Activities */
+      .break-activities {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .break-activities h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .activity-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+      }
+
+      .activity-card {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+      }
+
+      .activity-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border-color: #4CAF50;
+      }
+
+      .activity-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+
+      .activity-name {
+        font-weight: bold;
+        margin-bottom: 4px;
+        color: #333;
+      }
+
+      .activity-desc {
+        font-size: 12px;
+        color: #666;
+        line-height: 1.4;
+      }
+
+      /* Break Stats */
+      .break-stats {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .break-stats h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 12px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4CAF50;
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        color: #666;
+      }
+
+      /* Rewards Styles */
+      .level-card {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .level-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .level-icon {
+        font-size: 32px;
+        margin-right: 16px;
+      }
+
+      .level-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 4px;
+      }
+
+      .level-points {
+        color: #666;
+        font-size: 16px;
+      }
+
+      .level-progress {
+        margin-bottom: 16px;
+      }
+
+      .progress-text {
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+        margin-top: 8px;
+      }
+
+      .daily-goal-card, .streak-card, .achievements-card, .points-history {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .daily-goal-card h3, .streak-card h3, .achievements-card h3, .points-history h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .goal-progress-bar {
+        height: 12px;
+        background: #f0f0f0;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 8px;
+      }
+
+      .goal-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4CAF50, #45a049);
+        border-radius: 6px;
+        transition: width 0.3s ease;
+      }
+
+      .goal-text {
+        text-align: center;
+        color: #333;
+        font-weight: bold;
+        margin-bottom: 12px;
+      }
+
+      .goal-completed {
+        text-align: center;
+        color: #4CAF50;
+        font-weight: bold;
+        background: #E8F5E8;
+        padding: 12px;
+        border-radius: 12px;
+      }
+
+      .streak-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+      }
+
+      .streak-icon {
+        font-size: 40px;
+        margin-right: 16px;
+      }
+
+      .streak-number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #FF6B35;
+        margin-bottom: 4px;
+      }
+
+      .streak-label {
+        color: #666;
+        font-size: 16px;
+      }
+
+      .streak-description {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+      }
+
+      .achievements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+      }
+
+      .achievement-badge {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+      }
+
+      .achievement-badge.unlocked {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        border-color: #4CAF50;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+      }
+
+      .achievement-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+
+      .achievement-name {
+        font-weight: bold;
+        margin-bottom: 4px;
+      }
+
+      .achievement-desc {
+        font-size: 12px;
+        opacity: 0.8;
+        line-height: 1.4;
+      }
+
+      .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 12px;
+      }
+
+      .activity-item .activity-icon {
+        font-size: 20px;
+        margin-right: 12px;
+      }
+
+      .activity-item .activity-desc {
+        flex: 1;
+        color: #333;
+        font-size: 14px;
+      }
+
+      .activity-item .activity-points {
+        color: #4CAF50;
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      /* Notification Toast */
+      .notification-toast {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        z-index: 2000;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        max-width: 90%;
+        text-align: center;
+      }
+
+      .notification-toast.show {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .break-types {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .break-type {
+          width: 100%;
+          max-width: 200px;
+        }
+
+        .timer-controls {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .control-btn {
+          width: 100%;
+          max-width: 200px;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .achievements-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
       .music-categories {
         margin-bottom: 30px;
       }
@@ -2522,16 +3044,486 @@
         initializeMusicSystem();
       }
 
+      // Break Time and Rewards System
+      let breakState = {
+        isBreakActive: false,
+        breakTimeRemaining: 0,
+        breakType: "short", // micro, short, long
+        breakDuration: 5, // minutes
+        breakStartTime: null,
+        breakInterval: null,
+        totalBreaks: 0,
+        completedBreaks: 0,
+        streak: 0,
+        lastBreakDate: null,
+      };
+
+      let rewardsState = {
+        totalPoints: 0,
+        currentLevel: 1,
+        pointsToNextLevel: 100,
+        focusStreak: 0,
+        dailyGoal: 4,
+        dailyProgress: 0,
+        achievements: [],
+        unlockedAchievements: [],
+      };
+
+      // Load saved data
+      function loadBreakRewardsData() {
+        const savedBreakData = localStorage.getItem("breakData");
+        const savedRewardsData = localStorage.getItem("rewardsData");
+
+        if (savedBreakData) {
+          breakState = { ...breakState, ...JSON.parse(savedBreakData) };
+        }
+
+        if (savedRewardsData) {
+          rewardsState = { ...rewardsState, ...JSON.parse(savedRewardsData) };
+        }
+      }
+
+      // Save data
+      function saveBreakRewardsData() {
+        localStorage.setItem("breakData", JSON.stringify(breakState));
+        localStorage.setItem("rewardsData", JSON.stringify(rewardsState));
+      }
+
+      // Initialize on page load
+      loadBreakRewardsData();
+
       function openBreakTime() {
-        alert(
-          "Break Time feature coming soon! This will include guided breaks and activity suggestions."
-        );
+        hideMainApp();
+        showBreakTimeScreen();
       }
 
       function openRewards() {
-        alert(
-          "Rewards feature coming soon! This will include progress tracking and achievement system."
-        );
+        hideMainApp();
+        showRewardsScreen();
+      }
+
+      // Break Time Screen
+      function showBreakTimeScreen() {
+        const breakTimeHTML = `
+          <div class="break-time-screen">
+            <div class="screen-header">
+              <button class="back-btn" onclick="showMainApp()">← Back</button>
+              <h2>Break Time</h2>
+            </div>
+            
+            <div class="break-content">
+              <!-- Break Type Selector -->
+              <div class="break-type-selector">
+                <h3>Choose Your Break Type</h3>
+                <div class="break-types">
+                  <div class="break-type ${
+                    breakState.breakType === "micro" ? "selected" : ""
+                  }" onclick="selectBreakType('micro')">
+                    <div class="break-icon">⚡</div>
+                    <div class="break-name">Micro Break</div>
+                    <div class="break-duration">2 min</div>
+                  </div>
+                  <div class="break-type ${
+                    breakState.breakType === "short" ? "selected" : ""
+                  }" onclick="selectBreakType('short')">
+                    <div class="break-icon">☕</div>
+                    <div class="break-name">Short Break</div>
+                    <div class="break-duration">5 min</div>
+                  </div>
+                  <div class="break-type ${
+                    breakState.breakType === "long" ? "selected" : ""
+                  }" onclick="selectBreakType('long')">
+                    <div class="break-icon">🧘</div>
+                    <div class="break-name">Long Break</div>
+                    <div class="break-duration">15 min</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Break Timer -->
+              <div class="break-timer">
+                <div class="timer-display">
+                  <div class="timer-time" id="breakTimerDisplay">${formatBreakTime(
+                    breakState.breakTimeRemaining
+                  )}</div>
+                  <div class="timer-progress">
+                    <div class="progress-bar">
+                      <div class="progress-fill" id="breakProgressFill" style="width: 0%"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="timer-controls">
+                  <button class="control-btn start-btn" id="breakStartBtn" onclick="startBreakTimer()">▶️ Start Break</button>
+                  <button class="control-btn pause-btn" id="breakPauseBtn" onclick="pauseBreakTimer()" style="display: none;">⏸️ Pause</button>
+                  <button class="control-btn stop-btn" onclick="stopBreakTimer()">⏹️ Stop</button>
+                </div>
+              </div>
+
+              <!-- Break Activities -->
+              <div class="break-activities">
+                <h3>Break Activities</h3>
+                <div class="activity-grid">
+                  <div class="activity-card" onclick="startBreakActivity('breathing')">
+                    <div class="activity-icon">🫁</div>
+                    <div class="activity-name">Breathing</div>
+                    <div class="activity-desc">Deep breathing exercise</div>
+                  </div>
+                  <div class="activity-card" onclick="startBreakActivity('stretching')">
+                    <div class="activity-icon">🤸</div>
+                    <div class="activity-name">Stretching</div>
+                    <div class="activity-desc">Light stretching routine</div>
+                  </div>
+                  <div class="activity-card" onclick="startBreakActivity('walking')">
+                    <div class="activity-icon">🚶</div>
+                    <div class="activity-name">Walking</div>
+                    <div class="activity-desc">Take a short walk</div>
+                  </div>
+                  <div class="activity-card" onclick="startBreakActivity('meditation')">
+                    <div class="activity-icon">🧘</div>
+                    <div class="activity-name">Meditation</div>
+                    <div class="activity-desc">Quick mindfulness</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Break Stats -->
+              <div class="break-stats">
+                <h3>Your Break Stats</h3>
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <div class="stat-value">${breakState.totalBreaks}</div>
+                    <div class="stat-label">Total Breaks</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-value">${breakState.completedBreaks}</div>
+                    <div class="stat-label">Completed</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-value">${breakState.streak}</div>
+                    <div class="stat-label">Day Streak</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.body.insertAdjacentHTML("beforeend", breakTimeHTML);
+      }
+
+      // Rewards Screen
+      function showRewardsScreen() {
+        const rewardsHTML = `
+          <div class="rewards-screen">
+            <div class="screen-header">
+              <button class="back-btn" onclick="showMainApp()">← Back</button>
+              <h2>Rewards & Achievements</h2>
+            </div>
+            
+            <div class="rewards-content">
+              <!-- Level Progress -->
+              <div class="level-card">
+                <div class="level-header">
+                  <div class="level-icon">🏆</div>
+                  <div class="level-info">
+                    <div class="level-title">Level ${
+                      rewardsState.currentLevel
+                    }</div>
+                    <div class="level-points">${
+                      rewardsState.totalPoints
+                    } points</div>
+                  </div>
+                </div>
+                <div class="level-progress">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${
+                      ((100 - rewardsState.pointsToNextLevel) / 100) * 100
+                    }%"></div>
+                  </div>
+                  <div class="progress-text">${
+                    100 - rewardsState.pointsToNextLevel
+                  }/100 points to next level</div>
+                </div>
+              </div>
+
+              <!-- Daily Goal -->
+              <div class="daily-goal-card">
+                <h3>Daily Goal</h3>
+                <div class="goal-progress">
+                  <div class="goal-progress-bar">
+                    <div class="goal-progress-fill" style="width: ${
+                      (rewardsState.dailyProgress / rewardsState.dailyGoal) *
+                      100
+                    }%"></div>
+                  </div>
+                  <div class="goal-text">${rewardsState.dailyProgress}/${
+          rewardsState.dailyGoal
+        } focus sessions</div>
+                </div>
+                ${
+                  rewardsState.dailyProgress >= rewardsState.dailyGoal
+                    ? '<div class="goal-completed">🎉 Daily goal completed!</div>'
+                    : ""
+                }
+              </div>
+
+              <!-- Streak Tracker -->
+              <div class="streak-card">
+                <h3>Focus Streak</h3>
+                <div class="streak-display">
+                  <div class="streak-icon">🔥</div>
+                  <div class="streak-info">
+                    <div class="streak-number">${rewardsState.focusStreak}</div>
+                    <div class="streak-label">days</div>
+                  </div>
+                </div>
+                <div class="streak-description">Keep the momentum going!</div>
+              </div>
+
+              <!-- Achievements -->
+              <div class="achievements-card">
+                <h3>Achievements</h3>
+                <div class="achievements-grid">
+                  <div class="achievement-badge ${
+                    rewardsState.totalPoints >= 50 ? "unlocked" : ""
+                  }">
+                    <div class="achievement-icon">🎯</div>
+                    <div class="achievement-name">Focus Master</div>
+                    <div class="achievement-desc">Complete 10 focus sessions</div>
+                  </div>
+                  <div class="achievement-badge ${
+                    rewardsState.totalPoints >= 125 ? "unlocked" : ""
+                  }">
+                    <div class="achievement-icon">🧘</div>
+                    <div class="achievement-name">Zen Master</div>
+                    <div class="achievement-desc">Complete 25 focus sessions</div>
+                  </div>
+                  <div class="achievement-badge ${
+                    rewardsState.totalPoints >= 250 ? "unlocked" : ""
+                  }">
+                    <div class="achievement-icon">🧠</div>
+                    <div class="achievement-name">Mind Master</div>
+                    <div class="achievement-desc">Complete 50 focus sessions</div>
+                  </div>
+                  <div class="achievement-badge ${
+                    rewardsState.focusStreak >= 7 ? "unlocked" : ""
+                  }">
+                    <div class="achievement-icon">🔥</div>
+                    <div class="achievement-name">Streak Master</div>
+                    <div class="achievement-desc">7-day focus streak</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Points History -->
+              <div class="points-history">
+                <h3>Recent Activity</h3>
+                <div class="activity-list">
+                  <div class="activity-item">
+                    <div class="activity-icon">🎯</div>
+                    <div class="activity-desc">Completed focus session</div>
+                    <div class="activity-points">+5 points</div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-icon">☕</div>
+                    <div class="activity-desc">Took a break</div>
+                    <div class="activity-points">+2 points</div>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-icon">🏆</div>
+                    <div class="activity-desc">Level up!</div>
+                    <div class="activity-points">+10 points</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.body.insertAdjacentHTML("beforeend", rewardsHTML);
+      }
+
+      // Break Timer Functions
+      function selectBreakType(type) {
+        breakState.breakType = type;
+        const durations = { micro: 2, short: 5, long: 15 };
+        breakState.breakDuration = durations[type];
+        breakState.breakTimeRemaining = breakState.breakDuration * 60;
+
+        // Update UI
+        document
+          .querySelectorAll(".break-type")
+          .forEach((el) => el.classList.remove("selected"));
+        document
+          .querySelector(`[onclick="selectBreakType('${type}')"]`)
+          .classList.add("selected");
+
+        // Update timer display
+        const timerDisplay = document.getElementById("breakTimerDisplay");
+        if (timerDisplay) {
+          timerDisplay.textContent = formatBreakTime(
+            breakState.breakTimeRemaining
+          );
+        }
+
+        saveBreakRewardsData();
+      }
+
+      function startBreakTimer() {
+        if (breakState.breakTimeRemaining === 0) {
+          breakState.breakTimeRemaining = breakState.breakDuration * 60;
+        }
+
+        breakState.isBreakActive = true;
+        breakState.breakStartTime = Date.now();
+
+        // Update UI
+        document.getElementById("breakStartBtn").style.display = "none";
+        document.getElementById("breakPauseBtn").style.display = "inline-block";
+
+        // Start timer
+        breakState.breakInterval = setInterval(() => {
+          breakState.breakTimeRemaining--;
+          updateBreakTimerDisplay();
+
+          if (breakState.breakTimeRemaining <= 0) {
+            completeBreak();
+          }
+        }, 1000);
+
+        saveBreakRewardsData();
+      }
+
+      function pauseBreakTimer() {
+        breakState.isBreakActive = false;
+        clearInterval(breakState.breakInterval);
+
+        // Update UI
+        document.getElementById("breakStartBtn").style.display = "inline-block";
+        document.getElementById("breakPauseBtn").style.display = "none";
+
+        saveBreakRewardsData();
+      }
+
+      function stopBreakTimer() {
+        breakState.isBreakActive = false;
+        breakState.breakTimeRemaining = 0;
+        clearInterval(breakState.breakInterval);
+
+        // Update UI
+        document.getElementById("breakStartBtn").style.display = "inline-block";
+        document.getElementById("breakPauseBtn").style.display = "none";
+        updateBreakTimerDisplay();
+
+        saveBreakRewardsData();
+      }
+
+      function completeBreak() {
+        breakState.isBreakActive = false;
+        breakState.breakTimeRemaining = 0;
+        clearInterval(breakState.breakInterval);
+
+        // Update stats
+        breakState.totalBreaks++;
+        breakState.completedBreaks++;
+        breakState.streak++;
+        breakState.lastBreakDate = new Date().toISOString();
+
+        // Add points
+        addPoints(2);
+
+        // Update UI
+        document.getElementById("breakStartBtn").style.display = "inline-block";
+        document.getElementById("breakPauseBtn").style.display = "none";
+        updateBreakTimerDisplay();
+
+        // Show completion message
+        showNotification("🎉 Break completed! You earned 2 points!");
+
+        saveBreakRewardsData();
+      }
+
+      function updateBreakTimerDisplay() {
+        const timerDisplay = document.getElementById("breakTimerDisplay");
+        const progressFill = document.getElementById("breakProgressFill");
+
+        if (timerDisplay) {
+          timerDisplay.textContent = formatBreakTime(
+            breakState.breakTimeRemaining
+          );
+        }
+
+        if (progressFill) {
+          const totalTime = breakState.breakDuration * 60;
+          const progress =
+            ((totalTime - breakState.breakTimeRemaining) / totalTime) * 100;
+          progressFill.style.width = `${progress}%`;
+        }
+      }
+
+      function formatBreakTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, "0")}:${secs
+          .toString()
+          .padStart(2, "0")}`;
+      }
+
+      function startBreakActivity(activity) {
+        const activities = {
+          breathing:
+            "Take 5 deep breaths. Inhale for 4 counts, hold for 4, exhale for 6.",
+          stretching:
+            "Stand up and stretch your arms, neck, and back. Hold each stretch for 15 seconds.",
+          walking:
+            "Take a short walk around your space. Even 2-3 minutes helps!",
+          meditation:
+            "Close your eyes and focus on your breathing. Let thoughts come and go naturally.",
+        };
+
+        showNotification(`🧘 ${activities[activity]}`);
+      }
+
+      // Rewards Functions
+      function addPoints(points) {
+        rewardsState.totalPoints += points;
+
+        // Check for level up
+        const newLevel = Math.floor(rewardsState.totalPoints / 100) + 1;
+        if (newLevel > rewardsState.currentLevel) {
+          rewardsState.currentLevel = newLevel;
+          showNotification(`🎉 Level up! You're now level ${newLevel}!`);
+        }
+
+        rewardsState.pointsToNextLevel = 100 - (rewardsState.totalPoints % 100);
+
+        // Update daily progress
+        rewardsState.dailyProgress++;
+        if (rewardsState.dailyProgress >= rewardsState.dailyGoal) {
+          showNotification("🎯 Daily goal completed!");
+        }
+
+        saveBreakRewardsData();
+      }
+
+      function showNotification(message) {
+        // Create notification element
+        const notification = document.createElement("div");
+        notification.className = "notification-toast";
+        notification.textContent = message;
+
+        // Add to page
+        document.body.appendChild(notification);
+
+        // Show notification
+        setTimeout(() => notification.classList.add("show"), 100);
+
+        // Hide after 3 seconds
+        setTimeout(() => {
+          notification.classList.remove("show");
+          setTimeout(() => notification.remove(), 300);
+        }, 3000);
       }
 
       // Todo management functions
