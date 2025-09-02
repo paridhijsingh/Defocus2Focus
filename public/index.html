@@ -1,1198 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Defocus2Focus - Where Procrastination Meets Play</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* Custom animations */
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        to {
-          opacity: 1;
-          transform: translateY(0);
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-      }
-
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%);
+        
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
         }
-        to {
-          transform: translateX(0);
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
         }
-      }
-
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out;
-      }
-
-      .animate-slide-in {
-        animation: slideIn 0.3s ease-out;
-      }
-
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-
-      ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 3px;
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 3px;
-      }
-
-      ::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-      }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .status {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 2px solid white;
+            margin-bottom: 2rem;
+        }
+        
+        .status h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #22c55e;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .feature h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .coming-soon {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
     </style>
-  </head>
-  <body class="bg-gray-50">
-    <div id="root"></div>
-
-    <script type="text/babel">
-      const { useState, useEffect } = React;
-
-      const OnboardingTutorial = ({ onComplete, onSkip }) => {
-        const [currentStep, setCurrentStep] = useState(0);
-        const [isVisible, setIsVisible] = useState(true);
-
-        const steps = [
-          {
-            id: "welcome",
-            title: "Welcome to Defocus2Focus! 🎯",
-            subtitle: "Where Procrastination Meets Play",
-            description:
-              "Transform your productivity with our gamified approach to focus and breaks.",
-            icon: "🎯",
-            color: "blue",
-            illustration: "✨",
-          },
-          {
-            id: "focus-mode",
-            title: "Focus Mode 🎯",
-            subtitle: "Deep Work Made Fun",
-            description:
-              "Set timers, track progress, and complete tasks while earning energy points and unlocking achievements.",
-            icon: "🎯",
-            color: "blue",
-            illustration: "⏰",
-            features: [
-              "Pomodoro Timer",
-              "Task Management",
-              "Progress Tracking",
-              "Energy Points",
-            ],
-          },
-          {
-            id: "defocus-mode",
-            title: "Defocus Mode 🌿",
-            subtitle: "Mindful Breaks & Recovery",
-            description:
-              "Take purposeful breaks with guided activities, mini-games, and relaxation techniques.",
-            icon: "🌿",
-            color: "orange",
-            illustration: "🧘",
-            features: [
-              "Mini Games",
-              "Breathing Exercises",
-              "Journaling",
-              "AI Therapist",
-            ],
-          },
-          {
-            id: "switching-modes",
-            title: "Smart Mode Switching 🔄",
-            subtitle: "Seamless Transitions",
-            description:
-              "Easily switch between Focus and Defocus modes with our intuitive toggle system.",
-            icon: "🔄",
-            color: "purple",
-            illustration: "⚡",
-            features: [
-              "One-Click Toggle",
-              "Smart Suggestions",
-              "Context Awareness",
-              "Smooth Transitions",
-            ],
-          },
-          {
-            id: "rewards",
-            title: "Rewards & Motivation 🏆",
-            subtitle: "Stay Motivated",
-            description:
-              "Earn badges, track streaks, and unlock achievements as you build better productivity habits.",
-            icon: "🏆",
-            color: "green",
-            illustration: "⭐",
-            features: [
-              "Achievement Badges",
-              "Daily Streaks",
-              "Energy Points",
-              "Progress Analytics",
-            ],
-          },
-        ];
-
-        const nextStep = () => {
-          if (currentStep < steps.length - 1) {
-            setCurrentStep(currentStep + 1);
-          } else {
-            handleComplete();
-          }
-        };
-
-        const prevStep = () => {
-          if (currentStep > 0) {
-            setCurrentStep(currentStep - 1);
-          }
-        };
-
-        const handleComplete = () => {
-          setIsVisible(false);
-          setTimeout(() => {
-            onComplete();
-          }, 300);
-        };
-
-        const handleSkip = () => {
-          setIsVisible(false);
-          setTimeout(() => {
-            onSkip();
-          }, 300);
-        };
-
-        const currentStepData = steps[currentStep];
-        const isLastStep = currentStep === steps.length - 1;
-        const isFirstStep = currentStep === 0;
-
-        if (!isVisible) return null;
-
-        return React.createElement(
-          "div",
-          {
-            className:
-              "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4",
-          },
-          React.createElement(
-            "div",
-            {
-              className:
-                "bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all duration-300 ease-in-out animate-fade-in",
-            },
-            [
-              // Header
-              React.createElement(
-                "div",
-                { key: "header", className: "relative" },
-                [
-                  React.createElement("div", {
-                    key: "progress-bar",
-                    className: `h-2 bg-gradient-to-r ${
-                      currentStepData.color === "blue"
-                        ? "from-blue-400 to-blue-600"
-                        : currentStepData.color === "orange"
-                        ? "from-orange-400 to-orange-600"
-                        : currentStepData.color === "purple"
-                        ? "from-purple-400 to-purple-600"
-                        : "from-green-400 to-green-600"
-                    }`,
-                    style: {
-                      width: `${((currentStep + 1) / steps.length) * 100}%`,
-                    },
-                  }),
-                  React.createElement(
-                    "button",
-                    {
-                      key: "skip-button",
-                      onClick: handleSkip,
-                      className:
-                        "absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 text-sm font-medium",
-                    },
-                    "Skip Tutorial"
-                  ),
-                ]
-              ),
-
-              // Content
-              React.createElement(
-                "div",
-                { key: "content", className: "p-8 text-center" },
-                [
-                  // Illustration
-                  React.createElement(
-                    "div",
-                    { key: "illustration", className: "mb-6" },
-                    [
-                      React.createElement(
-                        "div",
-                        {
-                          key: "icon-container",
-                          className: `w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl mb-4 ${
-                            currentStepData.color === "blue"
-                              ? "bg-blue-100"
-                              : currentStepData.color === "orange"
-                              ? "bg-orange-100"
-                              : currentStepData.color === "purple"
-                              ? "bg-purple-100"
-                              : "bg-green-100"
-                          }`,
-                        },
-                        React.createElement(
-                          "span",
-                          { className: "text-4xl" },
-                          currentStepData.illustration
-                        )
-                      ),
-                      React.createElement(
-                        "div",
-                        { key: "main-icon", className: "text-6xl mb-2" },
-                        currentStepData.icon
-                      ),
-                    ]
-                  ),
-
-                  // Title
-                  React.createElement(
-                    "h2",
-                    {
-                      key: "title",
-                      className: "text-2xl font-bold text-gray-900 mb-2",
-                    },
-                    currentStepData.title
-                  ),
-
-                  // Subtitle
-                  React.createElement(
-                    "h3",
-                    {
-                      key: "subtitle",
-                      className: `text-lg font-semibold mb-4 ${
-                        currentStepData.color === "blue"
-                          ? "text-blue-600"
-                          : currentStepData.color === "orange"
-                          ? "text-orange-600"
-                          : currentStepData.color === "purple"
-                          ? "text-purple-600"
-                          : "text-green-600"
-                      }`,
-                    },
-                    currentStepData.subtitle
-                  ),
-
-                  // Description
-                  React.createElement(
-                    "p",
-                    {
-                      key: "description",
-                      className: "text-gray-600 mb-6 leading-relaxed",
-                    },
-                    currentStepData.description
-                  ),
-
-                  // Features List
-                  currentStepData.features &&
-                    React.createElement(
-                      "div",
-                      { key: "features", className: "mb-6" },
-                      [
-                        React.createElement(
-                          "div",
-                          {
-                            key: "features-grid",
-                            className: "grid grid-cols-2 gap-2",
-                          },
-                          currentStepData.features.map((feature, index) =>
-                            React.createElement(
-                              "div",
-                              {
-                                key: index,
-                                className:
-                                  "flex items-center justify-center p-2 bg-gray-50 rounded-lg",
-                              },
-                              React.createElement(
-                                "span",
-                                {
-                                  className:
-                                    "text-sm text-gray-700 font-medium",
-                                },
-                                feature
-                              )
-                            )
-                          )
-                        ),
-                      ]
-                    ),
-
-                  // Progress Dots
-                  React.createElement(
-                    "div",
-                    {
-                      key: "progress-dots",
-                      className: "flex justify-center space-x-2 mb-6",
-                    },
-                    steps.map((_, index) =>
-                      React.createElement("div", {
-                        key: index,
-                        className: `w-2 h-2 rounded-full transition-all duration-300 ${
-                          index === currentStep
-                            ? currentStepData.color === "blue"
-                              ? "bg-blue-500"
-                              : currentStepData.color === "orange"
-                              ? "bg-orange-500"
-                              : currentStepData.color === "purple"
-                              ? "bg-purple-500"
-                              : "bg-green-500"
-                            : "bg-gray-300"
-                        }`,
-                      })
-                    )
-                  ),
-                ]
-              ),
-
-              // Footer
-              React.createElement(
-                "div",
-                { key: "footer", className: "px-8 pb-8" },
-                [
-                  React.createElement(
-                    "div",
-                    {
-                      key: "footer-buttons",
-                      className: "flex justify-between items-center",
-                    },
-                    [
-                      // Back Button
-                      React.createElement(
-                        "button",
-                        {
-                          key: "back-button",
-                          onClick: prevStep,
-                          disabled: isFirstStep,
-                          className: `px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                            isFirstStep
-                              ? "text-gray-300 cursor-not-allowed"
-                              : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
-                          }`,
-                        },
-                        "Back"
-                      ),
-
-                      // Next/Complete Button
-                      React.createElement(
-                        "button",
-                        {
-                          key: "next-button",
-                          onClick: nextStep,
-                          className: `px-8 py-3 rounded-xl font-medium text-white transition-all duration-200 transform hover:scale-105 ${
-                            currentStepData.color === "blue"
-                              ? "bg-blue-500 hover:bg-blue-600"
-                              : currentStepData.color === "orange"
-                              ? "bg-orange-500 hover:bg-orange-600"
-                              : currentStepData.color === "purple"
-                              ? "bg-purple-500 hover:bg-purple-600"
-                              : "bg-green-500 hover:bg-green-600"
-                          }`,
-                        },
-                        isLastStep ? "Start My Journey" : "Next"
-                      ),
-                    ]
-                  ),
-                ]
-              ),
-            ]
-          )
-        );
-      };
-
-      const WebApp = () => {
-        const [showOnboarding, setShowOnboarding] = useState(false);
-        const [currentScreen, setCurrentScreen] = useState("dashboard");
-        const [hasCompletedOnboarding, setHasCompletedOnboarding] =
-          useState(false);
-
-        useEffect(() => {
-          // Check if user has completed onboarding before
-          const completed = localStorage.getItem(
-            "defocus2focus_onboarding_completed"
-          );
-          if (!completed) {
-            setShowOnboarding(true);
-          } else {
-            setHasCompletedOnboarding(true);
-          }
-        }, []);
-
-        const handleOnboardingComplete = () => {
-          localStorage.setItem("defocus2focus_onboarding_completed", "true");
-          setShowOnboarding(false);
-          setHasCompletedOnboarding(true);
-          setCurrentScreen("dashboard");
-        };
-
-        const handleOnboardingSkip = () => {
-          localStorage.setItem("defocus2focus_onboarding_completed", "true");
-          setShowOnboarding(false);
-          setHasCompletedOnboarding(true);
-          setCurrentScreen("dashboard");
-        };
-
-        const resetOnboarding = () => {
-          localStorage.removeItem("defocus2focus_onboarding_completed");
-          setShowOnboarding(true);
-          setHasCompletedOnboarding(false);
-        };
-
-        const renderDashboard = () =>
-          React.createElement(
-            "div",
-            {
-              className:
-                "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
-            },
-            [
-              // Header
-              React.createElement(
-                "header",
-                {
-                  key: "header",
-                  className: "bg-white shadow-sm border-b border-gray-200",
-                },
-                React.createElement(
-                  "div",
-                  {
-                    className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
-                  },
-                  React.createElement(
-                    "div",
-                    {
-                      className: "flex justify-between items-center py-6",
-                    },
-                    [
-                      React.createElement(
-                        "div",
-                        {
-                          key: "title",
-                          className: "flex items-center",
-                        },
-                        [
-                          React.createElement(
-                            "h1",
-                            {
-                              key: "main-title",
-                              className: "text-3xl font-bold text-gray-900",
-                            },
-                            "🎯 Defocus2Focus"
-                          ),
-                          React.createElement(
-                            "span",
-                            {
-                              key: "subtitle",
-                              className: "ml-3 text-sm text-gray-500",
-                            },
-                            "Where Procrastination Meets Play"
-                          ),
-                        ]
-                      ),
-                      React.createElement(
-                        "button",
-                        {
-                          key: "reset-button",
-                          onClick: resetOnboarding,
-                          className:
-                            "px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
-                        },
-                        "🔄 Reset Tutorial"
-                      ),
-                    ]
-                  )
-                )
-              ),
-
-              // Main Content
-              React.createElement(
-                "main",
-                {
-                  key: "main",
-                  className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
-                },
-                [
-                  React.createElement(
-                    "div",
-                    {
-                      key: "cards-grid",
-                      className:
-                        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-                    },
-                    [
-                      // Focus Mode Card
-                      React.createElement(
-                        "div",
-                        {
-                          key: "focus-card",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 cursor-pointer border-l-4 border-blue-500",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "focus-header",
-                              className: "flex items-center mb-4",
-                            },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "focus-icon",
-                                  className:
-                                    "w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4",
-                                },
-                                React.createElement(
-                                  "span",
-                                  { className: "text-2xl" },
-                                  "🎯"
-                                )
-                              ),
-                              React.createElement(
-                                "div",
-                                { key: "focus-text" },
-                                [
-                                  React.createElement(
-                                    "h3",
-                                    {
-                                      key: "focus-title",
-                                      className:
-                                        "text-lg font-semibold text-gray-900",
-                                    },
-                                    "Focus Mode"
-                                  ),
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      key: "focus-subtitle",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Deep work sessions"
-                                  ),
-                                ]
-                              ),
-                            ]
-                          ),
-                          React.createElement(
-                            "p",
-                            {
-                              key: "focus-description",
-                              className: "text-gray-600 mb-4",
-                            },
-                            "Set timers, track progress, and complete tasks while earning energy points."
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "focus-tags",
-                              className: "flex flex-wrap gap-2",
-                            },
-                            [
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag1",
-                                  className:
-                                    "px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full",
-                                },
-                                "Pomodoro Timer"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag2",
-                                  className:
-                                    "px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full",
-                                },
-                                "Task Management"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag3",
-                                  className:
-                                    "px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full",
-                                },
-                                "Progress Tracking"
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
-
-                      // Defocus Mode Card
-                      React.createElement(
-                        "div",
-                        {
-                          key: "defocus-card",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 cursor-pointer border-l-4 border-orange-500",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "defocus-header",
-                              className: "flex items-center mb-4",
-                            },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "defocus-icon",
-                                  className:
-                                    "w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4",
-                                },
-                                React.createElement(
-                                  "span",
-                                  { className: "text-2xl" },
-                                  "🌿"
-                                )
-                              ),
-                              React.createElement(
-                                "div",
-                                { key: "defocus-text" },
-                                [
-                                  React.createElement(
-                                    "h3",
-                                    {
-                                      key: "defocus-title",
-                                      className:
-                                        "text-lg font-semibold text-gray-900",
-                                    },
-                                    "Defocus Mode"
-                                  ),
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      key: "defocus-subtitle",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Mindful breaks"
-                                  ),
-                                ]
-                              ),
-                            ]
-                          ),
-                          React.createElement(
-                            "p",
-                            {
-                              key: "defocus-description",
-                              className: "text-gray-600 mb-4",
-                            },
-                            "Take purposeful breaks with guided activities and relaxation techniques."
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "defocus-tags",
-                              className: "flex flex-wrap gap-2",
-                            },
-                            [
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag1",
-                                  className:
-                                    "px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full",
-                                },
-                                "Mini Games"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag2",
-                                  className:
-                                    "px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full",
-                                },
-                                "Breathing"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag3",
-                                  className:
-                                    "px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full",
-                                },
-                                "Journaling"
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
-
-                      // Mode Switching Card
-                      React.createElement(
-                        "div",
-                        {
-                          key: "switching-card",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 cursor-pointer border-l-4 border-purple-500",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "switching-header",
-                              className: "flex items-center mb-4",
-                            },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "switching-icon",
-                                  className:
-                                    "w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4",
-                                },
-                                React.createElement(
-                                  "span",
-                                  { className: "text-2xl" },
-                                  "🔄"
-                                )
-                              ),
-                              React.createElement(
-                                "div",
-                                { key: "switching-text" },
-                                [
-                                  React.createElement(
-                                    "h3",
-                                    {
-                                      key: "switching-title",
-                                      className:
-                                        "text-lg font-semibold text-gray-900",
-                                    },
-                                    "Smart Switching"
-                                  ),
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      key: "switching-subtitle",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Seamless transitions"
-                                  ),
-                                ]
-                              ),
-                            ]
-                          ),
-                          React.createElement(
-                            "p",
-                            {
-                              key: "switching-description",
-                              className: "text-gray-600 mb-4",
-                            },
-                            "Easily switch between Focus and Defocus modes with our intuitive toggle system."
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "switching-tags",
-                              className: "flex flex-wrap gap-2",
-                            },
-                            [
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag1",
-                                  className:
-                                    "px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full",
-                                },
-                                "One-Click Toggle"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag2",
-                                  className:
-                                    "px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full",
-                                },
-                                "Smart Suggestions"
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
-
-                      // Rewards Card
-                      React.createElement(
-                        "div",
-                        {
-                          key: "rewards-card",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 cursor-pointer border-l-4 border-green-500",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "rewards-header",
-                              className: "flex items-center mb-4",
-                            },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "rewards-icon",
-                                  className:
-                                    "w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4",
-                                },
-                                React.createElement(
-                                  "span",
-                                  { className: "text-2xl" },
-                                  "🏆"
-                                )
-                              ),
-                              React.createElement(
-                                "div",
-                                { key: "rewards-text" },
-                                [
-                                  React.createElement(
-                                    "h3",
-                                    {
-                                      key: "rewards-title",
-                                      className:
-                                        "text-lg font-semibold text-gray-900",
-                                    },
-                                    "Rewards & Motivation"
-                                  ),
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      key: "rewards-subtitle",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Stay motivated"
-                                  ),
-                                ]
-                              ),
-                            ]
-                          ),
-                          React.createElement(
-                            "p",
-                            {
-                              key: "rewards-description",
-                              className: "text-gray-600 mb-4",
-                            },
-                            "Earn badges, track streaks, and unlock achievements as you build better habits."
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "rewards-tags",
-                              className: "flex flex-wrap gap-2",
-                            },
-                            [
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag1",
-                                  className:
-                                    "px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full",
-                                },
-                                "Achievement Badges"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag2",
-                                  className:
-                                    "px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full",
-                                },
-                                "Daily Streaks"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag3",
-                                  className:
-                                    "px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full",
-                                },
-                                "Energy Points"
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
-
-                      // Quick Actions
-                      React.createElement(
-                        "div",
-                        {
-                          key: "quick-actions",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 border-l-4 border-indigo-500",
-                        },
-                        [
-                          React.createElement(
-                            "h3",
-                            {
-                              key: "actions-title",
-                              className:
-                                "text-lg font-semibold text-gray-900 mb-4",
-                            },
-                            "Quick Actions"
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "actions-buttons",
-                              className: "space-y-3",
-                            },
-                            [
-                              React.createElement(
-                                "button",
-                                {
-                                  key: "focus-btn",
-                                  className:
-                                    "w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    { key: "icon", className: "mr-2" },
-                                    "🎯"
-                                  ),
-                                  "Start Focus Session",
-                                ]
-                              ),
-                              React.createElement(
-                                "button",
-                                {
-                                  key: "defocus-btn",
-                                  className:
-                                    "w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    { key: "icon", className: "mr-2" },
-                                    "🌿"
-                                  ),
-                                  "Take Defocus Break",
-                                ]
-                              ),
-                              React.createElement(
-                                "button",
-                                {
-                                  key: "tasks-btn",
-                                  className:
-                                    "w-full bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    { key: "icon", className: "mr-2" },
-                                    "📝"
-                                  ),
-                                  "Manage Tasks",
-                                ]
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
-
-                      // Stats Preview
-                      React.createElement(
-                        "div",
-                        {
-                          key: "stats-preview",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 border-l-4 border-teal-500",
-                        },
-                        [
-                          React.createElement(
-                            "h3",
-                            {
-                              key: "stats-title",
-                              className:
-                                "text-lg font-semibold text-gray-900 mb-4",
-                            },
-                            "Today's Progress"
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "stats-content",
-                              className: "space-y-4",
-                            },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "stat1",
-                                  className:
-                                    "flex justify-between items-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "label1",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Focus Sessions"
-                                  ),
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "value1",
-                                      className:
-                                        "text-sm font-semibold text-blue-600",
-                                    },
-                                    "0"
-                                  ),
-                                ]
-                              ),
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "stat2",
-                                  className:
-                                    "flex justify-between items-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "label2",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Energy Points"
-                                  ),
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "value2",
-                                      className:
-                                        "text-sm font-semibold text-green-600",
-                                    },
-                                    "0"
-                                  ),
-                                ]
-                              ),
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "stat3",
-                                  className:
-                                    "flex justify-between items-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "label3",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Current Streak"
-                                  ),
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "value3",
-                                      className:
-                                        "text-sm font-semibold text-orange-600",
-                                    },
-                                    "0 days"
-                                  ),
-                                ]
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
-                    ]
-                  ),
-
-                  // Welcome Message
-                  hasCompletedOnboarding &&
-                    React.createElement(
-                      "div",
-                      {
-                        key: "welcome-message",
-                        className:
-                          "mt-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white",
-                      },
-                      React.createElement(
-                        "div",
-                        {
-                          className: "flex items-center",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "welcome-icon",
-                              className:
-                                "w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-4",
-                            },
-                            React.createElement(
-                              "span",
-                              { className: "text-2xl" },
-                              "🎉"
-                            )
-                          ),
-                          React.createElement("div", { key: "welcome-text" }, [
-                            React.createElement(
-                              "h3",
-                              {
-                                key: "welcome-title",
-                                className: "text-xl font-semibold",
-                              },
-                              "Welcome to Defocus2Focus!"
-                            ),
-                            React.createElement(
-                              "p",
-                              {
-                                key: "welcome-description",
-                                className: "text-blue-100",
-                              },
-                              "You're all set to start your productivity journey. Ready to transform procrastination into play?"
-                            ),
-                          ]),
-                        ]
-                      )
-                    ),
-                ]
-              ),
-            ]
-          );
-
-        return React.createElement("div", null, [
-          showOnboarding &&
-            React.createElement(OnboardingTutorial, {
-              key: "onboarding",
-              onComplete: handleOnboardingComplete,
-              onSkip: handleOnboardingSkip,
-            }),
-          hasCompletedOnboarding && renderDashboard(),
-        ]);
-      };
-
-      // Render the app
-      ReactDOM.render(
-        React.createElement(WebApp),
-        document.getElementById("root")
-      );
-    </script>
-  </body>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Defocus2Focus</h1>
+        <p class="tagline">Where Procrastination Meets Play</p>
+        
+        <div class="status">
+            <h2>✅ Site is Live!</h2>
+            <p>Your Defocus2Focus app is successfully deployed on Netlify!</p>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>🎯 Focus Mode</h3>
+                <p>Pomodoro timers and task management</p>
+            </div>
+            <div class="feature">
+                <h3>🌿 Defocus Mode</h3>
+                <p>Mindful breaks and relaxation</p>
+            </div>
+            <div class="feature">
+                <h3>🔄 Smart Switching</h3>
+                <p>Seamless transitions between modes</p>
+            </div>
+            <div class="feature">
+                <h3>🏆 Rewards</h3>
+                <p>Achievement badges and streaks</p>
+            </div>
+        </div>
+        
+        <div class="coming-soon">
+            <h3>🚀 Full App Coming Soon!</h3>
+            <p>The complete onboarding tutorial and interactive features are being deployed. Check back in a few minutes!</p>
+        </div>
+    </div>
+</body>
 </html>
