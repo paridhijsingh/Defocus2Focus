@@ -5,6 +5,7 @@ import Dashboard from './screens/Dashboard';
 import FocusSession from './screens/FocusSession';
 import DefocusBreak from './screens/DefocusBreak';
 import Stats from './screens/Stats';
+import TodoScreen from './screens/TodoScreen';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState('dashboard');
@@ -20,6 +21,8 @@ function App() {
         return <DefocusBreak onNavigate={setCurrentScreen} />;
       case 'stats':
         return <Stats onNavigate={setCurrentScreen} />;
+      case 'todos':
+        return <TodoScreen onNavigate={setCurrentScreen} />;
       default:
         return <Dashboard onNavigate={setCurrentScreen} />;
     }

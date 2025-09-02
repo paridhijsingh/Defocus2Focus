@@ -9,6 +9,12 @@ const Navigation = ({ currentScreen, onNavigate }) => {
       color: 'primary'
     },
     {
+      id: 'todos',
+      label: 'Tasks',
+      icon: '📝',
+      color: 'secondary'
+    },
+    {
       id: 'focus',
       label: 'Focus',
       icon: '🎯',
