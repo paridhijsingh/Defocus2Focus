@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Defocus2Focus - Where Procrastination Meets Play</title>
@@ -1124,6 +1124,908 @@
           }
         };
 
+        // Music & Relaxation Screen
+        const MusicScreen = () => {
+          const [selectedCategory, setSelectedCategory] = useState("focus");
+          const [currentTrack, setCurrentTrack] = useState(null);
+          const [isPlaying, setIsPlaying] = useState(false);
+          const [volume, setVolume] = useState(0.7);
+
+          const musicCategories = [
+            {
+              id: "nature",
+              title: "Nature Sounds",
+              subtitle: "Forest, rain, ocean waves",
+              icon: "🌿",
+              color: "green",
+              tracks: [
+                { id: "rain", name: "Rain", icon: "🌧️", duration: "5:30" },
+                { id: "forest", name: "Forest", icon: "🌲", duration: "4:45" },
+                { id: "ocean", name: "Ocean", icon: "🌊", duration: "6:15" },
+                { id: "thunder", name: "Thunder", icon: "⛈️", duration: "3:50" },
+                { id: "birds", name: "Birds", icon: "🐦", duration: "4:20" },
+                { id: "wind", name: "Wind", icon: "🍃", duration: "5:10" },
+              ],
+            },
+            {
+              id: "ambient",
+              title: "Ambient Sounds",
+              subtitle: "Space, city, cafe atmosphere",
+              icon: "🌆",
+              color: "purple",
+              tracks: [
+                { id: "space", name: "Space", icon: "🚀", duration: "6:40" },
+                { id: "city", name: "City", icon: "🏙️", duration: "4:55" },
+                { id: "cafe", name: "Cafe", icon: "☕", duration: "5:25" },
+                { id: "library", name: "Library", icon: "📚", duration: "4:10" },
+                { id: "fireplace", name: "Fireplace", icon: "🔥", duration: "6:20" },
+                { id: "train", name: "Train", icon: "🚂", duration: "5:45" },
+              ],
+            },
+            {
+              id: "focus",
+              title: "Focus Music",
+              subtitle: "Binaural beats, classical, lofi",
+              icon: "🎯",
+              color: "blue",
+              tracks: [
+                { id: "binaural", name: "Binaural", icon: "🧠", duration: "4:30" },
+                { id: "classical", name: "Classical", icon: "🎼", duration: "5:15" },
+                { id: "lofi", name: "Lo-Fi", icon: "🎧", duration: "4:45" },
+                { id: "piano", name: "Piano", icon: "🎹", duration: "5:50" },
+                { id: "white_noise", name: "White Noise", icon: "📻", duration: "6:00" },
+                { id: "brown_noise", name: "Brown Noise", icon: "🌊", duration: "5:30" },
+              ],
+            },
+            {
+              id: "relax",
+              title: "Relaxation",
+              subtitle: "Meditation, spa, zen sounds",
+              icon: "🧘",
+              color: "orange",
+              tracks: [
+                { id: "meditation", name: "Meditation", icon: "🧘‍♀️", duration: "8:00" },
+                { id: "spa", name: "Spa", icon: "🛁", duration: "6:30" },
+                { id: "zen", name: "Zen", icon: "🏯", duration: "7:15" },
+                { id: "chimes", name: "Chimes", icon: "🔔", duration: "4:20" },
+                { id: "singing_bowl", name: "Singing Bowl", icon: "🥣", duration: "5:45" },
+                { id: "flute", name: "Flute", icon: "🎵", duration: "6:10" },
+              ],
+            },
+          ];
+
+          const handlePlayTrack = (track) => {
+            if (currentTrack?.id === track.id) {
+              setIsPlaying(!isPlaying);
+            } else {
+              setCurrentTrack(track);
+              setIsPlaying(true);
+            }
+          };
+
+          const getCurrentCategory = () => {
+            return musicCategories.find(cat => cat.id === selectedCategory);
+          };
+
+          return React.createElement(
+            "div",
+            {
+              className: "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
+            },
+            [
+              // Header
+              React.createElement(
+                "header",
+                {
+                  key: "header",
+                  className: "bg-white shadow-sm border-b border-gray-200",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className: "max-w-6xl mx-auto px-4 sm:px-6 lg:px-8",
+                  },
+                  React.createElement(
+                    "div",
+                    {
+                      className: "flex justify-between items-center py-6",
+                    },
+                    [
+                      React.createElement(
+                        "div",
+                        {
+                          key: "title",
+                          className: "flex items-center",
+                        },
+                        [
+                          React.createElement(
+                            "button",
+                            {
+                              key: "back-btn",
+                              onClick: () => navigateTo("dashboard"),
+                              className: "mr-4 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
+                            },
+                            "←"
+                          ),
+                          React.createElement(
+                            "h1",
+                            {
+                              key: "main-title",
+                              className: "text-3xl font-bold text-gray-900",
+                            },
+                            "🎵 Music & Relaxation"
+                          ),
+                        ]
+                      ),
+                      currentTrack && React.createElement(
+                        "div",
+                        {
+                          key: "now-playing",
+                          className: "text-sm text-gray-600",
+                        },
+                        `Now Playing: ${currentTrack.name}`
+                      ),
+                    ]
+                  )
+                )
+              ),
+
+              // Main Content
+              React.createElement(
+                "main",
+                {
+                  key: "main",
+                  className: "max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+                },
+                [
+                  // Category Selector
+                  React.createElement(
+                    "div",
+                    {
+                      key: "categories",
+                      className: "mb-8",
+                    },
+                    [
+                      React.createElement(
+                        "h2",
+                        {
+                          key: "section-title",
+                          className: "text-xl font-semibold text-gray-900 mb-4",
+                        },
+                        "Choose Your Sound"
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "category-grid",
+                          className: "grid grid-cols-2 md:grid-cols-4 gap-4",
+                        },
+                        musicCategories.map((category) =>
+                          React.createElement(
+                            "button",
+                            {
+                              key: category.id,
+                              onClick: () => setSelectedCategory(category.id),
+                              className: `p-4 rounded-xl border-2 transition-all duration-200 ${
+                                selectedCategory === category.id
+                                  ? `border-${category.color}-500 bg-${category.color}-50`
+                                  : "border-gray-200 bg-white hover:border-gray-300"
+                              }`,
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "icon",
+                                  className: "text-3xl mb-2",
+                                },
+                                category.icon
+                              ),
+                              React.createElement(
+                                "h3",
+                                {
+                                  key: "title",
+                                  className: "font-semibold text-gray-900 mb-1",
+                                },
+                                category.title
+                              ),
+                              React.createElement(
+                                "p",
+                                {
+                                  key: "subtitle",
+                                  className: "text-xs text-gray-600",
+                                },
+                                category.subtitle
+                              ),
+                            ]
+                          )
+                        )
+                      ),
+                    ]
+                  ),
+
+                  // Current Track Display
+                  currentTrack && React.createElement(
+                    "div",
+                    {
+                      key: "now-playing-card",
+                      className: "bg-white rounded-xl shadow-lg p-6 mb-8",
+                    },
+                    [
+                      React.createElement(
+                        "h3",
+                        {
+                          key: "now-playing-title",
+                          className: "text-lg font-semibold text-gray-900 mb-4",
+                        },
+                        "Now Playing"
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "track-info",
+                          className: "flex items-center justify-between",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            {
+                              key: "track-details",
+                              className: "flex items-center",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "track-icon",
+                                  className: "text-4xl mr-4",
+                                },
+                                currentTrack.icon
+                              ),
+                              React.createElement(
+                                "div",
+                                { key: "track-text" },
+                                [
+                                  React.createElement(
+                                    "h4",
+                                    {
+                                      key: "track-name",
+                                      className: "text-xl font-semibold text-gray-900",
+                                    },
+                                    currentTrack.name
+                                  ),
+                                  React.createElement(
+                                    "p",
+                                    {
+                                      key: "track-category",
+                                      className: "text-sm text-gray-600",
+                                    },
+                                    getCurrentCategory()?.title
+                                  ),
+                                ]
+                              ),
+                            ]
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "track-controls",
+                              className: "flex items-center space-x-4",
+                            },
+                            [
+                              React.createElement(
+                                "button",
+                                {
+                                  key: "play-pause",
+                                  onClick: () => setIsPlaying(!isPlaying),
+                                  className: `w-12 h-12 rounded-full flex items-center justify-center text-white transition-colors duration-200 ${
+                                    isPlaying ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"
+                                  }`,
+                                },
+                                isPlaying ? "⏸️" : "▶️"
+                              ),
+                              React.createElement(
+                                "button",
+                                {
+                                  key: "stop",
+                                  onClick: () => {
+                                    setIsPlaying(false);
+                                    setCurrentTrack(null);
+                                  },
+                                  className: "w-10 h-10 rounded-full bg-gray-500 hover:bg-gray-600 text-white flex items-center justify-center transition-colors duration-200",
+                                },
+                                "⏹️"
+                              ),
+                            ]
+                          ),
+                        ]
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "volume-control",
+                          className: "mt-4 flex items-center space-x-3",
+                        },
+                        [
+                          React.createElement(
+                            "span",
+                            { key: "volume-icon", className: "text-gray-600" },
+                            "🔊"
+                          ),
+                          React.createElement(
+                            "input",
+                            {
+                              key: "volume-slider",
+                              type: "range",
+                              min: "0",
+                              max: "1",
+                              step: "0.1",
+                              value: volume,
+                              onChange: (e) => setVolume(parseFloat(e.target.value)),
+                              className: "flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer",
+                            }
+                          ),
+                          React.createElement(
+                            "span",
+                            { key: "volume-value", className: "text-sm text-gray-600 w-8" },
+                            Math.round(volume * 100)
+                          ),
+                        ]
+                      ),
+                    ]
+                  ),
+
+                  // Tracks List
+                  React.createElement(
+                    "div",
+                    {
+                      key: "tracks-section",
+                      className: "bg-white rounded-xl shadow-lg p-6",
+                    },
+                    [
+                      React.createElement(
+                        "h3",
+                        {
+                          key: "tracks-title",
+                          className: "text-lg font-semibold text-gray-900 mb-4",
+                        },
+                        `${getCurrentCategory()?.title} Tracks`
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "tracks-grid",
+                          className: "grid grid-cols-1 md:grid-cols-2 gap-4",
+                        },
+                        getCurrentCategory()?.tracks.map((track) => {
+                          const isCurrentTrack = currentTrack?.id === track.id;
+                          const isPlayingTrack = isCurrentTrack && isPlaying;
+                          
+                          return React.createElement(
+                            "div",
+                            {
+                              key: track.id,
+                              className: `p-4 rounded-lg border transition-all duration-200 cursor-pointer ${
+                                isCurrentTrack
+                                  ? "border-blue-500 bg-blue-50"
+                                  : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100"
+                              }`,
+                              onClick: () => handlePlayTrack(track),
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "track-header",
+                                  className: "flex items-center justify-between mb-2",
+                                },
+                                [
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "track-info",
+                                      className: "flex items-center",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "span",
+                                        { key: "track-icon", className: "text-2xl mr-3" },
+                                        track.icon
+                                      ),
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "track-name",
+                                          className: `font-medium ${
+                                            isCurrentTrack ? "text-blue-600" : "text-gray-900"
+                                          }`,
+                                        },
+                                        track.name
+                                      ),
+                                    ]
+                                  ),
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "track-controls",
+                                      className: "flex items-center space-x-2",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "span",
+                                        { key: "duration", className: "text-sm text-gray-500" },
+                                        track.duration
+                                      ),
+                                      React.createElement(
+                                        "div",
+                                        {
+                                          key: "play-indicator",
+                                          className: `w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                                            isPlayingTrack
+                                              ? "bg-red-500 text-white"
+                                              : "bg-green-500 text-white"
+                                          }`,
+                                        },
+                                        isPlayingTrack ? "⏸️" : "▶️"
+                                      ),
+                                    ]
+                                  ),
+                                ]
+                              ),
+                            ]
+                          );
+                        })
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+            ]
+          );
+        };
+
+        // Rewards & Achievements Screen
+        const RewardsScreen = () => {
+          return React.createElement(
+            "div",
+            {
+              className: "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
+            },
+            [
+              // Header
+              React.createElement(
+                "header",
+                {
+                  key: "header",
+                  className: "bg-white shadow-sm border-b border-gray-200",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8",
+                  },
+                  React.createElement(
+                    "div",
+                    {
+                      className: "flex justify-between items-center py-6",
+                    },
+                    [
+                      React.createElement(
+                        "div",
+                        {
+                          key: "title",
+                          className: "flex items-center",
+                        },
+                        [
+                          React.createElement(
+                            "button",
+                            {
+                              key: "back-btn",
+                              onClick: () => navigateTo("dashboard"),
+                              className: "mr-4 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
+                            },
+                            "←"
+                          ),
+                          React.createElement(
+                            "h1",
+                            {
+                              key: "main-title",
+                              className: "text-3xl font-bold text-gray-900",
+                            },
+                            "🏆 Rewards & Achievements"
+                          ),
+                        ]
+                      ),
+                    ]
+                  )
+                )
+              ),
+
+              // Main Content
+              React.createElement(
+                "main",
+                {
+                  key: "main",
+                  className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+                },
+                [
+                  // Energy Points Summary
+                  React.createElement(
+                    "div",
+                    {
+                      key: "energy-summary",
+                      className: "bg-gradient-to-r from-green-500 to-blue-500 rounded-xl p-6 text-white mb-8",
+                    },
+                    [
+                      React.createElement(
+                        "h2",
+                        {
+                          key: "energy-title",
+                          className: "text-2xl font-bold mb-2",
+                        },
+                        "Your Energy Points"
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "energy-stats",
+                          className: "flex justify-between items-center",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            { key: "current-energy" },
+                            [
+                              React.createElement(
+                                "div",
+                                { key: "energy-value", className: "text-4xl font-bold" },
+                                energyPoints
+                              ),
+                              React.createElement(
+                                "div",
+                                { key: "energy-label", className: "text-green-100" },
+                                "Current Points"
+                              ),
+                            ]
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "energy-icon", className: "text-6xl" },
+                            "⚡"
+                          ),
+                        ]
+                      ),
+                    ]
+                  ),
+
+                  // Achievements
+                  React.createElement(
+                    "div",
+                    {
+                      key: "achievements",
+                      className: "bg-white rounded-xl shadow-lg p-6",
+                    },
+                    [
+                      React.createElement(
+                        "h3",
+                        {
+                          key: "achievements-title",
+                          className: "text-xl font-semibold text-gray-900 mb-4",
+                        },
+                        "Your Achievements"
+                      ),
+                      achievements.length === 0 ? React.createElement(
+                        "div",
+                        {
+                          key: "no-achievements",
+                          className: "text-center py-8 text-gray-500",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            { key: "empty-icon", className: "text-4xl mb-2" },
+                            "🏆"
+                          ),
+                          React.createElement(
+                            "p",
+                            { key: "empty-text" },
+                            "Complete focus sessions to unlock achievements!"
+                          ),
+                        ]
+                      ) : React.createElement(
+                        "div",
+                        {
+                          key: "achievements-grid",
+                          className: "grid grid-cols-1 md:grid-cols-2 gap-4",
+                        },
+                        achievements.map((achievement) =>
+                          React.createElement(
+                            "div",
+                            {
+                              key: achievement.id,
+                              className: "p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "achievement-header",
+                                  className: "flex items-center mb-2",
+                                },
+                                [
+                                  React.createElement(
+                                    "span",
+                                    { key: "achievement-icon", className: "text-2xl mr-3" },
+                                    achievement.icon
+                                  ),
+                                  React.createElement(
+                                    "h4",
+                                    {
+                                      key: "achievement-name",
+                                      className: "font-semibold text-gray-900",
+                                    },
+                                    achievement.name
+                                  ),
+                                ]
+                              ),
+                              React.createElement(
+                                "p",
+                                {
+                                  key: "achievement-description",
+                                  className: "text-sm text-gray-600",
+                                },
+                                achievement.description
+                              ),
+                            ]
+                          )
+                        )
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+            ]
+          );
+        };
+
+        // Statistics Screen
+        const StatsScreen = () => {
+          return React.createElement(
+            "div",
+            {
+              className: "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
+            },
+            [
+              // Header
+              React.createElement(
+                "header",
+                {
+                  key: "header",
+                  className: "bg-white shadow-sm border-b border-gray-200",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8",
+                  },
+                  React.createElement(
+                    "div",
+                    {
+                      className: "flex justify-between items-center py-6",
+                    },
+                    [
+                      React.createElement(
+                        "div",
+                        {
+                          key: "title",
+                          className: "flex items-center",
+                        },
+                        [
+                          React.createElement(
+                            "button",
+                            {
+                              key: "back-btn",
+                              onClick: () => navigateTo("dashboard"),
+                              className: "mr-4 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
+                            },
+                            "←"
+                          ),
+                          React.createElement(
+                            "h1",
+                            {
+                              key: "main-title",
+                              className: "text-3xl font-bold text-gray-900",
+                            },
+                            "📊 Statistics & Analytics"
+                          ),
+                        ]
+                      ),
+                    ]
+                  )
+                )
+              ),
+
+              // Main Content
+              React.createElement(
+                "main",
+                {
+                  key: "main",
+                  className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+                },
+                [
+                  // Stats Grid
+                  React.createElement(
+                    "div",
+                    {
+                      key: "stats-grid",
+                      className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-8",
+                    },
+                    [
+                      React.createElement(
+                        "div",
+                        {
+                          key: "focus-sessions-card",
+                          className: "bg-white rounded-xl shadow-lg p-6 text-center",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            { key: "focus-icon", className: "text-4xl mb-2" },
+                            "🎯"
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "focus-value", className: "text-3xl font-bold text-blue-600 mb-1" },
+                            focusSessions
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "focus-label", className: "text-gray-600" },
+                            "Focus Sessions"
+                          ),
+                        ]
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "energy-points-card",
+                          className: "bg-white rounded-xl shadow-lg p-6 text-center",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            { key: "energy-icon", className: "text-4xl mb-2" },
+                            "⚡"
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "energy-value", className: "text-3xl font-bold text-green-600 mb-1" },
+                            energyPoints
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "energy-label", className: "text-gray-600" },
+                            "Energy Points"
+                          ),
+                        ]
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "streak-card",
+                          className: "bg-white rounded-xl shadow-lg p-6 text-center",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            { key: "streak-icon", className: "text-4xl mb-2" },
+                            "🔥"
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "streak-value", className: "text-3xl font-bold text-orange-600 mb-1" },
+                            currentStreak
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "streak-label", className: "text-gray-600" },
+                            "Day Streak"
+                          ),
+                        ]
+                      ),
+                    ]
+                  ),
+
+                  // Task Statistics
+                  React.createElement(
+                    "div",
+                    {
+                      key: "task-stats",
+                      className: "bg-white rounded-xl shadow-lg p-6",
+                    },
+                    [
+                      React.createElement(
+                        "h3",
+                        {
+                          key: "task-stats-title",
+                          className: "text-xl font-semibold text-gray-900 mb-4",
+                        },
+                        "Task Statistics"
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "task-progress",
+                          className: "space-y-4",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            {
+                              key: "total-tasks",
+                              className: "flex justify-between items-center",
+                            },
+                            [
+                              React.createElement(
+                                "span",
+                                { key: "total-label", className: "text-gray-600" },
+                                "Total Tasks"
+                              ),
+                              React.createElement(
+                                "span",
+                                { key: "total-value", className: "font-semibold" },
+                                tasks.length
+                              ),
+                            ]
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "completed-tasks",
+                              className: "flex justify-between items-center",
+                            },
+                            [
+                              React.createElement(
+                                "span",
+                                { key: "completed-label", className: "text-gray-600" },
+                                "Completed Tasks"
+                              ),
+                              React.createElement(
+                                "span",
+                                { key: "completed-value", className: "font-semibold text-green-600" },
+                                tasks.filter(t => t.completed).length
+                              ),
+                            ]
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "completion-rate",
+                              className: "flex justify-between items-center",
+                            },
+                            [
+                              React.createElement(
+                                "span",
+                                { key: "rate-label", className: "text-gray-600" },
+                                "Completion Rate"
+                              ),
+                              React.createElement(
+                                "span",
+                                { key: "rate-value", className: "font-semibold text-blue-600" },
+                                tasks.length > 0 ? `${Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100)}%` : "0%"
+                              ),
+                            ]
+                          ),
+                        ]
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+            ]
+          );
+        };
+
         // Task Management Screen
         const TaskManagement = () => {
           const [newTask, setNewTask] = useState("");
@@ -1921,14 +2823,90 @@
                         ]
                       ),
 
-                      // Stats Preview
-                      React.createElement(
-                        "div",
-                        {
-                          key: "stats-preview",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 border-l-4 border-teal-500",
-                        },
+                                             // Navigation Cards
+                       React.createElement(
+                         "div",
+                         {
+                           key: "navigation-cards",
+                           className: "bg-white rounded-xl shadow-lg p-6 border-l-4 border-indigo-500",
+                         },
+                         [
+                           React.createElement(
+                             "h3",
+                             {
+                               key: "nav-title",
+                               className: "text-lg font-semibold text-gray-900 mb-4",
+                             },
+                             "Explore Features"
+                           ),
+                           React.createElement(
+                             "div",
+                             {
+                               key: "nav-grid",
+                               className: "grid grid-cols-2 gap-3",
+                             },
+                             [
+                               React.createElement(
+                                 "button",
+                                 {
+                                   key: "music-nav",
+                                   onClick: () => navigateTo("music"),
+                                   className: "p-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center",
+                                 },
+                                 [
+                                   React.createElement("span", { key: "icon", className: "mr-2" }, "🎵"),
+                                   "Music",
+                                 ]
+                               ),
+                               React.createElement(
+                                 "button",
+                                 {
+                                   key: "rewards-nav",
+                                   onClick: () => navigateTo("rewards"),
+                                   className: "p-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center",
+                                 },
+                                 [
+                                   React.createElement("span", { key: "icon", className: "mr-2" }, "🏆"),
+                                   "Rewards",
+                                 ]
+                               ),
+                               React.createElement(
+                                 "button",
+                                 {
+                                   key: "stats-nav",
+                                   onClick: () => navigateTo("stats"),
+                                   className: "p-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center",
+                                 },
+                                 [
+                                   React.createElement("span", { key: "icon", className: "mr-2" }, "📊"),
+                                   "Stats",
+                                 ]
+                               ),
+                               React.createElement(
+                                 "button",
+                                 {
+                                   key: "tasks-nav",
+                                   onClick: () => navigateTo("tasks"),
+                                   className: "p-3 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center",
+                                 },
+                                 [
+                                   React.createElement("span", { key: "icon", className: "mr-2" }, "📝"),
+                                   "Tasks",
+                                 ]
+                               ),
+                             ]
+                           ),
+                         ]
+                       ),
+
+                       // Stats Preview
+                       React.createElement(
+                         "div",
+                         {
+                           key: "stats-preview",
+                           className:
+                             "bg-white rounded-xl shadow-lg p-6 border-l-4 border-teal-500",
+                         },
                         [
                           React.createElement(
                             "h3",
@@ -2088,15 +3066,21 @@
             ]
           );
 
-        const renderCurrentScreen = () => {
-          switch (currentScreen) {
-            case "tasks":
-              return React.createElement(TaskManagement);
-            case "dashboard":
-            default:
-              return renderDashboard();
-          }
-        };
+                 const renderCurrentScreen = () => {
+           switch (currentScreen) {
+             case "tasks":
+               return React.createElement(TaskManagement);
+             case "music":
+               return React.createElement(MusicScreen);
+             case "rewards":
+               return React.createElement(RewardsScreen);
+             case "stats":
+               return React.createElement(StatsScreen);
+             case "dashboard":
+             default:
+               return renderDashboard();
+           }
+         };
 
         return React.createElement("div", null, [
           showOnboarding &&
@@ -2159,5 +3143,5 @@
         document.getElementById("root")
       );
     </script>
-  </body>
+</body>
 </html>
