@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Defocus2Focus - Where Procrastination Meets Play</title>
+    <script src="assets/audio/audio-manager.js"></script>
     <style>
       * {
         margin: 0;
@@ -982,6 +983,13 @@
         opacity: 0.8;
       }
 
+      .audio-info {
+        font-size: 12px;
+        opacity: 0.7;
+        margin-top: 5px;
+        font-style: italic;
+      }
+
       .audio-visualizer {
         margin: 15px 0;
         display: flex;
@@ -1064,6 +1072,14 @@
         background: #059669;
       }
 
+      .stop-btn {
+        background: #ef4444;
+      }
+
+      .stop-btn:hover {
+        background: #dc2626;
+      }
+
       .volume-control {
         display: flex;
         align-items: center;
@@ -1087,6 +1103,20 @@
         border-radius: 50%;
         background: #667eea;
         cursor: pointer;
+      }
+
+      .shortcuts-info {
+        text-align: center;
+        margin-top: 10px;
+        padding: 8px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 8px;
+        color: #667eea;
+      }
+
+      .shortcuts-info small {
+        font-size: 12px;
+        opacity: 0.8;
       }
 
       .music-categories {
@@ -2302,6 +2332,7 @@
                 <div class="track-info">
                   <div class="track-title" id="currentTrackTitle">Select a track to play</div>
                   <div class="track-category" id="currentTrackCategory"></div>
+                  <div class="audio-info">🎵 Using high-quality generated audio for each track</div>
                 </div>
                 
                 <!-- Audio Visualizer -->
@@ -2322,14 +2353,20 @@
 
               <!-- Audio Controls -->
               <div class="audio-controls">
-                <button class="control-btn" id="prevBtn" onclick="previousTrack()">⏮️</button>
-                <button class="control-btn play-btn" id="playPauseBtn" onclick="togglePlayPause()">▶️</button>
-                <button class="control-btn" id="nextBtn" onclick="nextTrack()">⏭️</button>
+                <button class="control-btn" id="prevBtn" onclick="previousTrack()" title="Previous Track">⏮️</button>
+                <button class="control-btn play-btn" id="playPauseBtn" onclick="togglePlayPause()" title="Play/Pause (Space)">▶️</button>
+                <button class="control-btn" id="nextBtn" onclick="nextTrack()" title="Next Track">⏭️</button>
+                <button class="control-btn stop-btn" id="stopBtn" onclick="stopAllAudio()" title="Stop (S)">⏹️</button>
                 <div class="volume-control">
                   <span>🔊</span>
-                  <input type="range" id="volumeSlider" min="0" max="100" value="50" onchange="setVolume(this.value)">
+                  <input type="range" id="volumeSlider" min="0" max="100" value="50" onchange="setVolume(this.value)" title="Volume Control (↑/↓)">
                   <span id="volumeValue">50%</span>
                 </div>
+              </div>
+              
+              <!-- Keyboard Shortcuts Info -->
+              <div class="shortcuts-info">
+                <small>💡 Keyboard shortcuts: Space (Play/Pause), S (Stop), ↑/↓ (Volume)</small>
               </div>
 
               <!-- Music Categories -->
@@ -2858,6 +2895,40 @@
         );
       }
 
+      // Add keyboard shortcuts for audio control
+      document.addEventListener("keydown", function (event) {
+        // Only handle shortcuts when music modal is open
+        const musicModal = document.getElementById("musicModal");
+        if (!musicModal || musicModal.style.display !== "block") return;
+
+        switch (event.code) {
+          case "Space":
+            event.preventDefault();
+            togglePlayPause();
+            break;
+          case "KeyS":
+            event.preventDefault();
+            stopAllAudio();
+            break;
+          case "ArrowUp":
+            event.preventDefault();
+            const currentVolume = window.audioManager
+              ? window.audioManager.getVolume() * 100
+              : 50;
+            const newVolume = Math.min(100, currentVolume + 10);
+            setVolume(newVolume);
+            break;
+          case "ArrowDown":
+            event.preventDefault();
+            const currentVol = window.audioManager
+              ? window.audioManager.getVolume() * 100
+              : 50;
+            const newVol = Math.max(0, currentVol - 10);
+            setVolume(newVol);
+            break;
+        }
+      });
+
       // Initialize app
       document.addEventListener("DOMContentLoaded", function () {
         // Auto-start app after 3 seconds
@@ -2892,44 +2963,8 @@
       let analyser = null;
       let dataArray = null;
 
-      // Audio URLs - Using free audio sources
-      const audioSources = {
-        nature: {
-          rain: "https://www.soundjay.com/misc/sounds/rain-01.wav",
-          forest: "https://www.soundjay.com/misc/sounds/forest-01.wav",
-          ocean: "https://www.soundjay.com/misc/sounds/ocean-01.wav",
-          thunder: "https://www.soundjay.com/misc/sounds/thunder-01.wav",
-          birds: "https://www.soundjay.com/misc/sounds/birds-01.wav",
-          wind: "https://www.soundjay.com/misc/sounds/wind-01.wav",
-        },
-        ambient: {
-          space: "https://www.soundjay.com/misc/sounds/space-01.wav",
-          city: "https://www.soundjay.com/misc/sounds/city-01.wav",
-          cafe: "https://www.soundjay.com/misc/sounds/cafe-01.wav",
-          library: "https://www.soundjay.com/misc/sounds/library-01.wav",
-          fireplace: "https://www.soundjay.com/misc/sounds/fireplace-01.wav",
-          train: "https://www.soundjay.com/misc/sounds/train-01.wav",
-        },
-        focus: {
-          binaural: "https://www.soundjay.com/misc/sounds/binaural-01.wav",
-          classical: "https://www.soundjay.com/misc/sounds/classical-01.wav",
-          lofi: "https://www.soundjay.com/misc/sounds/lofi-01.wav",
-          piano: "https://www.soundjay.com/misc/sounds/piano-01.wav",
-          "white-noise":
-            "https://www.soundjay.com/misc/sounds/white-noise-01.wav",
-          "brown-noise":
-            "https://www.soundjay.com/misc/sounds/brown-noise-01.wav",
-        },
-        relax: {
-          meditation: "https://www.soundjay.com/misc/sounds/meditation-01.wav",
-          spa: "https://www.soundjay.com/misc/sounds/spa-01.wav",
-          zen: "https://www.soundjay.com/misc/sounds/zen-01.wav",
-          chimes: "https://www.soundjay.com/misc/sounds/chimes-01.wav",
-          "singing-bowls":
-            "https://www.soundjay.com/misc/sounds/singing-bowls-01.wav",
-          flute: "https://www.soundjay.com/misc/sounds/flute-01.wav",
-        },
-      };
+      // Note: Audio sources are now managed by the AudioManager class
+      // The audio manager handles both local MP3 files and generated audio fallbacks
 
       // Initialize Music System
       function initializeMusicSystem() {
@@ -2976,119 +3011,108 @@
           localStorage.setItem("currentCategory", currentCategory);
       }
 
-      // Play a track
-      function playTrack(trackId, category) {
+      // Play a track using the audio manager
+      async function playTrack(trackId, category) {
         console.log("🎵 Playing track:", trackId, "from category:", category);
 
-        // Stop current audio if playing
-        if (currentAudio) {
-          currentAudio.pause();
-          currentAudio = null;
-        }
+        // Stop any existing visualizer
+        stopVisualizer();
 
-        // Create new audio element
-        currentAudio = new Audio();
-        currentTrack = trackId;
-        currentCategory = category;
+        // Use the audio manager to play the track
+        const success = await window.audioManager.playAudio(category, trackId);
 
-        // Set audio source (using placeholder URLs for demo)
-        const audioUrl = getAudioUrl(trackId, category);
-        currentAudio.src = audioUrl;
+        if (success) {
+          // Update UI state
+          currentTrack = trackId;
+          currentCategory = category;
+          isPlaying = true;
 
-        // Set up event listeners
-        currentAudio.addEventListener("loadeddata", () => {
-          console.log("🎵 Audio loaded:", trackId);
+          updatePlayPauseButton();
+          updateTrackItemStates();
           updateCurrentTrackDisplay();
-        });
-
-        currentAudio.addEventListener("error", (e) => {
-          console.error("🎵 Audio error:", e);
-          // Use fallback audio generation for demo
+          startProgressUpdate();
+          startVisualizer();
+          saveMusicPreferences();
+        } else {
+          console.log("🎵 Falling back to generated audio");
+          // Fallback to generated audio
           generateFallbackAudio(trackId, category);
-        });
-
-        currentAudio.addEventListener("ended", nextTrack);
-        currentAudio.addEventListener("timeupdate", updateProgress);
-
-        // Play the audio
-        currentAudio
-          .play()
-          .then(() => {
-            isPlaying = true;
-            updatePlayPauseButton();
-            updateTrackItemStates();
-            startProgressUpdate();
-            saveMusicPreferences();
-          })
-          .catch((error) => {
-            console.error("🎵 Play error:", error);
-            // Use fallback audio generation
-            generateFallbackAudio(trackId, category);
-          });
+        }
       }
 
-      // Get audio URL (placeholder implementation)
-      function getAudioUrl(trackId, category) {
-        // For demo purposes, we'll generate audio programmatically
-        // In a real app, you'd use actual audio files
-        return `data:audio/wav;base64,${generateAudioData(trackId, category)}`;
-      }
+      // Audio URL function removed - now handled by AudioManager
 
       // Generate fallback audio data (demo implementation)
       function generateFallbackAudio(trackId, category) {
         console.log("🎵 Generating fallback audio for:", trackId);
 
-        // Create a simple tone based on track type
-        const audioContext = new (window.AudioContext ||
-          window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+        // Stop any existing audio context
+        if (audioContext) {
+          audioContext.close();
+        }
 
-        // Set frequency based on track type
-        const frequencies = {
-          rain: 200,
-          forest: 300,
-          ocean: 150,
-          thunder: 80,
-          birds: 800,
-          wind: 100,
-          space: 50,
-          city: 400,
-          cafe: 250,
-          library: 180,
-          fireplace: 120,
-          train: 200,
-          binaural: 440,
-          classical: 523,
-          lofi: 330,
-          piano: 440,
-          "white-noise": 1000,
-          "brown-noise": 500,
-          meditation: 220,
-          spa: 160,
-          zen: 110,
-          chimes: 660,
-          "singing-bowls": 220,
-          flute: 440,
-        };
+        // Create new audio context
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-        oscillator.frequency.setValueAtTime(
-          frequencies[trackId] || 440,
-          audioContext.currentTime
-        );
-        oscillator.type = "sine";
+        // Create multiple oscillators for more realistic sound
+        const oscillators = [];
+        const gainNodes = [];
 
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        // Create different sound patterns based on track type
+        const soundConfig = getSoundConfig(trackId, category);
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        // Create oscillators for each frequency
+        soundConfig.frequencies.forEach((freq, index) => {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
 
-        oscillator.start();
+          oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+          oscillator.type = soundConfig.waveType;
+
+          // Add some randomness and modulation
+          if (soundConfig.modulation) {
+            const lfo = audioContext.createOscillator();
+            const lfoGain = audioContext.createGain();
+
+            lfo.frequency.setValueAtTime(
+              soundConfig.modulation.rate,
+              audioContext.currentTime
+            );
+            lfoGain.gain.setValueAtTime(
+              soundConfig.modulation.depth,
+              audioContext.currentTime
+            );
+
+            lfo.connect(lfoGain);
+            lfoGain.connect(oscillator.frequency);
+            lfo.start();
+          }
+
+          gainNode.gain.setValueAtTime(
+            soundConfig.volumes[index] || 0.1,
+            audioContext.currentTime
+          );
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillators.push(oscillator);
+          gainNodes.push(gainNode);
+        });
+
+        // Start all oscillators
+        oscillators.forEach((osc) => osc.start());
 
         // Store reference for stopping
         currentAudio = {
-          pause: () => oscillator.stop(),
-          play: () => oscillator.start(),
+          pause: () => {
+            oscillators.forEach((osc) => osc.stop());
+            if (audioContext) audioContext.close();
+          },
+          play: () => {
+            // Restart the audio
+            generateFallbackAudio(trackId, category);
+          },
           currentTime: 0,
           duration: 60,
           volume: 0.5,
@@ -3099,6 +3123,172 @@
         updateTrackItemStates();
         startProgressUpdate();
         startVisualizer();
+      }
+
+      // Get sound configuration for different track types
+      function getSoundConfig(trackId, category) {
+        const configs = {
+          // Nature sounds
+          rain: {
+            frequencies: [200, 300, 150, 250],
+            volumes: [0.3, 0.2, 0.4, 0.1],
+            waveType: "sawtooth",
+            modulation: { rate: 0.5, depth: 50 },
+          },
+          forest: {
+            frequencies: [400, 600, 800, 1000],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: "sine",
+            modulation: { rate: 0.3, depth: 100 },
+          },
+          ocean: {
+            frequencies: [100, 150, 200, 120],
+            volumes: [0.4, 0.3, 0.2, 0.3],
+            waveType: "triangle",
+            modulation: { rate: 0.2, depth: 80 },
+          },
+          thunder: {
+            frequencies: [60, 80, 100, 120],
+            volumes: [0.5, 0.3, 0.2, 0.1],
+            waveType: "square",
+            modulation: { rate: 0.1, depth: 200 },
+          },
+          birds: {
+            frequencies: [800, 1200, 1600, 2000],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: "sine",
+            modulation: { rate: 2, depth: 200 },
+          },
+          wind: {
+            frequencies: [80, 120, 160, 200],
+            volumes: [0.3, 0.4, 0.2, 0.1],
+            waveType: "sawtooth",
+            modulation: { rate: 0.4, depth: 150 },
+          },
+
+          // Ambient sounds
+          space: {
+            frequencies: [50, 100, 150, 200],
+            volumes: [0.4, 0.3, 0.2, 0.1],
+            waveType: "sine",
+            modulation: { rate: 0.1, depth: 100 },
+          },
+          city: {
+            frequencies: [200, 400, 600, 800],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: "square",
+            modulation: { rate: 0.8, depth: 50 },
+          },
+          cafe: {
+            frequencies: [300, 500, 700, 900],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: "sine",
+            modulation: { rate: 0.6, depth: 80 },
+          },
+          library: {
+            frequencies: [150, 250, 350, 450],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: "triangle",
+            modulation: { rate: 0.2, depth: 30 },
+          },
+          fireplace: {
+            frequencies: [100, 150, 200, 250],
+            volumes: [0.3, 0.4, 0.2, 0.1],
+            waveType: "sawtooth",
+            modulation: { rate: 0.3, depth: 100 },
+          },
+          train: {
+            frequencies: [120, 180, 240, 300],
+            volumes: [0.4, 0.3, 0.2, 0.1],
+            waveType: "square",
+            modulation: { rate: 0.5, depth: 60 },
+          },
+
+          // Focus sounds
+          binaural: {
+            frequencies: [440, 444, 448, 452],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: "sine",
+            modulation: { rate: 0.1, depth: 10 },
+          },
+          classical: {
+            frequencies: [261, 329, 392, 523],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: "sine",
+            modulation: { rate: 0.05, depth: 20 },
+          },
+          lofi: {
+            frequencies: [220, 330, 440, 550],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: "triangle",
+            modulation: { rate: 0.3, depth: 40 },
+          },
+          piano: {
+            frequencies: [261, 329, 392, 523],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: "sine",
+            modulation: { rate: 0.1, depth: 30 },
+          },
+          "white-noise": {
+            frequencies: [1000, 2000, 3000, 4000],
+            volumes: [0.2, 0.2, 0.2, 0.2],
+            waveType: "sawtooth",
+            modulation: { rate: 10, depth: 500 },
+          },
+          "brown-noise": {
+            frequencies: [500, 1000, 1500, 2000],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: "sawtooth",
+            modulation: { rate: 5, depth: 300 },
+          },
+
+          // Relaxation sounds
+          meditation: {
+            frequencies: [220, 330, 440, 550],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: "sine",
+            modulation: { rate: 0.05, depth: 20 },
+          },
+          spa: {
+            frequencies: [200, 300, 400, 500],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: "triangle",
+            modulation: { rate: 0.1, depth: 30 },
+          },
+          zen: {
+            frequencies: [110, 220, 330, 440],
+            volumes: [0.3, 0.3, 0.2, 0.1],
+            waveType: "sine",
+            modulation: { rate: 0.02, depth: 10 },
+          },
+          chimes: {
+            frequencies: [523, 659, 784, 1047],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: "sine",
+            modulation: { rate: 0.1, depth: 50 },
+          },
+          "singing-bowls": {
+            frequencies: [220, 330, 440, 550],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: "sine",
+            modulation: { rate: 0.05, depth: 40 },
+          },
+          flute: {
+            frequencies: [440, 523, 659, 784],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: "sine",
+            modulation: { rate: 0.2, depth: 30 },
+          },
+        };
+
+        return (
+          configs[trackId] || {
+            frequencies: [440, 523, 659, 784],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: "sine",
+            modulation: { rate: 0.1, depth: 20 },
+          }
+        );
       }
 
       // Initialize Audio Visualizer
@@ -3287,18 +3477,22 @@
         return "UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT";
       }
 
-      // Toggle play/pause
+      // Toggle play/pause using audio manager
       function togglePlayPause() {
-        if (!currentAudio) return;
+        if (!window.audioManager) return;
 
-        if (isPlaying) {
-          currentAudio.pause();
+        if (window.audioManager.isAudioPlaying()) {
+          // Pause the audio
+          window.audioManager.pauseAudio();
           isPlaying = false;
           stopVisualizer();
+          console.log("🎵 Audio paused");
         } else {
-          currentAudio.play();
+          // Resume the audio
+          window.audioManager.resumeAudio();
           isPlaying = true;
           startVisualizer();
+          console.log("🎵 Audio playing");
         }
 
         updatePlayPauseButton();
@@ -3308,30 +3502,37 @@
       function updatePlayPauseButton() {
         const btn = document.getElementById("playPauseBtn");
         if (btn) {
-          btn.textContent = isPlaying ? "⏸️" : "▶️";
+          // Check audio manager state if available
+          const audioPlaying = window.audioManager
+            ? window.audioManager.isAudioPlaying()
+            : isPlaying;
+          btn.textContent = audioPlaying ? "⏸️" : "▶️";
         }
       }
 
       // Update progress bar
       function updateProgress() {
-        if (!currentAudio) return;
+        // Get current audio from audio manager or fallback
+        const audio = window.audioManager
+          ? window.audioManager.currentAudio
+          : currentAudio;
+        if (!audio) return;
 
         const progressFill = document.getElementById("progressFill");
         const currentTimeEl = document.getElementById("currentTime");
         const totalTimeEl = document.getElementById("totalTime");
 
-        if (progressFill && currentAudio.duration) {
-          const progress =
-            (currentAudio.currentTime / currentAudio.duration) * 100;
+        if (progressFill && audio.duration) {
+          const progress = (audio.currentTime / audio.duration) * 100;
           progressFill.style.width = progress + "%";
         }
 
         if (currentTimeEl) {
-          currentTimeEl.textContent = formatTime(currentAudio.currentTime || 0);
+          currentTimeEl.textContent = formatTime(audio.currentTime || 0);
         }
 
         if (totalTimeEl) {
-          totalTimeEl.textContent = formatTime(currentAudio.duration || 0);
+          totalTimeEl.textContent = formatTime(audio.duration || 0);
         }
       }
 
@@ -3350,18 +3551,25 @@
           .padStart(2, "0")}`;
       }
 
-      // Set volume
+      // Set volume using audio manager
       function setVolume(volume) {
         const volumeValue = document.getElementById("volumeValue");
         if (volumeValue) {
           volumeValue.textContent = volume + "%";
         }
 
+        // Use audio manager to set volume
+        if (window.audioManager) {
+          window.audioManager.setVolume(volume / 100);
+        }
+
+        // Also set for fallback audio
         if (currentAudio) {
           currentAudio.volume = volume / 100;
         }
 
         localStorage.setItem("musicVolume", volume);
+        console.log("🎵 Volume set to:", volume + "%");
       }
 
       // Switch category
@@ -3526,6 +3734,35 @@
         saveMusicPreferences();
       }
 
+      // Stop all audio using audio manager
+      function stopAllAudio() {
+        console.log("🎵 Stopping all audio...");
+
+        if (window.audioManager) {
+          window.audioManager.stopAudio();
+        }
+
+        if (audioContext) {
+          audioContext.close();
+          audioContext = null;
+        }
+
+        isPlaying = false;
+        currentTrack = null;
+        currentCategory = null;
+
+        updatePlayPauseButton();
+        updateTrackItemStates();
+        stopVisualizer();
+
+        if (progressInterval) {
+          clearInterval(progressInterval);
+          progressInterval = null;
+        }
+
+        console.log("🎵 All audio stopped");
+      }
+
       // Close music modal
       function closeMusicModal() {
         const modal = document.getElementById("musicModal");
@@ -3533,18 +3770,8 @@
           document.body.removeChild(modal);
         }
 
-        // Stop audio
-        if (currentAudio) {
-          currentAudio.pause();
-        }
-
-        // Clear progress interval
-        if (progressInterval) {
-          clearInterval(progressInterval);
-        }
-
-        // Stop visualizer
-        stopVisualizer();
+        // Stop all audio
+        stopAllAudio();
       }
 
       // Test functions - call from browser console
