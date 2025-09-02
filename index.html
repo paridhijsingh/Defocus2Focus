@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Defocus2Focus - Where Procrastination Meets Play</title>
@@ -950,16 +950,16 @@
         const [hasCompletedOnboarding, setHasCompletedOnboarding] =
           useState(false);
 
-                 // App state
-         const [tasks, setTasks] = useState([]);
-         const [energyPoints, setEnergyPoints] = useState(0);
-         const [focusSessions, setFocusSessions] = useState(0);
-         const [currentStreak, setCurrentStreak] = useState(0);
-         const [achievements, setAchievements] = useState([]);
-         
-         // Modal states
-         const [showPomodoro, setShowPomodoro] = useState(false);
-         const [showDefocus, setShowDefocus] = useState(false);
+        // App state
+        const [tasks, setTasks] = useState([]);
+        const [energyPoints, setEnergyPoints] = useState(0);
+        const [focusSessions, setFocusSessions] = useState(0);
+        const [currentStreak, setCurrentStreak] = useState(0);
+        const [achievements, setAchievements] = useState([]);
+
+        // Modal states
+        const [showPomodoro, setShowPomodoro] = useState(false);
+        const [showDefocus, setShowDefocus] = useState(false);
 
         useEffect(() => {
           // Check if user has completed onboarding before
@@ -1139,7 +1139,8 @@
           return React.createElement(
             "div",
             {
-              className: "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
+              className:
+                "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
             },
             [
               // Header
@@ -1172,7 +1173,8 @@
                             {
                               key: "back-btn",
                               onClick: () => navigateTo("dashboard"),
-                              className: "mr-4 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
+                              className:
+                                "mr-4 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
                             },
                             "←"
                           ),
@@ -1192,7 +1194,9 @@
                           key: "stats",
                           className: "text-sm text-gray-600",
                         },
-                        `${tasks.filter(t => t.completed).length}/${tasks.length} completed`
+                        `${tasks.filter((t) => t.completed).length}/${
+                          tasks.length
+                        } completed`
                       ),
                     ]
                   )
@@ -1231,23 +1235,22 @@
                           className: "flex gap-4",
                         },
                         [
-                          React.createElement(
-                            "input",
-                            {
-                              key: "task-input",
-                              type: "text",
-                              value: newTask,
-                              onChange: (e) => setNewTask(e.target.value),
-                              placeholder: "What do you need to focus on?",
-                              className: "flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
-                            }
-                          ),
+                          React.createElement("input", {
+                            key: "task-input",
+                            type: "text",
+                            value: newTask,
+                            onChange: (e) => setNewTask(e.target.value),
+                            placeholder: "What do you need to focus on?",
+                            className:
+                              "flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                          }),
                           React.createElement(
                             "button",
                             {
                               key: "add-btn",
                               type: "submit",
-                              className: "px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200",
+                              className:
+                                "px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200",
                             },
                             "Add Task"
                           ),
@@ -1272,72 +1275,86 @@
                         },
                         "Your Tasks"
                       ),
-                      tasks.length === 0 ? React.createElement(
-                        "div",
-                        {
-                          key: "empty-state",
-                          className: "text-center py-8 text-gray-500",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            { key: "empty-icon", className: "text-4xl mb-2" },
-                            "📝"
-                          ),
-                          React.createElement(
-                            "p",
-                            { key: "empty-text" },
-                            "No tasks yet. Add your first task above!"
-                          ),
-                        ]
-                      ) : React.createElement(
-                        "div",
-                        {
-                          key: "tasks",
-                          className: "space-y-3",
-                        },
-                        tasks.map((task) =>
-                          React.createElement(
+                      tasks.length === 0
+                        ? React.createElement(
                             "div",
                             {
-                              key: task.id,
-                              className: `flex items-center p-4 rounded-lg border ${
-                                task.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-                              }`,
+                              key: "empty-state",
+                              className: "text-center py-8 text-gray-500",
                             },
                             [
                               React.createElement(
-                                "button",
+                                "div",
                                 {
-                                  key: "toggle",
-                                  onClick: () => toggleTask(task.id),
-                                  className: `w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center ${
-                                    task.completed ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'
-                                  }`,
+                                  key: "empty-icon",
+                                  className: "text-4xl mb-2",
                                 },
-                                task.completed ? "✓" : ""
+                                "📝"
                               ),
                               React.createElement(
-                                "span",
-                                {
-                                  key: "text",
-                                  className: `flex-1 ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}`,
-                                },
-                                task.text
-                              ),
-                              React.createElement(
-                                "button",
-                                {
-                                  key: "delete",
-                                  onClick: () => deleteTask(task.id),
-                                  className: "p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200",
-                                },
-                                "🗑️"
+                                "p",
+                                { key: "empty-text" },
+                                "No tasks yet. Add your first task above!"
                               ),
                             ]
                           )
-                        )
-                      ),
+                        : React.createElement(
+                            "div",
+                            {
+                              key: "tasks",
+                              className: "space-y-3",
+                            },
+                            tasks.map((task) =>
+                              React.createElement(
+                                "div",
+                                {
+                                  key: task.id,
+                                  className: `flex items-center p-4 rounded-lg border ${
+                                    task.completed
+                                      ? "bg-green-50 border-green-200"
+                                      : "bg-gray-50 border-gray-200"
+                                  }`,
+                                },
+                                [
+                                  React.createElement(
+                                    "button",
+                                    {
+                                      key: "toggle",
+                                      onClick: () => toggleTask(task.id),
+                                      className: `w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center ${
+                                        task.completed
+                                          ? "bg-green-500 border-green-500 text-white"
+                                          : "border-gray-300"
+                                      }`,
+                                    },
+                                    task.completed ? "✓" : ""
+                                  ),
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      key: "text",
+                                      className: `flex-1 ${
+                                        task.completed
+                                          ? "line-through text-gray-500"
+                                          : "text-gray-900"
+                                      }`,
+                                    },
+                                    task.text
+                                  ),
+                                  React.createElement(
+                                    "button",
+                                    {
+                                      key: "delete",
+                                      onClick: () => deleteTask(task.id),
+                                      className:
+                                        "p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200",
+                                    },
+                                    "🗑️"
+                                  ),
+                                ]
+                              )
+                            )
+                          ),
                     ]
                   ),
                 ]
@@ -1848,57 +1865,57 @@
                               className: "space-y-3",
                             },
                             [
-                                                             React.createElement(
-                                 "button",
-                                 {
-                                   key: "focus-btn",
-                                   onClick: () => setShowPomodoro(true),
-                                   className:
-                                     "w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                                 },
-                                 [
-                                   React.createElement(
-                                     "span",
-                                     { key: "icon", className: "mr-2" },
-                                     "🎯"
-                                   ),
-                                   "Start Focus Session",
-                                 ]
-                               ),
-                                                             React.createElement(
-                                 "button",
-                                 {
-                                   key: "defocus-btn",
-                                   onClick: () => setShowDefocus(true),
-                                   className:
-                                     "w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                                 },
-                                 [
-                                   React.createElement(
-                                     "span",
-                                     { key: "icon", className: "mr-2" },
-                                     "🌿"
-                                   ),
-                                   "Take Defocus Break",
-                                 ]
-                               ),
-                                                             React.createElement(
-                                 "button",
-                                 {
-                                   key: "tasks-btn",
-                                   onClick: () => navigateTo("tasks"),
-                                   className:
-                                     "w-full bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                                 },
-                                 [
-                                   React.createElement(
-                                     "span",
-                                     { key: "icon", className: "mr-2" },
-                                     "📝"
-                                   ),
-                                   "Manage Tasks",
-                                 ]
-                               ),
+                              React.createElement(
+                                "button",
+                                {
+                                  key: "focus-btn",
+                                  onClick: () => setShowPomodoro(true),
+                                  className:
+                                    "w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
+                                },
+                                [
+                                  React.createElement(
+                                    "span",
+                                    { key: "icon", className: "mr-2" },
+                                    "🎯"
+                                  ),
+                                  "Start Focus Session",
+                                ]
+                              ),
+                              React.createElement(
+                                "button",
+                                {
+                                  key: "defocus-btn",
+                                  onClick: () => setShowDefocus(true),
+                                  className:
+                                    "w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
+                                },
+                                [
+                                  React.createElement(
+                                    "span",
+                                    { key: "icon", className: "mr-2" },
+                                    "🌿"
+                                  ),
+                                  "Take Defocus Break",
+                                ]
+                              ),
+                              React.createElement(
+                                "button",
+                                {
+                                  key: "tasks-btn",
+                                  onClick: () => navigateTo("tasks"),
+                                  className:
+                                    "w-full bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
+                                },
+                                [
+                                  React.createElement(
+                                    "span",
+                                    { key: "icon", className: "mr-2" },
+                                    "📝"
+                                  ),
+                                  "Manage Tasks",
+                                ]
+                              ),
                             ]
                           ),
                         ]
@@ -1945,15 +1962,15 @@
                                     },
                                     "Focus Sessions"
                                   ),
-                                                                     React.createElement(
-                                     "span",
-                                     {
-                                       key: "value1",
-                                       className:
-                                         "text-sm font-semibold text-blue-600",
-                                     },
-                                     focusSessions
-                                   ),
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      key: "value1",
+                                      className:
+                                        "text-sm font-semibold text-blue-600",
+                                    },
+                                    focusSessions
+                                  ),
                                 ]
                               ),
                               React.createElement(
@@ -1972,15 +1989,15 @@
                                     },
                                     "Energy Points"
                                   ),
-                                                                     React.createElement(
-                                     "span",
-                                     {
-                                       key: "value2",
-                                       className:
-                                         "text-sm font-semibold text-green-600",
-                                     },
-                                     energyPoints
-                                   ),
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      key: "value2",
+                                      className:
+                                        "text-sm font-semibold text-green-600",
+                                    },
+                                    energyPoints
+                                  ),
                                 ]
                               ),
                               React.createElement(
@@ -1999,15 +2016,15 @@
                                     },
                                     "Current Streak"
                                   ),
-                                                                     React.createElement(
-                                     "span",
-                                     {
-                                       key: "value3",
-                                       className:
-                                         "text-sm font-semibold text-orange-600",
-                                     },
-                                     `${currentStreak} days`
-                                   ),
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      key: "value3",
+                                      className:
+                                        "text-sm font-semibold text-orange-600",
+                                    },
+                                    `${currentStreak} days`
+                                  ),
                                 ]
                               ),
                             ]
@@ -2071,57 +2088,69 @@
             ]
           );
 
-                 const renderCurrentScreen = () => {
-           switch (currentScreen) {
-             case "tasks":
-               return React.createElement(TaskManagement);
-             case "dashboard":
-             default:
-               return renderDashboard();
-           }
-         };
+        const renderCurrentScreen = () => {
+          switch (currentScreen) {
+            case "tasks":
+              return React.createElement(TaskManagement);
+            case "dashboard":
+            default:
+              return renderDashboard();
+          }
+        };
 
-         return React.createElement("div", null, [
-           showOnboarding &&
-             React.createElement(OnboardingTutorial, {
-               key: "onboarding",
-               onComplete: handleOnboardingComplete,
-               onSkip: handleOnboardingSkip,
-             }),
-           hasCompletedOnboarding && renderCurrentScreen(),
-           showPomodoro &&
-             React.createElement(PomodoroTimer, {
-               key: "pomodoro",
-               onComplete: (sessions) => {
-                 // Award points for completed sessions
-                 const newSessions = focusSessions + sessions;
-                 const newEnergy = energyPoints + (sessions * 25);
-                 const newStreak = currentStreak + 1;
-                 
-                 setFocusSessions(newSessions);
-                 setEnergyPoints(newEnergy);
-                 setCurrentStreak(newStreak);
-                 
-                 localStorage.setItem("defocus2focus_sessions", newSessions.toString());
-                 localStorage.setItem("defocus2focus_energy", newEnergy.toString());
-                 localStorage.setItem("defocus2focus_streak", newStreak.toString());
-                 
-                 checkAchievements(newSessions, newStreak);
-               },
-               onSkip: () => setShowPomodoro(false),
-             }),
-           showDefocus &&
-             React.createElement(DefocusMode, {
-               key: "defocus",
-               onComplete: () => {
-                 // Award points for taking breaks
-                 const newEnergy = energyPoints + 5;
-                 setEnergyPoints(newEnergy);
-                 localStorage.setItem("defocus2focus_energy", newEnergy.toString());
-               },
-               onSkip: () => setShowDefocus(false),
-             }),
-         ]);
+        return React.createElement("div", null, [
+          showOnboarding &&
+            React.createElement(OnboardingTutorial, {
+              key: "onboarding",
+              onComplete: handleOnboardingComplete,
+              onSkip: handleOnboardingSkip,
+            }),
+          hasCompletedOnboarding && renderCurrentScreen(),
+          showPomodoro &&
+            React.createElement(PomodoroTimer, {
+              key: "pomodoro",
+              onComplete: (sessions) => {
+                // Award points for completed sessions
+                const newSessions = focusSessions + sessions;
+                const newEnergy = energyPoints + sessions * 25;
+                const newStreak = currentStreak + 1;
+
+                setFocusSessions(newSessions);
+                setEnergyPoints(newEnergy);
+                setCurrentStreak(newStreak);
+
+                localStorage.setItem(
+                  "defocus2focus_sessions",
+                  newSessions.toString()
+                );
+                localStorage.setItem(
+                  "defocus2focus_energy",
+                  newEnergy.toString()
+                );
+                localStorage.setItem(
+                  "defocus2focus_streak",
+                  newStreak.toString()
+                );
+
+                checkAchievements(newSessions, newStreak);
+              },
+              onSkip: () => setShowPomodoro(false),
+            }),
+          showDefocus &&
+            React.createElement(DefocusMode, {
+              key: "defocus",
+              onComplete: () => {
+                // Award points for taking breaks
+                const newEnergy = energyPoints + 5;
+                setEnergyPoints(newEnergy);
+                localStorage.setItem(
+                  "defocus2focus_energy",
+                  newEnergy.toString()
+                );
+              },
+              onSkip: () => setShowDefocus(false),
+            }),
+        ]);
       };
 
       // Render the app
@@ -2130,5 +2159,5 @@
         document.getElementById("root")
       );
     </script>
-</body>
+  </body>
 </html>
