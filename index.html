@@ -5,132 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Defocus2Focus - Where Procrastination Meets Play</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: white;
+            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
         }
-        
         .container {
             text-align: center;
-            max-width: 600px;
             padding: 2rem;
+            max-width: 600px;
         }
-        
         h1 {
             font-size: 3rem;
             margin-bottom: 1rem;
-            animation: bounce 2s infinite;
         }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
-        }
-        
-        .tagline {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-        
-        .status {
+        .success {
             background: rgba(255, 255, 255, 0.2);
-            padding: 1.5rem;
+            padding: 2rem;
             border-radius: 15px;
             border: 2px solid white;
-            margin-bottom: 2rem;
+            margin: 2rem 0;
         }
-        
-        .status h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #22c55e;
-        }
-        
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
             margin-top: 2rem;
         }
-        
         .feature {
             background: rgba(255, 255, 255, 0.1);
             padding: 1rem;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .feature h3 {
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .feature p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        
-        .coming-soon {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎯 Defocus2Focus</h1>
-        <p class="tagline">Where Procrastination Meets Play</p>
+        <p>Where Procrastination Meets Play</p>
         
-        <div class="status">
-            <h2>✅ Site is Live!</h2>
-            <p>Your Defocus2Focus app is successfully deployed on Netlify!</p>
+        <div class="success">
+            <h2>✅ SUCCESS!</h2>
+            <p>Your site is now working on Netlify!</p>
+            <p>This is a simple test to confirm deployment is working.</p>
         </div>
         
         <div class="features">
             <div class="feature">
                 <h3>🎯 Focus Mode</h3>
-                <p>Pomodoro timers and task management</p>
+                <p>Pomodoro timers</p>
             </div>
             <div class="feature">
                 <h3>🌿 Defocus Mode</h3>
-                <p>Mindful breaks and relaxation</p>
+                <p>Mindful breaks</p>
             </div>
             <div class="feature">
                 <h3>🔄 Smart Switching</h3>
-                <p>Seamless transitions between modes</p>
+                <p>Seamless transitions</p>
             </div>
             <div class="feature">
                 <h3>🏆 Rewards</h3>
-                <p>Achievement badges and streaks</p>
+                <p>Achievement badges</p>
             </div>
         </div>
         
-        <div class="coming-soon">
-            <h3>🚀 Full App Coming Soon!</h3>
-            <p>The complete onboarding tutorial and interactive features are being deployed. Check back in a few minutes!</p>
-        </div>
+        <p style="margin-top: 2rem; opacity: 0.8;">
+            Full onboarding tutorial coming soon!
+        </p>
     </div>
 </body>
 </html>
