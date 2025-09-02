@@ -30,19 +30,19 @@ class AudioManager {
         train: "./assets/audio/ambient/train.mp3",
       },
       focus: {
-        binaural: "./assets/audio/focus/binaural.mp3",
+        binaural: "./assets/audio/focus/Binaural.mp3",
         classical: "./assets/audio/focus/classical.mp3",
         lofi: "./assets/audio/focus/lofi.mp3",
         piano: "./assets/audio/focus/piano.mp3",
-        "white-noise": "./assets/audio/focus/white_noise.mp3",
-        "brown-noise": "./assets/audio/focus/brown_noise.mp3",
+        "white-noise": "./assets/audio/focus/white noise.mp3",
+        "brown-noise": "./assets/audio/focus/brown noise.mp3",
       },
       relax: {
         meditation: "./assets/audio/relax/meditation.mp3",
         spa: "./assets/audio/relax/spa.mp3",
         zen: "./assets/audio/relax/zen.mp3",
         chimes: "./assets/audio/relax/chimes.mp3",
-        "singing-bowls": "./assets/audio/relax/singing_bowls.mp3",
+        "singing-bowls": "./assets/audio/relax/singing bowl.mp3",
         flute: "./assets/audio/relax/flute.mp3",
       },
     };
