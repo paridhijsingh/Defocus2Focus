@@ -1064,6 +1064,14 @@
         background: #059669;
       }
 
+      .stop-btn {
+        background: #ef4444;
+      }
+
+      .stop-btn:hover {
+        background: #dc2626;
+      }
+
       .volume-control {
         display: flex;
         align-items: center;
@@ -2325,6 +2333,7 @@
                 <button class="control-btn" id="prevBtn" onclick="previousTrack()">⏮️</button>
                 <button class="control-btn play-btn" id="playPauseBtn" onclick="togglePlayPause()">▶️</button>
                 <button class="control-btn" id="nextBtn" onclick="nextTrack()">⏭️</button>
+                <button class="control-btn stop-btn" id="stopBtn" onclick="stopAllAudio()">⏹️</button>
                 <div class="volume-control">
                   <span>🔊</span>
                   <input type="range" id="volumeSlider" min="0" max="100" value="50" onchange="setVolume(this.value)">
@@ -2892,11 +2901,11 @@
       let analyser = null;
       let dataArray = null;
 
-      // Audio URLs - Using free audio sources
+      // Audio Sources - Using free audio from freesound.org and other sources
       const audioSources = {
         nature: {
           rain: "https://www.soundjay.com/misc/sounds/rain-01.wav",
-          forest: "https://www.soundjay.com/misc/sounds/forest-01.wav",
+          forest: "https://www.soundjay.com/misc/sounds/forest-01.wav", 
           ocean: "https://www.soundjay.com/misc/sounds/ocean-01.wav",
           thunder: "https://www.soundjay.com/misc/sounds/thunder-01.wav",
           birds: "https://www.soundjay.com/misc/sounds/birds-01.wav",
@@ -2905,7 +2914,7 @@
         ambient: {
           space: "https://www.soundjay.com/misc/sounds/space-01.wav",
           city: "https://www.soundjay.com/misc/sounds/city-01.wav",
-          cafe: "https://www.soundjay.com/misc/sounds/cafe-01.wav",
+          cafe: "https://www.soundjay.com/misc/sounds/cafe-01.wav", 
           library: "https://www.soundjay.com/misc/sounds/library-01.wav",
           fireplace: "https://www.soundjay.com/misc/sounds/fireplace-01.wav",
           train: "https://www.soundjay.com/misc/sounds/train-01.wav",
@@ -2915,18 +2924,15 @@
           classical: "https://www.soundjay.com/misc/sounds/classical-01.wav",
           lofi: "https://www.soundjay.com/misc/sounds/lofi-01.wav",
           piano: "https://www.soundjay.com/misc/sounds/piano-01.wav",
-          "white-noise":
-            "https://www.soundjay.com/misc/sounds/white-noise-01.wav",
-          "brown-noise":
-            "https://www.soundjay.com/misc/sounds/brown-noise-01.wav",
+          "white-noise": "https://www.soundjay.com/misc/sounds/white-noise-01.wav",
+          "brown-noise": "https://www.soundjay.com/misc/sounds/brown-noise-01.wav",
         },
         relax: {
           meditation: "https://www.soundjay.com/misc/sounds/meditation-01.wav",
           spa: "https://www.soundjay.com/misc/sounds/spa-01.wav",
           zen: "https://www.soundjay.com/misc/sounds/zen-01.wav",
           chimes: "https://www.soundjay.com/misc/sounds/chimes-01.wav",
-          "singing-bowls":
-            "https://www.soundjay.com/misc/sounds/singing-bowls-01.wav",
+          "singing-bowls": "https://www.soundjay.com/misc/sounds/singing-bowls-01.wav",
           flute: "https://www.soundjay.com/misc/sounds/flute-01.wav",
         },
       };
@@ -2983,17 +2989,23 @@
         // Stop current audio if playing
         if (currentAudio) {
           currentAudio.pause();
+          currentAudio.currentTime = 0;
           currentAudio = null;
         }
+
+        // Stop any existing visualizer
+        stopVisualizer();
 
         // Create new audio element
         currentAudio = new Audio();
         currentTrack = trackId;
         currentCategory = category;
 
-        // Set audio source (using placeholder URLs for demo)
+        // Set audio source - try real audio first, then fallback
         const audioUrl = getAudioUrl(trackId, category);
         currentAudio.src = audioUrl;
+        currentAudio.loop = true; // Loop the audio
+        currentAudio.volume = 0.5; // Set default volume
 
         // Set up event listeners
         currentAudio.addEventListener("loadeddata", () => {
@@ -3003,34 +3015,46 @@
 
         currentAudio.addEventListener("error", (e) => {
           console.error("🎵 Audio error:", e);
-          // Use fallback audio generation for demo
+          console.log("🎵 Using fallback audio generation for:", trackId);
+          // Use fallback audio generation
           generateFallbackAudio(trackId, category);
         });
 
-        currentAudio.addEventListener("ended", nextTrack);
+        currentAudio.addEventListener("ended", () => {
+          // Since we're looping, this shouldn't happen often
+          console.log("🎵 Track ended, restarting...");
+        });
+
         currentAudio.addEventListener("timeupdate", updateProgress);
 
-        // Play the audio
-        currentAudio
-          .play()
+        // Try to play the audio
+        currentAudio.play()
           .then(() => {
+            console.log("🎵 Successfully playing:", trackId);
             isPlaying = true;
             updatePlayPauseButton();
             updateTrackItemStates();
             startProgressUpdate();
+            startVisualizer();
             saveMusicPreferences();
           })
           .catch((error) => {
             console.error("🎵 Play error:", error);
+            console.log("🎵 Using fallback audio generation for:", trackId);
             // Use fallback audio generation
             generateFallbackAudio(trackId, category);
           });
       }
 
-      // Get audio URL (placeholder implementation)
+      // Get audio URL - try real audio files first
       function getAudioUrl(trackId, category) {
-        // For demo purposes, we'll generate audio programmatically
-        // In a real app, you'd use actual audio files
+        // Try to get real audio URL from audioSources
+        if (audioSources[category] && audioSources[category][trackId]) {
+          return audioSources[category][trackId];
+        }
+        
+        // Fallback to generated audio data
+        console.log("🎵 No real audio found for", trackId, "using generated audio");
         return `data:audio/wav;base64,${generateAudioData(trackId, category)}`;
       }
 
@@ -3038,57 +3062,64 @@
       function generateFallbackAudio(trackId, category) {
         console.log("🎵 Generating fallback audio for:", trackId);
 
-        // Create a simple tone based on track type
-        const audioContext = new (window.AudioContext ||
-          window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+        // Stop any existing audio context
+        if (audioContext) {
+          audioContext.close();
+        }
 
-        // Set frequency based on track type
-        const frequencies = {
-          rain: 200,
-          forest: 300,
-          ocean: 150,
-          thunder: 80,
-          birds: 800,
-          wind: 100,
-          space: 50,
-          city: 400,
-          cafe: 250,
-          library: 180,
-          fireplace: 120,
-          train: 200,
-          binaural: 440,
-          classical: 523,
-          lofi: 330,
-          piano: 440,
-          "white-noise": 1000,
-          "brown-noise": 500,
-          meditation: 220,
-          spa: 160,
-          zen: 110,
-          chimes: 660,
-          "singing-bowls": 220,
-          flute: 440,
-        };
+        // Create new audio context
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create multiple oscillators for more realistic sound
+        const oscillators = [];
+        const gainNodes = [];
+        
+        // Create different sound patterns based on track type
+        const soundConfig = getSoundConfig(trackId, category);
+        
+        // Create oscillators for each frequency
+        soundConfig.frequencies.forEach((freq, index) => {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+          oscillator.type = soundConfig.waveType;
+          
+          // Add some randomness and modulation
+          if (soundConfig.modulation) {
+            const lfo = audioContext.createOscillator();
+            const lfoGain = audioContext.createGain();
+            
+            lfo.frequency.setValueAtTime(soundConfig.modulation.rate, audioContext.currentTime);
+            lfoGain.gain.setValueAtTime(soundConfig.modulation.depth, audioContext.currentTime);
+            
+            lfo.connect(lfoGain);
+            lfoGain.connect(oscillator.frequency);
+            lfo.start();
+          }
+          
+          gainNode.gain.setValueAtTime(soundConfig.volumes[index] || 0.1, audioContext.currentTime);
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillators.push(oscillator);
+          gainNodes.push(gainNode);
+        });
 
-        oscillator.frequency.setValueAtTime(
-          frequencies[trackId] || 440,
-          audioContext.currentTime
-        );
-        oscillator.type = "sine";
-
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.start();
+        // Start all oscillators
+        oscillators.forEach(osc => osc.start());
 
         // Store reference for stopping
         currentAudio = {
-          pause: () => oscillator.stop(),
-          play: () => oscillator.start(),
+          pause: () => {
+            oscillators.forEach(osc => osc.stop());
+            if (audioContext) audioContext.close();
+          },
+          play: () => {
+            // Restart the audio
+            generateFallbackAudio(trackId, category);
+          },
           currentTime: 0,
           duration: 60,
           volume: 0.5,
@@ -3099,6 +3130,170 @@
         updateTrackItemStates();
         startProgressUpdate();
         startVisualizer();
+      }
+
+      // Get sound configuration for different track types
+      function getSoundConfig(trackId, category) {
+        const configs = {
+          // Nature sounds
+          rain: {
+            frequencies: [200, 300, 150, 250],
+            volumes: [0.3, 0.2, 0.4, 0.1],
+            waveType: 'sawtooth',
+            modulation: { rate: 0.5, depth: 50 }
+          },
+          forest: {
+            frequencies: [400, 600, 800, 1000],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: 'sine',
+            modulation: { rate: 0.3, depth: 100 }
+          },
+          ocean: {
+            frequencies: [100, 150, 200, 120],
+            volumes: [0.4, 0.3, 0.2, 0.3],
+            waveType: 'triangle',
+            modulation: { rate: 0.2, depth: 80 }
+          },
+          thunder: {
+            frequencies: [60, 80, 100, 120],
+            volumes: [0.5, 0.3, 0.2, 0.1],
+            waveType: 'square',
+            modulation: { rate: 0.1, depth: 200 }
+          },
+          birds: {
+            frequencies: [800, 1200, 1600, 2000],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: 'sine',
+            modulation: { rate: 2, depth: 200 }
+          },
+          wind: {
+            frequencies: [80, 120, 160, 200],
+            volumes: [0.3, 0.4, 0.2, 0.1],
+            waveType: 'sawtooth',
+            modulation: { rate: 0.4, depth: 150 }
+          },
+          
+          // Ambient sounds
+          space: {
+            frequencies: [50, 100, 150, 200],
+            volumes: [0.4, 0.3, 0.2, 0.1],
+            waveType: 'sine',
+            modulation: { rate: 0.1, depth: 100 }
+          },
+          city: {
+            frequencies: [200, 400, 600, 800],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: 'square',
+            modulation: { rate: 0.8, depth: 50 }
+          },
+          cafe: {
+            frequencies: [300, 500, 700, 900],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: 'sine',
+            modulation: { rate: 0.6, depth: 80 }
+          },
+          library: {
+            frequencies: [150, 250, 350, 450],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: 'triangle',
+            modulation: { rate: 0.2, depth: 30 }
+          },
+          fireplace: {
+            frequencies: [100, 150, 200, 250],
+            volumes: [0.3, 0.4, 0.2, 0.1],
+            waveType: 'sawtooth',
+            modulation: { rate: 0.3, depth: 100 }
+          },
+          train: {
+            frequencies: [120, 180, 240, 300],
+            volumes: [0.4, 0.3, 0.2, 0.1],
+            waveType: 'square',
+            modulation: { rate: 0.5, depth: 60 }
+          },
+          
+          // Focus sounds
+          binaural: {
+            frequencies: [440, 444, 448, 452],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: 'sine',
+            modulation: { rate: 0.1, depth: 10 }
+          },
+          classical: {
+            frequencies: [261, 329, 392, 523],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: 'sine',
+            modulation: { rate: 0.05, depth: 20 }
+          },
+          lofi: {
+            frequencies: [220, 330, 440, 550],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: 'triangle',
+            modulation: { rate: 0.3, depth: 40 }
+          },
+          piano: {
+            frequencies: [261, 329, 392, 523],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: 'sine',
+            modulation: { rate: 0.1, depth: 30 }
+          },
+          'white-noise': {
+            frequencies: [1000, 2000, 3000, 4000],
+            volumes: [0.2, 0.2, 0.2, 0.2],
+            waveType: 'sawtooth',
+            modulation: { rate: 10, depth: 500 }
+          },
+          'brown-noise': {
+            frequencies: [500, 1000, 1500, 2000],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: 'sawtooth',
+            modulation: { rate: 5, depth: 300 }
+          },
+          
+          // Relaxation sounds
+          meditation: {
+            frequencies: [220, 330, 440, 550],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: 'sine',
+            modulation: { rate: 0.05, depth: 20 }
+          },
+          spa: {
+            frequencies: [200, 300, 400, 500],
+            volumes: [0.2, 0.3, 0.2, 0.1],
+            waveType: 'triangle',
+            modulation: { rate: 0.1, depth: 30 }
+          },
+          zen: {
+            frequencies: [110, 220, 330, 440],
+            volumes: [0.3, 0.3, 0.2, 0.1],
+            waveType: 'sine',
+            modulation: { rate: 0.02, depth: 10 }
+          },
+          chimes: {
+            frequencies: [523, 659, 784, 1047],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: 'sine',
+            modulation: { rate: 0.1, depth: 50 }
+          },
+          'singing-bowls': {
+            frequencies: [220, 330, 440, 550],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: 'sine',
+            modulation: { rate: 0.05, depth: 40 }
+          },
+          flute: {
+            frequencies: [440, 523, 659, 784],
+            volumes: [0.3, 0.3, 0.2, 0.2],
+            waveType: 'sine',
+            modulation: { rate: 0.2, depth: 30 }
+          }
+        };
+
+        return configs[trackId] || {
+          frequencies: [440, 523, 659, 784],
+          volumes: [0.3, 0.3, 0.2, 0.2],
+          waveType: 'sine',
+          modulation: { rate: 0.1, depth: 20 }
+        };
       }
 
       // Initialize Audio Visualizer
@@ -3292,13 +3487,23 @@
         if (!currentAudio) return;
 
         if (isPlaying) {
-          currentAudio.pause();
+          // Pause the audio
+          if (currentAudio.pause) {
+            currentAudio.pause();
+          }
           isPlaying = false;
           stopVisualizer();
+          console.log("🎵 Audio paused");
         } else {
-          currentAudio.play();
+          // Play the audio
+          if (currentAudio.play) {
+            currentAudio.play().catch(error => {
+              console.error("🎵 Play error:", error);
+            });
+          }
           isPlaying = true;
           startVisualizer();
+          console.log("🎵 Audio playing");
         }
 
         updatePlayPauseButton();
@@ -3526,6 +3731,38 @@
         saveMusicPreferences();
       }
 
+      // Stop all audio
+      function stopAllAudio() {
+        console.log("🎵 Stopping all audio...");
+        
+        if (currentAudio) {
+          if (currentAudio.pause) {
+            currentAudio.pause();
+          }
+          currentAudio = null;
+        }
+        
+        if (audioContext) {
+          audioContext.close();
+          audioContext = null;
+        }
+        
+        isPlaying = false;
+        currentTrack = null;
+        currentCategory = null;
+        
+        updatePlayPauseButton();
+        updateTrackItemStates();
+        stopVisualizer();
+        
+        if (progressInterval) {
+          clearInterval(progressInterval);
+          progressInterval = null;
+        }
+        
+        console.log("🎵 All audio stopped");
+      }
+
       // Close music modal
       function closeMusicModal() {
         const modal = document.getElementById("musicModal");
@@ -3533,18 +3770,8 @@
           document.body.removeChild(modal);
         }
 
-        // Stop audio
-        if (currentAudio) {
-          currentAudio.pause();
-        }
-
-        // Clear progress interval
-        if (progressInterval) {
-          clearInterval(progressInterval);
-        }
-
-        // Stop visualizer
-        stopVisualizer();
+        // Stop all audio
+        stopAllAudio();
       }
 
       // Test functions - call from browser console
