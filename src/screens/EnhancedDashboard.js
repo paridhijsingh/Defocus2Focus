@@ -134,7 +134,13 @@ const EnhancedDashboard = ({ onNavigate }) => {
         <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 gap-4">
           <button
-            onClick={() => onNavigate('defocus')}
+            onClick={() => {
+              if (isDefocusAvailable()) {
+                onNavigate('defocus');
+              } else {
+                alert(`🔒 Defocus Locked\n\n${getDefocusLockMessage()}`);
+              }
+            }}
             className={`p-4 rounded-lg text-center transition-all ${
               isDefocusAvailable()
                 ? 'bg-green-50 hover:bg-green-100 border-2 border-green-200'
