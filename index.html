@@ -4799,10 +4799,10 @@
         if (modal) {
           // Stop all audio first
           stopAllAudio();
-          
+
           // Remove modal from DOM
           document.body.removeChild(modal);
-          
+
           // Reset music state
           currentAudio = null;
           currentTrack = null;
@@ -4810,18 +4810,18 @@
           isPlaying = false;
           currentPlaylist = [];
           currentPlaylistIndex = 0;
-          
+
           // Clear any intervals
           if (progressInterval) {
             clearInterval(progressInterval);
             progressInterval = null;
           }
-          
+
           if (visualizerInterval) {
             clearInterval(visualizerInterval);
             visualizerInterval = null;
           }
-          
+
           console.log("🎵 Music modal closed and cleaned up");
         }
       }
