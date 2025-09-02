@@ -1,93 +1,160 @@
-# Defocus2Focus - Gamified Productivity App
+# 📚 Documentation Index
 
-## 🎮 **Working Prototype Available!**
+Welcome to the Defocus2Focus documentation! This index provides quick access to all project documentation organized by topic and feature.
 
-### **✅ Current Status:**
+## 🚀 Getting Started
 
-- **HTML Prototype**: Fully functional and accessible
-- **React Native App**: In development (server issues being resolved)
-- **Features**: Interactive splash screen, navigation menu, and feature previews
+- **[Main README](../README.md)** - Project overview, features, and quick start guide
+- **[Installation Guide](#installation)** - Detailed setup instructions
+- **[Development Setup](#development)** - Local development environment
 
-### **🌐 How to Access the Working App:**
+## 🏗️ Architecture & Structure
 
-#### **Option 1: Web Browser (Recommended)**
+- **[Project Structure](../README.md#-project-structure)** - Folder organization and file structure
+- **[Component Architecture](../src/components/README.md)** - Reusable UI components
+- **[Screen Architecture](../src/screens/README.md)** - App screens and features
+- **[Web App Architecture](../public/README.md)** - Web implementation details
 
-1. **URL**: http://localhost:5000/index.html
-2. **Status**: ✅ **Currently Running**
-3. **Features**:
-   - Beautiful splash screen with animations
-   - Interactive navigation menu
-   - Feature previews with descriptions
-   - Mobile-responsive design
+## 🎯 Core Features
 
-#### **Option 2: Direct File Access**
+### 🎯 Focus & Productivity
+- **[Focus Sessions](../src/screens/README.md#-focus-sessions)** - Pomodoro timer and session management
+- **[Session Cycle](../src/screens/README.md#-defocus-activities)** - Defocus → Focus → Unlock workflow
+- **[Progress Tracking](../src/screens/README.md#-statistics--analytics)** - Visual progress and statistics
 
-1. **File**: `index.html` in the project root
-2. **Open**: Double-click the file or drag to browser
-3. **Status**: ✅ **Works offline**
+### ☕ Break Management
+- **[Break Types](../src/screens/README.md#-break-management)** - Micro, Short, Long breaks
+- **[Break Activities](../src/screens/README.md#-break-management)** - Guided activities and exercises
+- **[Break Statistics](../src/screens/README.md#-break-management)** - Completion rates and streaks
 
-### **🎯 What You'll See:**
+### 🎵 Music & Relaxation
+- **[Audio System](../assets/audio/README.md)** - Complete audio implementation guide
+- **[Audio Categories](../assets/audio/README.md#-audio-categories)** - Nature, Ambient, Focus, Relax
+- **[Audio Controls](../assets/audio/README.md#-audio-controls)** - Playback and volume management
+- **[Adding Audio](../assets/audio/README.md#-adding-new-audio-files)** - How to add new audio files
 
-#### **Splash Screen:**
+### 📝 Task Management
+- **[Task System](../src/screens/README.md#-task-management)** - To-do lists and organization
+- **[Task Components](../src/components/README.md#-task-management-components)** - Task-related UI components
+- **[Task Features](../src/screens/README.md#-task-management)** - Categories, priorities, due dates
 
-- **Animated "Defocus2Focus"** title with pulsing effect
-- **"Where Procrastination Meets Play"** tagline
-- **"Start Your Journey"** button
+### 🏆 Rewards & Gamification
+- **[Rewards System](../src/screens/README.md#-rewards--achievements)** - Energy points and badges
+- **[Energy Points](../src/screens/README.md#-rewards--achievements)** - Point earning and tracking
+- **[Badge System](../src/screens/README.md#-rewards--achievements)** - Unlockable achievements
+- **[Progress Tracking](../src/screens/README.md#-rewards--achievements)** - Daily goals and streaks
 
-#### **Main Menu:**
+## 🛠️ Development
 
-- **6 Interactive Features:**
-  - 🌿 **Defocus Time** - Mindful breaks and mini-games
-  - ✅ **My Tasks** - Task management with rewards
-  - ⏰ **Focus Session** - Pomodoro timer
-  - 🎵 **Music & Relax** - Background sounds
-  - ☕ **Break Time** - Activity recommendations
-  - 🏆 **Rewards** - Progress tracking
+### Components
+- **[Component Library](../src/components/README.md)** - Reusable UI components
+- **[Component Development](../src/components/README.md#-development)** - Adding new components
+- **[Component Testing](../src/components/README.md#-testing-components)** - Testing strategies
 
-#### **Status Bar:**
+### Screens
+- **[Screen Development](../src/screens/README.md#-technical-implementation)** - Screen architecture
+- **[Screen Testing](../src/screens/README.md#-testing)** - Testing approaches
+- **[Navigation](../src/screens/README.md#-core-feature-screens)** - Screen navigation
 
-- **Level, Coins, and Streak** indicators
-- **Real-time stats** display
+### Web Development
+- **[Web App](../public/README.md)** - Web implementation
+- **[Web Features](../public/README.md#-core-features)** - Web-specific features
+- **[Web Deployment](../public/README.md#-deployment)** - Deployment strategies
 
-### **📱 Mobile Experience:**
+## 🔧 Technical Guides
 
-- **Fully responsive** design
-- **Touch-friendly** interface
-- **Smooth animations** and transitions
-- **Works on iPhone, Android, and desktop**
+### Audio System
+- **[Audio Manager](../assets/audio/README.md#-technical-implementation)** - Technical implementation
+- **[Audio Files](../assets/audio/README.md#-adding-new-audio-files)** - Adding new audio files
+- **[Audio Troubleshooting](../assets/audio/README.md#-troubleshooting)** - Common issues and solutions
 
-### **🔧 Technical Details:**
+### State Management
+- **[Context API](../src/contexts/)** - React Context implementation
+- **[Local Storage](../public/README.md#-technical-implementation)** - Data persistence
+- **[AsyncStorage](../src/screens/README.md#-technical-implementation)** - Mobile data storage
 
-#### **HTML Version (Current):**
+### Performance
+- **[Optimization](../src/screens/README.md#-performance-optimization)** - Performance best practices
+- **[Memory Management](../src/components/README.md#-development)** - Resource management
+- **[Loading Strategies](../public/README.md#-performance-optimization)** - Efficient loading
 
-- **Pure HTML/CSS/JavaScript**
-- **No dependencies** or server requirements
-- **Cross-platform** compatibility
-- **Fast loading** and smooth performance
+## 🧪 Testing
 
-#### **React Native Version (In Progress):**
+### Testing Strategies
+- **[Component Testing](../src/components/README.md#-testing-components)** - Component testing
+- **[Screen Testing](../src/screens/README.md#-testing)** - Screen testing
+- **[Web Testing](../public/README.md#-testing)** - Web app testing
+- **[Audio Testing](../assets/audio/README.md#-troubleshooting)** - Audio system testing
 
-- **Full mobile app** with native features
-- **Advanced animations** and interactions
-- **Local storage** for data persistence
-- **Push notifications** and haptic feedback
+### Testing Tools
+- **[Unit Tests](../src/components/README.md#-testing-components)** - Individual component tests
+- **[Integration Tests](../src/screens/README.md#-testing)** - Feature integration tests
+- **[E2E Tests](../public/README.md#-testing)** - End-to-end testing
+- **[Performance Tests](../src/screens/README.md#-testing)** - Performance testing
 
-### **🚀 Next Steps:**
+## 🚀 Deployment
 
-1. **Try the HTML prototype** - It's fully functional!
-2. **Explore all features** - Click each menu item
-3. **Provide feedback** - Let us know what you'd like to see
-4. **Wait for React Native** - Full app coming soon
+### Web Deployment
+- **[Netlify Deployment](../public/README.md#-deployment)** - Web app deployment
+- **[Build Process](../public/README.md#-deployment)** - Build and deployment
+- **[Production Setup](../public/README.md#-deployment)** - Production configuration
 
-### **💡 Features Coming Soon:**
+### Mobile Deployment
+- **[iOS Deployment](../README.md#-deployment)** - iOS app deployment
+- **[Android Deployment](../README.md#-deployment)** - Android app deployment
+- **[Expo Deployment](../README.md#-deployment)** - Expo deployment
 
-- **Interactive timers** with gamification
-- **Task management** with rewards system
-- **Music player** with relaxation sounds
-- **Progress tracking** and achievements
-- **Social features** and sharing
-- **Customizable themes** and settings
+## 🔍 Troubleshooting
+
+### Common Issues
+- **[Audio Issues](../assets/audio/README.md#-troubleshooting)** - Audio playback problems
+- **[Web Issues](../public/README.md#-troubleshooting)** - Web app problems
+- **[Component Issues](../src/components/README.md#-development)** - Component problems
+- **[Screen Issues](../src/screens/README.md#-technical-implementation)** - Screen problems
+
+### Performance Issues
+- **[Loading Problems](../public/README.md#-troubleshooting)** - Slow loading
+- **[Memory Issues](../src/screens/README.md#-performance-optimization)** - Memory problems
+- **[Audio Performance](../assets/audio/README.md#-troubleshooting)** - Audio performance
+
+## 📚 Additional Resources
+
+### External Documentation
+- **[React Native Docs](https://reactnative.dev/docs/getting-started)** - React Native documentation
+- **[Expo Docs](https://docs.expo.dev/)** - Expo documentation
+- **[Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)** - Web Audio API
+- **[AsyncStorage](https://react-native-async-storage.github.io/async-storage/)** - AsyncStorage documentation
+
+### Community Resources
+- **[GitHub Issues](https://github.com/yourusername/Defocus2Focus/issues)** - Bug reports and feature requests
+- **[Discussions](https://github.com/yourusername/Defocus2Focus/discussions)** - Community discussions
+- **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute
+
+## 🆘 Getting Help
+
+### Documentation Issues
+- **Missing Information**: Create an issue with the "documentation" label
+- **Incorrect Information**: Create an issue with the "bug" label
+- **Suggestions**: Create an issue with the "enhancement" label
+
+### Development Issues
+- **Technical Problems**: Check the troubleshooting sections
+- **Feature Requests**: Create an issue with the "enhancement" label
+- **Bug Reports**: Create an issue with the "bug" label
+
+### Community Support
+- **Questions**: Use GitHub Discussions
+- **Contributions**: Follow the Contributing Guide
+- **Feedback**: Create an issue with the "feedback" label
 
 ---
 
-**🎉 The Defocus2Focus app is working! Check it out at http://localhost:5000/index.html**
+**Quick Navigation:**
+- 🚀 [Getting Started](../README.md)
+- 🎯 [Focus Sessions](../src/screens/README.md#-focus-sessions)
+- 🎵 [Audio System](../assets/audio/README.md)
+- 🏆 [Rewards System](../src/screens/README.md#-rewards--achievements)
+- 🌐 [Web App](../public/README.md)
+- 🧩 [Components](../src/components/README.md)
+
+**Need help?** Check the [Getting Help section](#-getting-help) or create an issue in the repository.
