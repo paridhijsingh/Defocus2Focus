@@ -13,38 +13,38 @@ class AudioManager {
     
     // Audio sources - organized by category folders
     this.audioSources = {
-      nature: {
-        rain: "./assets/audio/nature/rain.mp3",
-        forest: "./assets/audio/nature/forest.mp3",
-        ocean: "./assets/audio/nature/ocean.mp3",
-        thunder: "./assets/audio/nature/thunder.mp3",
-        birds: "./assets/audio/nature/birds.mp3",
-        wind: "./assets/audio/nature/wind.mp3",
-      },
-      ambient: {
-        space: "./assets/audio/ambient/space.mp3",
-        city: "./assets/audio/ambient/city.mp3",
-        cafe: "./assets/audio/ambient/cafe.mp3",
-        library: "./assets/audio/ambient/library.mp3",
-        fireplace: "./assets/audio/ambient/fireplace.mp3",
-        train: "./assets/audio/ambient/train.mp3",
-      },
-      focus: {
-        binaural: "./assets/audio/focus/Binaural.mp3",
-        classical: "./assets/audio/focus/classical.mp3",
-        lofi: "./assets/audio/focus/lofi.mp3",
-        piano: "./assets/audio/focus/piano.mp3",
-        "white-noise": "./assets/audio/focus/white noise.mp3",
-        "brown-noise": "./assets/audio/focus/brown noise.mp3",
-      },
-      relax: {
-        meditation: "./assets/audio/relax/meditation.mp3",
-        spa: "./assets/audio/relax/spa.mp3",
-        zen: "./assets/audio/relax/zen.mp3",
-        chimes: "./assets/audio/relax/chimes.mp3",
-        "singing-bowls": "./assets/audio/relax/singing bowl.mp3",
-        flute: "./assets/audio/relax/flute.mp3",
-      },
+              nature: {
+          rain: "../assets/audio/nature/rain.mp3",
+          forest: "../assets/audio/nature/forest.mp3",
+          ocean: "../assets/audio/nature/ocean.mp3",
+          thunder: "../assets/audio/nature/thunder.mp3",
+          birds: "../assets/audio/nature/birds.mp3",
+          wind: "../assets/audio/nature/wind.mp3",
+        },
+        ambient: {
+          space: "../assets/audio/ambient/space.mp3",
+          city: "../assets/audio/ambient/city.mp3",
+          cafe: "../assets/audio/ambient/cafe.mp3",
+          library: "../assets/audio/ambient/library.mp3",
+          fireplace: "../assets/audio/ambient/fireplace.mp3",
+          train: "../assets/audio/ambient/train.mp3",
+        },
+        focus: {
+          binaural: "../assets/audio/focus/Binaural.mp3",
+          classical: "../assets/audio/focus/classical.mp3",
+          lofi: "../assets/audio/focus/lofi.mp3",
+          piano: "../assets/audio/focus/piano.mp3",
+          "white-noise": "../assets/audio/focus/white noise.mp3",
+          "brown-noise": "../assets/audio/focus/brown noise.mp3",
+        },
+        relax: {
+          meditation: "../assets/audio/relax/meditation.mp3",
+          spa: "../assets/audio/relax/spa.mp3",
+          zen: "../assets/audio/relax/zen.mp3",
+          chimes: "../assets/audio/relax/chimes.mp3",
+          "singing-bowls": "../assets/audio/relax/singing bowl.mp3",
+          flute: "../assets/audio/relax/flute.mp3",
+        },
     };
     
     this.initializeAudio();
