@@ -14,9 +14,9 @@ def create_tone(frequency, duration, sample_rate=44100, volume=0.3):
     wave_data = volume * np.sin(2 * np.pi * frequency * t)
     return (wave_data * 32767).astype(np.int16)
 
-def create_rain_sound(duration=10):
+def create_rain_sound(duration=3):
     """Create rain-like sound using multiple frequencies"""
-    sample_rate = 44100
+    sample_rate = 22050  # Lower sample rate for smaller files
     t = np.linspace(0, duration, int(sample_rate * duration), False)
     
     # Multiple frequencies for rain effect
@@ -30,9 +30,9 @@ def create_rain_sound(duration=10):
     
     return (wave_data * 32767).astype(np.int16)
 
-def create_ocean_sound(duration=10):
+def create_ocean_sound(duration=3):
     """Create ocean-like sound"""
-    sample_rate = 44100
+    sample_rate = 22050  # Lower sample rate for smaller files
     t = np.linspace(0, duration, int(sample_rate * duration), False)
     
     # Ocean wave frequencies
@@ -46,9 +46,9 @@ def create_ocean_sound(duration=10):
     
     return (wave_data * 32767).astype(np.int16)
 
-def create_meditation_sound(duration=10):
+def create_meditation_sound(duration=3):
     """Create meditation-like sound"""
-    sample_rate = 44100
+    sample_rate = 22050  # Lower sample rate for smaller files
     t = np.linspace(0, duration, int(sample_rate * duration), False)
     
     # Calm frequencies
@@ -58,7 +58,7 @@ def create_meditation_sound(duration=10):
     
     return (wave_data * 32767).astype(np.int16)
 
-def save_wav(filename, wave_data, sample_rate=44100):
+def save_wav(filename, wave_data, sample_rate=22050):
     """Save wave data to WAV file"""
     with wave.open(filename, 'w') as wav_file:
         wav_file.setnchannels(1)  # Mono
@@ -71,32 +71,32 @@ def main():
     # Ensure directory exists
     os.makedirs('assets/audio', exist_ok=True)
     
-    # Create sample audio files
+    # Create sample audio files (3 seconds each for faster loading)
     audio_files = {
-        'rain.wav': lambda: create_rain_sound(10),
-        'ocean.wav': lambda: create_ocean_sound(10),
-        'meditation.wav': lambda: create_meditation_sound(10),
-        'forest.wav': lambda: create_tone(400, 10),
-        'thunder.wav': lambda: create_tone(80, 10),
-        'birds.wav': lambda: create_tone(800, 10),
-        'wind.wav': lambda: create_tone(120, 10),
-        'space.wav': lambda: create_tone(50, 10),
-        'city.wav': lambda: create_tone(400, 10),
-        'cafe.wav': lambda: create_tone(300, 10),
-        'library.wav': lambda: create_tone(180, 10),
-        'fireplace.wav': lambda: create_tone(120, 10),
-        'train.wav': lambda: create_tone(200, 10),
-        'binaural.wav': lambda: create_tone(440, 10),
-        'classical.wav': lambda: create_tone(523, 10),
-        'lofi.wav': lambda: create_tone(330, 10),
-        'piano.wav': lambda: create_tone(440, 10),
-        'white-noise.wav': lambda: create_tone(1000, 10),
-        'brown-noise.wav': lambda: create_tone(500, 10),
-        'spa.wav': lambda: create_tone(200, 10),
-        'zen.wav': lambda: create_tone(110, 10),
-        'chimes.wav': lambda: create_tone(660, 10),
-        'singing-bowls.wav': lambda: create_tone(220, 10),
-        'flute.wav': lambda: create_tone(440, 10),
+        'rain.wav': lambda: create_rain_sound(3),
+        'ocean.wav': lambda: create_ocean_sound(3),
+        'meditation.wav': lambda: create_meditation_sound(3),
+        'forest.wav': lambda: create_tone(400, 3),
+        'thunder.wav': lambda: create_tone(80, 3),
+        'birds.wav': lambda: create_tone(800, 3),
+        'wind.wav': lambda: create_tone(120, 3),
+        'space.wav': lambda: create_tone(50, 3),
+        'city.wav': lambda: create_tone(400, 3),
+        'cafe.wav': lambda: create_tone(300, 3),
+        'library.wav': lambda: create_tone(180, 3),
+        'fireplace.wav': lambda: create_tone(120, 3),
+        'train.wav': lambda: create_tone(200, 3),
+        'binaural.wav': lambda: create_tone(440, 3),
+        'classical.wav': lambda: create_tone(523, 3),
+        'lofi.wav': lambda: create_tone(330, 3),
+        'piano.wav': lambda: create_tone(440, 3),
+        'white-noise.wav': lambda: create_tone(1000, 3),
+        'brown-noise.wav': lambda: create_tone(500, 3),
+        'spa.wav': lambda: create_tone(200, 3),
+        'zen.wav': lambda: create_tone(110, 3),
+        'chimes.wav': lambda: create_tone(660, 3),
+        'singing-bowls.wav': lambda: create_tone(220, 3),
+        'flute.wav': lambda: create_tone(440, 3),
     }
     
     print("Creating sample audio files...")

@@ -2981,6 +2981,10 @@
 
         // Initialize volume
         const savedVolume = localStorage.getItem("musicVolume") || 50;
+        const volumeSlider = document.getElementById("volumeSlider");
+        if (volumeSlider) {
+          volumeSlider.value = savedVolume;
+        }
         setVolume(savedVolume);
 
         console.log("🎵 Music system initialized");

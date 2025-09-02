@@ -14,36 +14,36 @@ class AudioManager {
     // Audio sources - local files in assets/audio/
     this.audioSources = {
       nature: {
-        rain: "./assets/audio/rain.mp3",           // Gentle rain sounds
-        forest: "./assets/audio/forest.mp3",       // Forest ambiance with birds
-        ocean: "./assets/audio/ocean.mp3",         // Ocean waves
-        thunder: "./assets/audio/thunder.mp3",     // Distant thunder
-        birds: "./assets/audio/birds.mp3",         // Bird songs
-        wind: "./assets/audio/wind.mp3",           // Wind through trees
+        rain: "./assets/audio/rain.wav",           // Gentle rain sounds
+        forest: "./assets/audio/forest.wav",       // Forest ambiance with birds
+        ocean: "./assets/audio/ocean.wav",         // Ocean waves
+        thunder: "./assets/audio/thunder.wav",     // Distant thunder
+        birds: "./assets/audio/birds.wav",         // Bird songs
+        wind: "./assets/audio/wind.wav",           // Wind through trees
       },
       ambient: {
-        space: "./assets/audio/space.mp3",         // Space ambient sounds
-        city: "./assets/audio/city.mp3",           // City ambiance
-        cafe: "./assets/audio/cafe.mp3",           // Café background noise
-        library: "./assets/audio/library.mp3",     // Quiet library sounds
-        fireplace: "./assets/audio/fireplace.mp3", // Fireplace crackling
-        train: "./assets/audio/train.mp3",         // Train journey sounds
+        space: "./assets/audio/space.wav",         // Space ambient sounds
+        city: "./assets/audio/city.wav",           // City ambiance
+        cafe: "./assets/audio/cafe.wav",           // Café background noise
+        library: "./assets/audio/library.wav",     // Quiet library sounds
+        fireplace: "./assets/audio/fireplace.wav", // Fireplace crackling
+        train: "./assets/audio/train.wav",         // Train journey sounds
       },
       focus: {
-        binaural: "./assets/audio/binaural.mp3",   // Binaural beats for focus
-        classical: "./assets/audio/classical.mp3", // Classical music
-        lofi: "./assets/audio/lofi.mp3",           // Lo-fi hip hop
-        piano: "./assets/audio/piano.mp3",         // Piano melodies
-        "white-noise": "./assets/audio/white-noise.mp3", // White noise
-        "brown-noise": "./assets/audio/brown-noise.mp3", // Brown noise
+        binaural: "./assets/audio/binaural.wav",   // Binaural beats for focus
+        classical: "./assets/audio/classical.wav", // Classical music
+        lofi: "./assets/audio/lofi.wav",           // Lo-fi hip hop
+        piano: "./assets/audio/piano.wav",         // Piano melodies
+        "white-noise": "./assets/audio/white-noise.wav", // White noise
+        "brown-noise": "./assets/audio/brown-noise.wav", // Brown noise
       },
       relax: {
-        meditation: "./assets/audio/meditation.mp3",     // Meditation sounds
-        spa: "./assets/audio/spa.mp3",                   // Spa ambiance
-        zen: "./assets/audio/zen.mp3",                   // Zen garden sounds
-        chimes: "./assets/audio/chimes.mp3",             // Wind chimes
-        "singing-bowls": "./assets/audio/singing-bowls.mp3", // Singing bowls
-        flute: "./assets/audio/flute.mp3",               // Flute music
+        meditation: "./assets/audio/meditation.wav",     // Meditation sounds
+        spa: "./assets/audio/spa.wav",                   // Spa ambiance
+        zen: "./assets/audio/zen.wav",                   // Zen garden sounds
+        chimes: "./assets/audio/chimes.wav",             // Wind chimes
+        "singing-bowls": "./assets/audio/singing-bowls.wav", // Singing bowls
+        flute: "./assets/audio/flute.wav",               // Flute music
       },
     };
     
