@@ -2734,7 +2734,16 @@
       }
 
       function showMainApp() {
-        document.getElementById("todoScreen").remove();
+        // Remove any existing screens
+        const todoScreen = document.getElementById("todoScreen");
+        const breakTimeScreen = document.querySelector(".break-time-screen");
+        const rewardsScreen = document.querySelector(".rewards-screen");
+        
+        if (todoScreen) todoScreen.remove();
+        if (breakTimeScreen) breakTimeScreen.remove();
+        if (rewardsScreen) rewardsScreen.remove();
+        
+        // Show main app
         document.getElementById("mainApp").style.display = "block";
       }
 
@@ -3099,16 +3108,18 @@
 
       // Initialize on page load
       loadBreakRewardsData();
-      
+
       // Force cache refresh - Break Time & Rewards are fully implemented!
 
       function openBreakTime() {
-        hideMainApp();
+        // Hide main app and show break time screen
+        document.getElementById("mainApp").style.display = "none";
         showBreakTimeScreen();
       }
 
       function openRewards() {
-        hideMainApp();
+        // Hide main app and show rewards screen
+        document.getElementById("mainApp").style.display = "none";
         showRewardsScreen();
       }
 
