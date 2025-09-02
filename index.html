@@ -961,6 +961,198 @@
         const [showPomodoro, setShowPomodoro] = useState(false);
         const [showDefocus, setShowDefocus] = useState(false);
 
+        // Audio Manager Class
+        class AudioManager {
+          constructor() {
+            this.currentAudio = null;
+            this.volume = 0.7;
+            this.isPlaying = false;
+            this.audioSources = {
+              nature: {
+                rain: "assets/audio/nature/rain.mp3",
+                forest: "assets/audio/nature/forest.mp3",
+                ocean: "assets/audio/nature/ocean.mp3",
+                thunder: "assets/audio/nature/thunder.mp3",
+                birds: "assets/audio/nature/birds.mp3",
+                wind: "assets/audio/nature/wind.mp3",
+              },
+              ambient: {
+                space: "assets/audio/ambient/space.mp3",
+                city: "assets/audio/ambient/city.mp3",
+                cafe: "assets/audio/ambient/cafe.mp3",
+                library: "assets/audio/ambient/library.mp3",
+                fireplace: "assets/audio/ambient/fireplace.mp3",
+                train: "assets/audio/ambient/train.mp3",
+              },
+              focus: {
+                binaural: "assets/audio/focus/Binaural.mp3",
+                classical: "assets/audio/focus/classical.mp3",
+                lofi: "assets/audio/focus/lofi.mp3",
+                piano: "assets/audio/focus/piano.mp3",
+                white_noise: "assets/audio/focus/white noise.mp3",
+                brown_noise: "assets/audio/focus/brown noise.mp3",
+              },
+              relax: {
+                meditation: "assets/audio/relax/meditation.mp3",
+                spa: "assets/audio/relax/spa.mp3",
+                zen: "assets/audio/relax/zen.mp3",
+                chimes: "assets/audio/relax/chimes.mp3",
+                singing_bowl: "assets/audio/relax/singing bowl.mp3",
+                flute: "assets/audio/relax/flute.mp3",
+              },
+            };
+          }
+
+          playAudio(category, trackId) {
+            this.stopAudio();
+
+            const audioPath = this.audioSources[category]?.[trackId];
+            if (!audioPath) {
+              console.warn(`Audio not found: ${category}/${trackId}`);
+              return;
+            }
+
+            this.currentAudio = new Audio(audioPath);
+            this.currentAudio.volume = this.volume;
+            this.currentAudio.loop = true;
+
+            this.currentAudio.addEventListener("canplaythrough", () => {
+              this.currentAudio
+                .play()
+                .then(() => {
+                  this.isPlaying = true;
+                })
+                .catch((error) => {
+                  console.warn("Audio play failed:", error);
+                  // Fallback: try to play a simple tone
+                  this.playFallbackTone();
+                });
+            });
+
+            this.currentAudio.addEventListener("error", (error) => {
+              console.warn("Audio load failed:", error);
+              // Fallback: try to play a simple tone
+              this.playFallbackTone();
+            });
+
+            this.currentAudio.load();
+          }
+
+          playFallbackTone() {
+            // Create a simple audio context for fallback
+            try {
+              const audioContext = new (window.AudioContext ||
+                window.webkitAudioContext)();
+              const oscillator = audioContext.createOscillator();
+              const gainNode = audioContext.createGain();
+
+              oscillator.connect(gainNode);
+              gainNode.connect(audioContext.destination);
+
+              oscillator.frequency.setValueAtTime(
+                440,
+                audioContext.currentTime
+              );
+              gainNode.gain.setValueAtTime(
+                this.volume * 0.1,
+                audioContext.currentTime
+              );
+
+              oscillator.start();
+              this.isPlaying = true;
+
+              // Store reference for stopping
+              this.currentAudio = {
+                pause: () => {
+                  oscillator.stop();
+                  this.isPlaying = false;
+                },
+                volume: this.volume,
+              };
+            } catch (error) {
+              console.warn("Fallback audio failed:", error);
+            }
+          }
+
+          pauseAudio() {
+            if (this.currentAudio && this.isPlaying) {
+              this.currentAudio.pause();
+              this.isPlaying = false;
+            }
+          }
+
+          resumeAudio() {
+            if (this.currentAudio && !this.isPlaying) {
+              this.currentAudio
+                .play()
+                .then(() => {
+                  this.isPlaying = true;
+                })
+                .catch((error) => {
+                  console.warn("Audio resume failed:", error);
+                });
+            }
+          }
+
+          stopAudio() {
+            if (this.currentAudio) {
+              this.currentAudio.pause();
+              this.currentAudio.currentTime = 0;
+              this.isPlaying = false;
+              this.currentAudio = null;
+            }
+          }
+
+          setVolume(volume) {
+            this.volume = Math.max(0, Math.min(1, volume));
+            if (this.currentAudio && this.currentAudio.volume !== undefined) {
+              this.currentAudio.volume = this.volume;
+            }
+          }
+
+          getVolume() {
+            return this.volume;
+          }
+
+          isCurrentlyPlaying() {
+            return this.isPlaying;
+          }
+        }
+
+        // Initialize audio manager
+        const audioManager = new AudioManager();
+
+        // Handle user interaction for audio
+        const enableAudio = () => {
+          // Create a silent audio context to enable audio
+          try {
+            const audioContext = new (window.AudioContext ||
+              window.webkitAudioContext)();
+            if (audioContext.state === "suspended") {
+              audioContext.resume();
+            }
+          } catch (error) {
+            console.warn("Audio context creation failed:", error);
+          }
+        };
+
+        // Enable audio on first user interaction
+        useEffect(() => {
+          const handleFirstInteraction = () => {
+            enableAudio();
+            document.removeEventListener("click", handleFirstInteraction);
+            document.removeEventListener("touchstart", handleFirstInteraction);
+          };
+
+          document.addEventListener("click", handleFirstInteraction);
+          document.addEventListener("touchstart", handleFirstInteraction);
+
+          return () => {
+            document.removeEventListener("click", handleFirstInteraction);
+            document.removeEventListener("touchstart", handleFirstInteraction);
+          };
+        }, []);
+
         useEffect(() => {
           // Check if user has completed onboarding before
           const completed = localStorage.getItem(
@@ -1130,6 +1322,13 @@
           const [currentTrack, setCurrentTrack] = useState(null);
           const [isPlaying, setIsPlaying] = useState(false);
           const [volume, setVolume] = useState(0.7);
+          const [audioStatus, setAudioStatus] = useState("ready");
+
+          // Sync with audio manager
+          useEffect(() => {
+            setIsPlaying(audioManager.isCurrentlyPlaying());
+            setVolume(audioManager.getVolume());
+          }, []);
 
           const musicCategories = [
             {
@@ -1240,12 +1439,46 @@
           ];
 
           const handlePlayTrack = (track) => {
+            console.log(`Attempting to play: ${selectedCategory}/${track.id}`);
+            setAudioStatus("loading");
+
             if (currentTrack?.id === track.id) {
-              setIsPlaying(!isPlaying);
+              // Toggle play/pause for current track
+              if (isPlaying) {
+                audioManager.pauseAudio();
+                setIsPlaying(false);
+                setAudioStatus("paused");
+                console.log("Audio paused");
+              } else {
+                audioManager.resumeAudio();
+                setIsPlaying(true);
+                setAudioStatus("playing");
+                console.log("Audio resumed");
+              }
             } else {
+              // Play new track
               setCurrentTrack(track);
+              audioManager.playAudio(selectedCategory, track.id);
               setIsPlaying(true);
+              setAudioStatus("playing");
+              console.log(`Playing: ${track.name} from ${selectedCategory}`);
+
+              // Show notification
+              if (navigator.vibrate) {
+                navigator.vibrate(100); // Haptic feedback
+              }
             }
+          };
+
+          const handleVolumeChange = (newVolume) => {
+            setVolume(newVolume);
+            audioManager.setVolume(newVolume);
+          };
+
+          const handleStop = () => {
+            audioManager.stopAudio();
+            setCurrentTrack(null);
+            setIsPlaying(false);
           };
 
           const getCurrentCategory = () => {
@@ -1311,7 +1544,25 @@
                             key: "now-playing",
                             className: "text-sm text-gray-600",
                           },
-                          `Now Playing: ${currentTrack.name}`
+                          [
+                            `Now Playing: ${currentTrack.name}`,
+                            React.createElement(
+                              "span",
+                              {
+                                key: "status",
+                                className: `ml-2 px-2 py-1 rounded text-xs ${
+                                  audioStatus === "playing"
+                                    ? "bg-green-100 text-green-800"
+                                    : audioStatus === "loading"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : audioStatus === "paused"
+                                    ? "bg-orange-100 text-orange-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`,
+                              },
+                              audioStatus
+                            ),
+                          ]
                         ),
                     ]
                   )
@@ -1481,10 +1732,7 @@
                                   "button",
                                   {
                                     key: "stop",
-                                    onClick: () => {
-                                      setIsPlaying(false);
-                                      setCurrentTrack(null);
-                                    },
+                                    onClick: handleStop,
                                     className:
                                       "w-10 h-10 rounded-full bg-gray-500 hover:bg-gray-600 text-white flex items-center justify-center transition-colors duration-200",
                                   },
@@ -1517,7 +1765,7 @@
                               step: "0.1",
                               value: volume,
                               onChange: (e) =>
-                                setVolume(parseFloat(e.target.value)),
+                                handleVolumeChange(parseFloat(e.target.value)),
                               className:
                                 "flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer",
                             }),
