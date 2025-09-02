@@ -887,6 +887,70 @@
           margin: 20px;
         }
       }
+
+      /* Focus Session Styles */
+      .focus-tips {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+      }
+
+      .focus-tips h3 {
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .focus-tips ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .focus-tips li {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        color: #666;
+      }
+
+      .focus-tips li:last-child {
+        border-bottom: none;
+      }
+
+      .timer-controls {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .timer-controls button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .timer-controls button:nth-child(1) {
+        background: #10b981;
+        color: white;
+      }
+
+      .timer-controls button:nth-child(2) {
+        background: #f59e0b;
+        color: white;
+      }
+
+      .timer-controls button:nth-child(3) {
+        background: #ef4444;
+        color: white;
+      }
+
+      .timer-controls button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
     </style>
   </head>
   <body>
@@ -925,6 +989,32 @@
             <span>🔥</span>
             <span><span id="userEnergy">0</span></span>
           </div>
+        </div>
+
+        <!-- Session Debug Panel -->
+        <div
+          id="sessionDebug"
+          style="
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 1000;
+          "
+        >
+          <div><strong>Session Debug</strong></div>
+          <div>
+            Defocus Available: <span id="debugDefocusAvailable">✅</span>
+          </div>
+          <div>Defocus Locked: <span id="debugDefocusLocked">❌</span></div>
+          <div>Focus Active: <span id="debugFocusActive">❌</span></div>
+          <div>Defocus Used: <span id="debugDefocusUsed">❌</span></div>
+          <div>Cycles Today: <span id="debugCyclesToday">0</span></div>
         </div>
 
         <!-- Welcome Message -->
@@ -1222,6 +1312,15 @@
         completedTasks: 0,
       };
 
+      // Session Cycle State Management
+      let sessionState = {
+        isDefocusUsed: false,
+        isFocusActive: false,
+        isDefocusLocked: false,
+        completedCyclesToday: 0,
+        lastCycleDate: new Date().toDateString(),
+      };
+
       // Load user data from localStorage
       function loadUserData() {
         const saved = localStorage.getItem("defocus2focus_userdata");
@@ -1239,6 +1338,161 @@
         );
       }
 
+      // Load session state from localStorage
+      function loadSessionState() {
+        const saved = localStorage.getItem("focusSessionState");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // Check if we need to reset daily counters
+          const today = new Date().toDateString();
+          if (parsed.lastCycleDate !== today) {
+            sessionState = {
+              isDefocusUsed: false,
+              isFocusActive: false,
+              isDefocusLocked: false,
+              completedCyclesToday: 0,
+              lastCycleDate: today,
+            };
+          } else {
+            sessionState = { ...sessionState, ...parsed };
+          }
+        }
+        updateDefocusLockState();
+      }
+
+      // Save session state to localStorage
+      function saveSessionState() {
+        localStorage.setItem("focusSessionState", JSON.stringify(sessionState));
+      }
+
+      // Update defocus lock state
+      function updateDefocusLockState() {
+        sessionState.isDefocusLocked =
+          sessionState.isDefocusUsed || sessionState.isFocusActive;
+        updateDefocusUI();
+      }
+
+      // Update defocus UI based on lock state
+      function updateDefocusUI() {
+        const defocusCard = document.querySelector(
+          '.feature-card[onclick="openDefocusTime()"]'
+        );
+        const defocusIcon = defocusCard?.querySelector(".feature-icon");
+        const defocusTitle = defocusCard?.querySelector(".feature-title");
+
+        if (sessionState.isDefocusLocked) {
+          if (defocusIcon) defocusIcon.textContent = "🔒";
+          if (defocusTitle) defocusTitle.textContent = "Defocus Locked";
+          if (defocusCard) {
+            defocusCard.style.opacity = "0.6";
+            defocusCard.style.cursor = "not-allowed";
+          }
+        } else {
+          if (defocusIcon) defocusIcon.textContent = "🌿";
+          if (defocusTitle) defocusTitle.textContent = "Defocus Time";
+          if (defocusCard) {
+            defocusCard.style.opacity = "1";
+            defocusCard.style.cursor = "pointer";
+          }
+        }
+
+        // Update debug panel
+        updateDebugPanel();
+      }
+
+      // Update debug panel
+      function updateDebugPanel() {
+        const debugPanel = document.getElementById("sessionDebug");
+        if (debugPanel) {
+          document.getElementById("debugDefocusAvailable").textContent =
+            isDefocusAvailable() ? "✅" : "❌";
+          document.getElementById("debugDefocusLocked").textContent =
+            sessionState.isDefocusLocked ? "🔒" : "🔓";
+          document.getElementById("debugFocusActive").textContent =
+            sessionState.isFocusActive ? "🎯" : "⏸️";
+          document.getElementById("debugDefocusUsed").textContent =
+            sessionState.isDefocusUsed ? "✅" : "❌";
+          document.getElementById("debugCyclesToday").textContent =
+            sessionState.completedCyclesToday;
+        }
+      }
+
+      // Check if defocus is available
+      function isDefocusAvailable() {
+        return !sessionState.isDefocusLocked;
+      }
+
+      // Get defocus lock message
+      function getDefocusLockMessage() {
+        if (sessionState.isFocusActive) {
+          return "🎯 Focus session in progress. Defocus will unlock when you complete your session.";
+        }
+        if (sessionState.isDefocusUsed) {
+          return "✨ You're ready to focus now! Defocus will unlock after your session.";
+        }
+        return "🌿 Defocus is available!";
+      }
+
+      // Start defocus session
+      function startDefocusSession(type, duration) {
+        if (!isDefocusAvailable()) {
+          alert(`🔒 Defocus Locked\n\n${getDefocusLockMessage()}`);
+          return false;
+        }
+
+        sessionState.isDefocusUsed = true;
+        updateDefocusLockState();
+        saveSessionState();
+        console.log("🌿 Defocus session started:", type, duration);
+        return true;
+      }
+
+      // End defocus session
+      function endDefocusSession() {
+        console.log("🌿 Defocus session ended");
+        // Defocus remains locked until focus session is completed
+      }
+
+      // Start focus session
+      function startFocusSession(duration = 25) {
+        sessionState.isFocusActive = true;
+        updateDefocusLockState();
+        saveSessionState();
+        console.log("🎯 Focus session started:", duration);
+      }
+
+      // End focus session
+      function endFocusSession() {
+        const wasDefocusUsed = sessionState.isDefocusUsed;
+        const today = new Date().toDateString();
+
+        sessionState.isFocusActive = false;
+        sessionState.isDefocusUsed = false; // Unlock defocus
+        sessionState.completedCyclesToday =
+          sessionState.lastCycleDate === today
+            ? sessionState.completedCyclesToday + (wasDefocusUsed ? 1 : 0)
+            : 1;
+        sessionState.lastCycleDate = today;
+
+        updateDefocusLockState();
+        saveSessionState();
+
+        console.log("🎯 Focus session ended, cycle completed:", wasDefocusUsed);
+
+        if (wasDefocusUsed) {
+          const message =
+            sessionState.completedCyclesToday === 1
+              ? "🎉 Great job completing your first focus cycle!"
+              : `🎉 Excellent! You've completed ${sessionState.completedCyclesToday} focus cycles today!`;
+          alert(message);
+        }
+
+        return {
+          cycleCompleted: wasDefocusUsed,
+          totalCyclesToday: sessionState.completedCyclesToday,
+        };
+      }
+
       // Update status bar
       function updateStatusBar() {
         document.getElementById("userLevel").textContent = userData.level;
@@ -1251,6 +1505,7 @@
         document.getElementById("splashScreen").style.display = "none";
         document.getElementById("mainApp").style.display = "block";
         loadUserData();
+        loadSessionState();
       }
 
       // Modal functions
@@ -1264,12 +1519,22 @@
 
       // Defocus Time functions
       function openDefocusTime() {
+        if (!isDefocusAvailable()) {
+          alert(`🔒 Defocus Locked\n\n${getDefocusLockMessage()}`);
+          return;
+        }
         openModal("defocusModal");
         resetDefocusTimer();
       }
 
       function startDefocusTimer() {
         if (!isTimerRunning) {
+          // Start defocus session (this locks defocus)
+          const success = startDefocusSession("defocus", defocusTimeLeft / 60);
+          if (!success) {
+            return; // Session was locked
+          }
+
           isTimerRunning = true;
           document.querySelector(".start-timer").style.display = "none";
           document.querySelector(".pause-timer").style.display = "inline-block";
@@ -1281,7 +1546,13 @@
             if (defocusTimeLeft <= 0) {
               clearInterval(defocusTimer);
               isTimerRunning = false;
-              alert("Defocus time is complete! Great job taking a break!");
+
+              // End defocus session
+              endDefocusSession();
+
+              alert(
+                "🌿 Defocus time complete! ✨ You're ready to focus now! Defocus will unlock after your session."
+              );
               userData.coins += 5;
               userData.energy += 10;
               saveUserData();
@@ -1557,9 +1828,110 @@
       }
 
       function openFocusSession() {
-        alert(
-          "Focus Session feature coming soon! This will include Pomodoro timer and task completion tracking."
-        );
+        // Start focus session (this keeps defocus locked)
+        startFocusSession(25); // 25 minutes default
+
+        // Simple focus timer implementation
+        let focusTimeLeft = 25 * 60; // 25 minutes in seconds
+        let focusTimer = null;
+
+        const focusModal = document.createElement("div");
+        focusModal.id = "focusModal";
+        focusModal.className = "modal";
+        focusModal.innerHTML = `
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2>🎯 Focus Session</h2>
+              <span class="close" onclick="closeFocusSession()">&times;</span>
+            </div>
+            <div class="modal-body">
+              <div class="timer-display">
+                <div class="timer-circle">
+                  <span id="focusTimerDisplay">25:00</span>
+                </div>
+                <div class="timer-controls">
+                  <button id="startFocusBtn" onclick="startFocusTimer()">Start Focus</button>
+                  <button id="pauseFocusBtn" onclick="pauseFocusTimer()" style="display:none;">Pause</button>
+                  <button id="stopFocusBtn" onclick="stopFocusTimer()">Stop</button>
+                </div>
+              </div>
+              <div class="focus-tips">
+                <h3>💡 Focus Tips</h3>
+                <ul>
+                  <li>Put your phone in another room</li>
+                  <li>Close unnecessary browser tabs</li>
+                  <li>Set a clear goal for this session</li>
+                  <li>Use noise-canceling headphones if available</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(focusModal);
+        focusModal.style.display = "block";
+
+        // Focus timer functions
+        window.startFocusTimer = function () {
+          if (!focusTimer) {
+            focusTimer = setInterval(() => {
+              focusTimeLeft--;
+              updateFocusDisplay();
+
+              if (focusTimeLeft <= 0) {
+                clearInterval(focusTimer);
+                focusTimer = null;
+                completeFocusSession();
+              }
+            }, 1000);
+
+            document.getElementById("startFocusBtn").style.display = "none";
+            document.getElementById("pauseFocusBtn").style.display =
+              "inline-block";
+          }
+        };
+
+        window.pauseFocusTimer = function () {
+          if (focusTimer) {
+            clearInterval(focusTimer);
+            focusTimer = null;
+            document.getElementById("startFocusBtn").style.display =
+              "inline-block";
+            document.getElementById("pauseFocusBtn").style.display = "none";
+          }
+        };
+
+        window.stopFocusTimer = function () {
+          if (confirm("Are you sure you want to stop the focus session?")) {
+            if (focusTimer) {
+              clearInterval(focusTimer);
+              focusTimer = null;
+            }
+            closeFocusSession();
+          }
+        };
+
+        window.closeFocusSession = function () {
+          document.body.removeChild(focusModal);
+          endFocusSession(); // This unlocks defocus
+        };
+
+        function updateFocusDisplay() {
+          const minutes = Math.floor(focusTimeLeft / 60);
+          const seconds = focusTimeLeft % 60;
+          document.getElementById("focusTimerDisplay").textContent = `${minutes
+            .toString()
+            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+        }
+
+        function completeFocusSession() {
+          alert("🎉 Focus session complete! Great job!");
+          userData.coins += 10;
+          userData.energy += 20;
+          saveUserData();
+          updateStatusBar();
+          closeFocusSession();
+        }
       }
 
       function openMusicRelax() {
