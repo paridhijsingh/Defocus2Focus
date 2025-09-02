@@ -1618,6 +1618,198 @@
         transform: translateX(-50%) translateY(0);
       }
 
+      /* Energy Notifications */
+      .energy-notification {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        color: #333;
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+        z-index: 2000;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        max-width: 200px;
+        transform: translateX(100px);
+        opacity: 0;
+      }
+
+      .energy-notification.show {
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      .energy-notification-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .energy-icon {
+        font-size: 20px;
+      }
+
+      .energy-text {
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      .energy-action {
+        font-size: 12px;
+        opacity: 0.8;
+        margin-top: 2px;
+      }
+
+      /* Badge Notifications */
+      .badge-notification {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 16px 64px rgba(0, 0, 0, 0.3);
+        z-index: 2000;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        opacity: 0;
+        max-width: 300px;
+        text-align: center;
+      }
+
+      .badge-notification.show {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+
+      .badge-notification-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .badge-icon {
+        font-size: 40px;
+      }
+
+      .badge-text {
+        flex: 1;
+      }
+
+      .badge-title {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-bottom: 4px;
+      }
+
+      .badge-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 4px;
+      }
+
+      .badge-description {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+
+      /* Energy Card Styles */
+      .energy-card {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .energy-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .energy-icon {
+        font-size: 32px;
+        margin-right: 16px;
+      }
+
+      .energy-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 4px;
+      }
+
+      .energy-total {
+        color: #FFD700;
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      .energy-progress {
+        margin-bottom: 16px;
+      }
+
+      /* Badges Card Styles */
+      .badges-card {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .badges-card h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .badges-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 16px;
+      }
+
+      .badge-item {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+      }
+
+      .badge-item.unlocked {
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        color: #333;
+        border-color: #FFD700;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(255, 215, 0, 0.3);
+      }
+
+      .badge-item .badge-icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+
+      .badge-item .badge-name {
+        font-weight: bold;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+
+      .badge-item .badge-desc {
+        font-size: 11px;
+        opacity: 0.8;
+        line-height: 1.3;
+      }
+
       /* Mini Music Player */
       .mini-music-player {
         position: fixed;
@@ -2525,6 +2717,10 @@
           alert(`🔒 Defocus Locked\n\n${getDefocusLockMessage()}`);
           return;
         }
+
+        // Add energy points for opening defocus
+        addEnergyPoints(1, "Defocus Opened");
+
         openModal("defocusModal");
         resetDefocusTimer();
       }
@@ -2849,6 +3045,10 @@
         // Start focus session (this keeps defocus locked)
         startFocusSession(25); // 25 minutes default
 
+        // Add energy points for starting focus session
+        addEnergyPoints(2, "Focus Session Started");
+        globalRewardsState.sessionCount++;
+
         // Simple focus timer implementation
         let focusTimeLeft = 25 * 60; // 25 minutes in seconds
         let focusTimer = null;
@@ -2958,6 +3158,9 @@
         if (existingModal) {
           closeMusicModal();
         }
+
+        // Add energy points for opening music
+        addEnergyPoints(1, "Music Opened");
 
         // Create music modal
         const musicModal = document.createElement("div");
@@ -3172,6 +3375,21 @@
         initializeMusicSystem();
       }
 
+      // Global Rewards & Energy System
+      let globalRewardsState = {
+        totalEnergyPoints: 0,
+        totalRewards: 0,
+        unlockedBadges: [],
+        dailyEnergyGoal: 20,
+        dailyEnergyProgress: 0,
+        lastEnergyDate: null,
+        energyStreak: 0,
+        sessionCount: 0,
+        breakCount: 0,
+        musicPlayCount: 0,
+        todoCompletedCount: 0,
+      };
+
       // Break Time and Rewards System
       let breakState = {
         isBreakActive: false,
@@ -3201,6 +3419,8 @@
       function loadBreakRewardsData() {
         const savedBreakData = localStorage.getItem("breakData");
         const savedRewardsData = localStorage.getItem("rewardsData");
+        const savedGlobalRewardsData =
+          localStorage.getItem("globalRewardsData");
 
         if (savedBreakData) {
           breakState = { ...breakState, ...JSON.parse(savedBreakData) };
@@ -3209,12 +3429,154 @@
         if (savedRewardsData) {
           rewardsState = { ...rewardsState, ...JSON.parse(savedRewardsData) };
         }
+
+        if (savedGlobalRewardsData) {
+          globalRewardsState = {
+            ...globalRewardsState,
+            ...JSON.parse(savedGlobalRewardsData),
+          };
+        }
       }
 
       // Save data
       function saveBreakRewardsData() {
         localStorage.setItem("breakData", JSON.stringify(breakState));
         localStorage.setItem("rewardsData", JSON.stringify(rewardsState));
+        localStorage.setItem(
+          "globalRewardsData",
+          JSON.stringify(globalRewardsState)
+        );
+      }
+
+      // Energy Points System
+      function addEnergyPoints(points, action = "interaction") {
+        globalRewardsState.totalEnergyPoints += points;
+        globalRewardsState.totalRewards += points;
+
+        // Update daily progress
+        const today = new Date().toDateString();
+        if (globalRewardsState.lastEnergyDate !== today) {
+          globalRewardsState.dailyEnergyProgress = 0;
+          globalRewardsState.lastEnergyDate = today;
+        }
+        globalRewardsState.dailyEnergyProgress += points;
+
+        // Check for badge unlocks
+        checkBadgeUnlocks();
+
+        // Show energy notification
+        showEnergyNotification(points, action);
+
+        // Save data
+        saveBreakRewardsData();
+
+        console.log(`⚡ +${points} Energy! (${action})`);
+      }
+
+      function checkBadgeUnlocks() {
+        const badges = [
+          {
+            id: "bronze",
+            name: "Bronze Badge",
+            icon: "🥉",
+            threshold: 10,
+            description: "First 10 energy points!",
+          },
+          {
+            id: "silver",
+            name: "Silver Badge",
+            icon: "🥈",
+            threshold: 25,
+            description: "25 energy points earned!",
+          },
+          {
+            id: "gold",
+            name: "Gold Badge",
+            icon: "🥇",
+            threshold: 50,
+            description: "50 energy points milestone!",
+          },
+          {
+            id: "platinum",
+            name: "Platinum Badge",
+            icon: "💎",
+            threshold: 100,
+            description: "100 energy points achieved!",
+          },
+          {
+            id: "diamond",
+            name: "Diamond Badge",
+            icon: "💠",
+            threshold: 250,
+            description: "250 energy points mastery!",
+          },
+          {
+            id: "legendary",
+            name: "Legendary Badge",
+            icon: "👑",
+            threshold: 500,
+            description: "500 energy points legend!",
+          },
+        ];
+
+        badges.forEach((badge) => {
+          if (
+            globalRewardsState.totalEnergyPoints >= badge.threshold &&
+            !globalRewardsState.unlockedBadges.find((b) => b.id === badge.id)
+          ) {
+            globalRewardsState.unlockedBadges.push(badge);
+            showBadgeUnlockNotification(badge);
+          }
+        });
+      }
+
+      function showEnergyNotification(points, action) {
+        const notification = document.createElement("div");
+        notification.className = "energy-notification";
+        notification.innerHTML = `
+          <div class="energy-notification-content">
+            <div class="energy-icon">⚡</div>
+            <div class="energy-text">+${points} Energy!</div>
+            <div class="energy-action">${action}</div>
+          </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Show notification
+        setTimeout(() => notification.classList.add("show"), 100);
+
+        // Hide after 2 seconds
+        setTimeout(() => {
+          notification.classList.remove("show");
+          setTimeout(() => notification.remove(), 300);
+        }, 2000);
+      }
+
+      function showBadgeUnlockNotification(badge) {
+        const notification = document.createElement("div");
+        notification.className = "badge-notification";
+        notification.innerHTML = `
+          <div class="badge-notification-content">
+            <div class="badge-icon">${badge.icon}</div>
+            <div class="badge-text">
+              <div class="badge-title">Badge Unlocked!</div>
+              <div class="badge-name">${badge.name}</div>
+              <div class="badge-description">${badge.description}</div>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Show notification
+        setTimeout(() => notification.classList.add("show"), 100);
+
+        // Hide after 4 seconds
+        setTimeout(() => {
+          notification.classList.remove("show");
+          setTimeout(() => notification.remove(), 300);
+        }, 4000);
       }
 
       // Initialize on page load
@@ -3354,6 +3716,31 @@
             </div>
             
             <div class="rewards-content">
+              <!-- Energy Points -->
+              <div class="energy-card">
+                <div class="energy-header">
+                  <div class="energy-icon">⚡</div>
+                  <div class="energy-info">
+                    <div class="energy-title">Energy Points</div>
+                    <div class="energy-total">${
+                      globalRewardsState.totalEnergyPoints
+                    } points</div>
+                  </div>
+                </div>
+                <div class="energy-progress">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${
+                      (globalRewardsState.dailyEnergyProgress /
+                        globalRewardsState.dailyEnergyGoal) *
+                      100
+                    }%"></div>
+                  </div>
+                  <div class="progress-text">${
+                    globalRewardsState.dailyEnergyProgress
+                  }/${globalRewardsState.dailyEnergyGoal} daily goal</div>
+                </div>
+              </div>
+
               <!-- Level Progress -->
               <div class="level-card">
                 <div class="level-header">
@@ -3411,6 +3798,61 @@
                   </div>
                 </div>
                 <div class="streak-description">Keep the momentum going!</div>
+              </div>
+
+              <!-- Energy Badges -->
+              <div class="badges-card">
+                <h3>Energy Badges</h3>
+                <div class="badges-grid">
+                  <div class="badge-item ${
+                    globalRewardsState.totalEnergyPoints >= 10 ? "unlocked" : ""
+                  }">
+                    <div class="badge-icon">🥉</div>
+                    <div class="badge-name">Bronze</div>
+                    <div class="badge-desc">10 energy points</div>
+                  </div>
+                  <div class="badge-item ${
+                    globalRewardsState.totalEnergyPoints >= 25 ? "unlocked" : ""
+                  }">
+                    <div class="badge-icon">🥈</div>
+                    <div class="badge-name">Silver</div>
+                    <div class="badge-desc">25 energy points</div>
+                  </div>
+                  <div class="badge-item ${
+                    globalRewardsState.totalEnergyPoints >= 50 ? "unlocked" : ""
+                  }">
+                    <div class="badge-icon">🥇</div>
+                    <div class="badge-name">Gold</div>
+                    <div class="badge-desc">50 energy points</div>
+                  </div>
+                  <div class="badge-item ${
+                    globalRewardsState.totalEnergyPoints >= 100
+                      ? "unlocked"
+                      : ""
+                  }">
+                    <div class="badge-icon">💎</div>
+                    <div class="badge-name">Platinum</div>
+                    <div class="badge-desc">100 energy points</div>
+                  </div>
+                  <div class="badge-item ${
+                    globalRewardsState.totalEnergyPoints >= 250
+                      ? "unlocked"
+                      : ""
+                  }">
+                    <div class="badge-icon">💠</div>
+                    <div class="badge-name">Diamond</div>
+                    <div class="badge-desc">250 energy points</div>
+                  </div>
+                  <div class="badge-item ${
+                    globalRewardsState.totalEnergyPoints >= 500
+                      ? "unlocked"
+                      : ""
+                  }">
+                    <div class="badge-icon">👑</div>
+                    <div class="badge-name">Legendary</div>
+                    <div class="badge-desc">500 energy points</div>
+                  </div>
+                </div>
               </div>
 
               <!-- Achievements -->
@@ -3509,6 +3951,10 @@
 
         breakState.isBreakActive = true;
         breakState.breakStartTime = Date.now();
+
+        // Add energy points for starting break
+        addEnergyPoints(1, "Break Started");
+        globalRewardsState.breakCount++;
 
         // Update UI
         document.getElementById("breakStartBtn").style.display = "none";
@@ -3831,6 +4277,15 @@
         const task = userData.todoList.find((t) => t.id === taskId);
         if (task) {
           task.completed = !task.completed;
+
+          // Add energy points for completing task
+          if (task.completed) {
+            addEnergyPoints(2, "Task Completed");
+            globalRewardsState.todoCompletedCount++;
+          } else {
+            addEnergyPoints(1, "Task Uncompleted");
+          }
+
           localStorage.setItem("userData", JSON.stringify(userData));
           loadAndDisplayTasks();
         }
@@ -3974,6 +4429,9 @@
 
       function saveTask(event, taskId) {
         event.preventDefault();
+
+        // Add energy points for creating/editing task
+        addEnergyPoints(1, "Task Saved");
 
         const userData = JSON.parse(localStorage.getItem("userData") || "{}");
         if (!userData.todoList) userData.todoList = [];
@@ -4150,6 +4608,10 @@
         const success = await window.audioManager.playAudio(category, trackId);
 
         if (success) {
+          // Add energy points for playing music
+          addEnergyPoints(1, "Music Played");
+          globalRewardsState.musicPlayCount++;
+
           // Update UI state
           currentTrack = trackId;
           currentCategory = category;
@@ -4622,7 +5084,7 @@
           startVisualizer();
           console.log("🎵 Audio playing");
         }
-        
+
         // Update mini player button
         updateMiniPlayerButton();
 
@@ -4893,7 +5355,7 @@
 
         // Hide mini player when music stops
         hideMiniMusicPlayer();
-        
+
         console.log("🎵 All audio stopped");
       }
 
@@ -4971,7 +5433,7 @@
       function updateMiniPlayerButton() {
         const miniPlayPauseBtn = document.getElementById("miniPlayPauseBtn");
         if (miniPlayPauseBtn) {
-          miniPlayPauseBtn.innerHTML = isPlaying ? '⏸️' : '▶️';
+          miniPlayPauseBtn.innerHTML = isPlaying ? "⏸️" : "▶️";
         }
       }
 
