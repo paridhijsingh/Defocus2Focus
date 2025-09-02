@@ -1,0 +1,8 @@
+# Redirect root to build-index.html
+/ /build-index.html 200
+
+# Redirect index.html to build-index.html  
+/index.html /build-index.html 200
+
+# Handle SPA routing - redirect all other routes to build-index.html
+/* /build-index.html 200

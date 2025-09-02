@@ -1,0 +1,30 @@
+[build]
+  # Directory to change to before starting a build
+  base = "public"
+  
+  # Directory that contains the deploy-ready HTML files and assets
+  publish = "public"
+  
+  # Default build command
+  command = "echo 'No build step required'"
+
+[[redirects]]
+  # Redirect root to build-index.html
+  from = "/"
+  to = "/build-index.html"
+  status = 200
+
+[[redirects]]
+  # Redirect index.html to build-index.html
+  from = "/index.html"
+  to = "/build-index.html"
+  status = 200
+
+[[redirects]]
+  # Handle SPA routing - redirect all other routes to build-index.html
+  from = "/*"
+  to = "/build-index.html"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "18"
