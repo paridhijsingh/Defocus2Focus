@@ -1,6 +1,6 @@
 /**
  * Audio Manager for Defocus2Focus Web App
- * Manages local audio files and provides centralized audio control
+ * Manages organized audio files in category-based folder structure
  */
 
 class AudioManager {
@@ -11,39 +11,39 @@ class AudioManager {
     this.currentTrack = null;
     this.currentCategory = null;
     
-    // Audio sources - local files in assets/audio/
+    // Audio sources - organized by category folders
     this.audioSources = {
       nature: {
-        rain: "./assets/audio/rain.wav",           // Gentle rain sounds
-        forest: "./assets/audio/forest.wav",       // Forest ambiance with birds
-        ocean: "./assets/audio/ocean.wav",         // Ocean waves
-        thunder: "./assets/audio/thunder.wav",     // Distant thunder
-        birds: "./assets/audio/birds.wav",         // Bird songs
-        wind: "./assets/audio/wind.wav",           // Wind through trees
+        rain: "./assets/audio/nature/rain.mp3",
+        forest: "./assets/audio/nature/forest.mp3",
+        ocean: "./assets/audio/nature/ocean.mp3",
+        thunder: "./assets/audio/nature/thunder.mp3",
+        birds: "./assets/audio/nature/birds.mp3",
+        wind: "./assets/audio/nature/wind.mp3",
       },
       ambient: {
-        space: "./assets/audio/space.wav",         // Space ambient sounds
-        city: "./assets/audio/city.wav",           // City ambiance
-        cafe: "./assets/audio/cafe.wav",           // Café background noise
-        library: "./assets/audio/library.wav",     // Quiet library sounds
-        fireplace: "./assets/audio/fireplace.wav", // Fireplace crackling
-        train: "./assets/audio/train.wav",         // Train journey sounds
+        space: "./assets/audio/ambient/space.mp3",
+        city: "./assets/audio/ambient/city.mp3",
+        cafe: "./assets/audio/ambient/cafe.mp3",
+        library: "./assets/audio/ambient/library.mp3",
+        fireplace: "./assets/audio/ambient/fireplace.mp3",
+        train: "./assets/audio/ambient/train.mp3",
       },
       focus: {
-        binaural: "./assets/audio/binaural.wav",   // Binaural beats for focus
-        classical: "./assets/audio/classical.wav", // Classical music
-        lofi: "./assets/audio/lofi.wav",           // Lo-fi hip hop
-        piano: "./assets/audio/piano.wav",         // Piano melodies
-        "white-noise": "./assets/audio/white-noise.wav", // White noise
-        "brown-noise": "./assets/audio/brown-noise.wav", // Brown noise
+        binaural: "./assets/audio/focus/binaural.mp3",
+        classical: "./assets/audio/focus/classical.mp3",
+        lofi: "./assets/audio/focus/lofi.mp3",
+        piano: "./assets/audio/focus/piano.mp3",
+        "white-noise": "./assets/audio/focus/white_noise.mp3",
+        "brown-noise": "./assets/audio/focus/brown_noise.mp3",
       },
       relax: {
-        meditation: "./assets/audio/meditation.wav",     // Meditation sounds
-        spa: "./assets/audio/spa.wav",                   // Spa ambiance
-        zen: "./assets/audio/zen.wav",                   // Zen garden sounds
-        chimes: "./assets/audio/chimes.wav",             // Wind chimes
-        "singing-bowls": "./assets/audio/singing-bowls.wav", // Singing bowls
-        flute: "./assets/audio/flute.wav",               // Flute music
+        meditation: "./assets/audio/relax/meditation.mp3",
+        spa: "./assets/audio/relax/spa.mp3",
+        zen: "./assets/audio/relax/zen.mp3",
+        chimes: "./assets/audio/relax/chimes.mp3",
+        "singing-bowls": "./assets/audio/relax/singing_bowls.mp3",
+        flute: "./assets/audio/relax/flute.mp3",
       },
     };
     
@@ -54,7 +54,7 @@ class AudioManager {
    * Initialize audio system
    */
   initializeAudio() {
-    console.log("🎵 Audio Manager initialized");
+    console.log("🎵 Audio Manager initialized with organized folder structure");
     this.loadAudioPreferences();
   }
 
@@ -114,7 +114,7 @@ class AudioManager {
       
       // Set up event listeners
       this.currentAudio.addEventListener('loadeddata', () => {
-        console.log(`🎵 Audio loaded: ${category}/${sound}`);
+        console.log(`🎵 Audio loaded successfully: ${category}/${sound}`);
       });
       
       this.currentAudio.addEventListener('error', (e) => {
@@ -185,9 +185,14 @@ class AudioManager {
    */
   resumeAudio() {
     if (this.currentAudio && !this.isPlaying) {
-      this.currentAudio.play();
-      this.isPlaying = true;
-      console.log("🎵 Audio resumed");
+      this.currentAudio.play()
+        .then(() => {
+          this.isPlaying = true;
+          console.log("🎵 Audio resumed");
+        })
+        .catch(error => {
+          console.error("🎵 Error resuming audio:", error);
+        });
     }
   }
 
@@ -214,9 +219,9 @@ class AudioManager {
     this.volume = Math.max(0, Math.min(1, volume));
     if (this.currentAudio) {
       this.currentAudio.volume = this.volume;
+      console.log(`🎵 Volume set to: ${(this.volume * 100).toFixed(0)}%`);
     }
     this.saveAudioPreferences();
-    console.log(`🎵 Volume set to: ${this.volume}`);
   }
 
   /**
@@ -262,6 +267,16 @@ class AudioManager {
    */
   getCategorySources(category) {
     return this.audioSources[category] || null;
+  }
+
+  /**
+   * Check if audio file exists
+   * @param {string} category - Audio category
+   * @param {string} sound - Sound name
+   * @returns {boolean} True if audio file exists
+   */
+  hasAudio(category, sound) {
+    return !!(this.audioSources[category] && this.audioSources[category][sound]);
   }
 }
 
