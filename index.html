@@ -1369,6 +1369,7 @@
       function updateDefocusLockState() {
         sessionState.isDefocusLocked =
           sessionState.isDefocusUsed || sessionState.isFocusActive;
+        console.log("🔒 Lock state updated:", sessionState);
         updateDefocusUI();
       }
 
@@ -1380,6 +1381,13 @@
         const defocusIcon = defocusCard?.querySelector(".feature-icon");
         const defocusTitle = defocusCard?.querySelector(".feature-title");
 
+        console.log("🎨 Updating defocus UI:", {
+          isLocked: sessionState.isDefocusLocked,
+          card: defocusCard,
+          icon: defocusIcon,
+          title: defocusTitle,
+        });
+
         if (sessionState.isDefocusLocked) {
           if (defocusIcon) defocusIcon.textContent = "🔒";
           if (defocusTitle) defocusTitle.textContent = "Defocus Locked";
@@ -1387,6 +1395,7 @@
             defocusCard.style.opacity = "0.6";
             defocusCard.style.cursor = "not-allowed";
           }
+          console.log("🔒 Defocus UI locked");
         } else {
           if (defocusIcon) defocusIcon.textContent = "🌿";
           if (defocusTitle) defocusTitle.textContent = "Defocus Time";
@@ -1394,6 +1403,7 @@
             defocusCard.style.opacity = "1";
             defocusCard.style.cursor = "pointer";
           }
+          console.log("🌿 Defocus UI unlocked");
         }
 
         // Update debug panel
@@ -1435,12 +1445,20 @@
 
       // Start defocus session
       function startDefocusSession(type, duration) {
+        console.log("🚀 Starting defocus session...", {
+          type,
+          duration,
+          isAvailable: isDefocusAvailable(),
+        });
+
         if (!isDefocusAvailable()) {
           alert(`🔒 Defocus Locked\n\n${getDefocusLockMessage()}`);
           return false;
         }
 
         sessionState.isDefocusUsed = true;
+        console.log("📝 Session state updated:", sessionState);
+
         updateDefocusLockState();
         saveSessionState();
         console.log("🌿 Defocus session started:", type, duration);
@@ -1528,9 +1546,16 @@
       }
 
       function startDefocusTimer() {
+        console.log("⏰ Start defocus timer called", {
+          isTimerRunning,
+          defocusTimeLeft,
+        });
+
         if (!isTimerRunning) {
           // Start defocus session (this locks defocus)
           const success = startDefocusSession("defocus", defocusTimeLeft / 60);
+          console.log("🎯 Defocus session start result:", success);
+
           if (!success) {
             return; // Session was locked
           }
@@ -2333,6 +2358,25 @@
             modal.style.display = "none";
           }
         });
+      };
+      // Test functions - call from browser console
+      window.testDefocusLock = function () {
+        console.log("🧪 Testing defocus lock...");
+        console.log("Current state:", sessionState);
+        startDefocusSession("test", 5);
+        console.log("After start:", sessionState);
+      };
+
+      window.testDefocusUnlock = function () {
+        console.log("🧪 Testing defocus unlock...");
+        console.log("Current state:", sessionState);
+        endFocusSession();
+        console.log("After end:", sessionState);
+      };
+
+      window.getSessionState = function () {
+        console.log("📊 Current session state:", sessionState);
+        return sessionState;
       };
     </script>
   </body>
