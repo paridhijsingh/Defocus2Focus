@@ -1618,6 +1618,88 @@
         transform: translateX(-50%) translateY(0);
       }
 
+      /* Mini Music Player */
+      .mini-music-player {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 25px;
+        padding: 12px 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        animation: slideUp 0.3s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateX(-50%) translateY(100px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(-50%) translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .mini-player-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .mini-player-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: white;
+      }
+
+      .mini-player-icon {
+        font-size: 20px;
+      }
+
+      .mini-player-details {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .mini-player-track {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 2px;
+      }
+
+      .mini-player-category {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+
+      .mini-player-controls {
+        display: flex;
+        gap: 8px;
+      }
+
+      .mini-control-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .mini-control-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+
       /* Responsive Design */
       @media (max-width: 768px) {
         .break-types {
@@ -1646,6 +1728,22 @@
 
         .achievements-grid {
           grid-template-columns: repeat(2, 1fr);
+        }
+
+        .mini-music-player {
+          bottom: 10px;
+          left: 10px;
+          right: 10px;
+          transform: none;
+          width: auto;
+        }
+
+        .mini-player-content {
+          justify-content: space-between;
+        }
+
+        .mini-player-info {
+          flex: 1;
         }
       }
 
@@ -4524,6 +4622,9 @@
           startVisualizer();
           console.log("🎵 Audio playing");
         }
+        
+        // Update mini player button
+        updateMiniPlayerButton();
 
         updatePlayPauseButton();
       }
@@ -4790,39 +4891,87 @@
           progressInterval = null;
         }
 
+        // Hide mini player when music stops
+        hideMiniMusicPlayer();
+        
         console.log("🎵 All audio stopped");
       }
 
-      // Close music modal
+      // Close music modal (but keep music playing)
       function closeMusicModal() {
         const modal = document.getElementById("musicModal");
         if (modal) {
-          // Stop all audio first
-          stopAllAudio();
-          
-          // Remove modal from DOM
+          // Remove modal from DOM but keep music playing
           document.body.removeChild(modal);
-          
-          // Reset music state
-          currentAudio = null;
-          currentTrack = null;
-          currentCategory = null;
-          isPlaying = false;
-          currentPlaylist = [];
-          currentPlaylistIndex = 0;
-          
-          // Clear any intervals
-          if (progressInterval) {
-            clearInterval(progressInterval);
-            progressInterval = null;
-          }
-          
+
+          // Clear visualizer interval (but keep audio playing)
           if (visualizerInterval) {
             clearInterval(visualizerInterval);
             visualizerInterval = null;
           }
-          
-          console.log("🎵 Music modal closed and cleaned up");
+
+          // Show mini music player in main app
+          showMiniMusicPlayer();
+
+          console.log(
+            "🎵 Music modal closed - music continues playing in background"
+          );
+        }
+      }
+
+      // Show mini music player in main app
+      function showMiniMusicPlayer() {
+        // Remove existing mini player if any
+        const existingPlayer = document.getElementById("miniMusicPlayer");
+        if (existingPlayer) {
+          existingPlayer.remove();
+        }
+
+        // Only show if music is actually playing
+        if (isPlaying && currentTrack && currentCategory) {
+          const miniPlayer = document.createElement("div");
+          miniPlayer.id = "miniMusicPlayer";
+          miniPlayer.className = "mini-music-player";
+          miniPlayer.innerHTML = `
+            <div class="mini-player-content">
+              <div class="mini-player-info">
+                <div class="mini-player-icon">🎵</div>
+                <div class="mini-player-details">
+                  <div class="mini-player-track">${currentTrack}</div>
+                  <div class="mini-player-category">${currentCategory}</div>
+                </div>
+              </div>
+              <div class="mini-player-controls">
+                <button class="mini-control-btn" onclick="togglePlayPause()" id="miniPlayPauseBtn">
+                  ${isPlaying ? "⏸️" : "▶️"}
+                </button>
+                <button class="mini-control-btn" onclick="stopAllAudio()">⏹️</button>
+                <button class="mini-control-btn" onclick="openMusicRelax()">🎵</button>
+              </div>
+            </div>
+          `;
+
+          // Add to main app
+          const mainApp = document.getElementById("mainApp");
+          if (mainApp) {
+            mainApp.appendChild(miniPlayer);
+          }
+        }
+      }
+
+      // Hide mini music player
+      function hideMiniMusicPlayer() {
+        const miniPlayer = document.getElementById("miniMusicPlayer");
+        if (miniPlayer) {
+          miniPlayer.remove();
+        }
+      }
+
+      // Update mini player button
+      function updateMiniPlayerButton() {
+        const miniPlayPauseBtn = document.getElementById("miniPlayPauseBtn");
+        if (miniPlayPauseBtn) {
+          miniPlayPauseBtn.innerHTML = isPlaying ? '⏸️' : '▶️';
         }
       }
 
