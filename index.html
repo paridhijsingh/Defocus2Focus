@@ -3811,7 +3811,93 @@
             audioManager.stopAudio();
             setCurrentTrack(null);
             setIsPlaying(false);
+            setAudioStatus("stopped");
           };
+
+          const handleNextTrack = () => {
+            const currentCategory = musicCategories.find(
+              (cat) => cat.id === selectedCategory
+            );
+            if (!currentCategory || !currentTrack) return;
+
+            const currentIndex = currentCategory.tracks.findIndex(
+              (track) => track.id === currentTrack.id
+            );
+            const nextIndex =
+              (currentIndex + 1) % currentCategory.tracks.length;
+            const nextTrack = currentCategory.tracks[nextIndex];
+
+            handlePlayTrack(nextTrack);
+          };
+
+          const handlePreviousTrack = () => {
+            const currentCategory = musicCategories.find(
+              (cat) => cat.id === selectedCategory
+            );
+            if (!currentCategory || !currentTrack) return;
+
+            const currentIndex = currentCategory.tracks.findIndex(
+              (track) => track.id === currentTrack.id
+            );
+            const prevIndex =
+              currentIndex === 0
+                ? currentCategory.tracks.length - 1
+                : currentIndex - 1;
+            const prevTrack = currentCategory.tracks[prevIndex];
+
+            handlePlayTrack(prevTrack);
+          };
+
+          // Keyboard shortcuts
+          useEffect(() => {
+            const handleKeyPress = (event) => {
+              // Only handle shortcuts when music screen is active
+              if (
+                event.target.tagName === "INPUT" ||
+                event.target.tagName === "TEXTAREA"
+              )
+                return;
+
+              switch (event.code) {
+                case "Space":
+                  event.preventDefault();
+                  if (currentTrack) {
+                    if (isPlaying) {
+                      audioManager.pauseAudio();
+                      setIsPlaying(false);
+                      setAudioStatus("paused");
+                    } else {
+                      audioManager.resumeAudio();
+                      setIsPlaying(true);
+                      setAudioStatus("playing");
+                    }
+                  }
+                  break;
+                case "ArrowRight":
+                  event.preventDefault();
+                  handleNextTrack();
+                  break;
+                case "ArrowLeft":
+                  event.preventDefault();
+                  handlePreviousTrack();
+                  break;
+                case "Escape":
+                  event.preventDefault();
+                  handleStop();
+                  break;
+                case "KeyM":
+                  event.preventDefault();
+                  // Toggle mute
+                  const newVolume = volume > 0 ? 0 : 0.7;
+                  handleVolumeChange(newVolume);
+                  break;
+              }
+            };
+
+            document.addEventListener("keydown", handleKeyPress);
+            return () =>
+              document.removeEventListener("keydown", handleKeyPress);
+          }, [currentTrack, isPlaying, volume]);
 
           const getCurrentCategory = () => {
             return musicCategories.find((cat) => cat.id === selectedCategory);
@@ -4050,15 +4136,50 @@
                                 React.createElement(
                                   "button",
                                   {
+                                    key: "previous",
+                                    onClick: handlePreviousTrack,
+                                    className:
+                                      "w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors duration-200",
+                                    title: "Previous Track (←)",
+                                  },
+                                  "⏮️"
+                                ),
+                                React.createElement(
+                                  "button",
+                                  {
                                     key: "play-pause",
-                                    onClick: () => setIsPlaying(!isPlaying),
+                                    onClick: () => {
+                                      if (currentTrack) {
+                                        if (isPlaying) {
+                                          audioManager.pauseAudio();
+                                          setIsPlaying(false);
+                                          setAudioStatus("paused");
+                                        } else {
+                                          audioManager.resumeAudio();
+                                          setIsPlaying(true);
+                                          setAudioStatus("playing");
+                                        }
+                                      }
+                                    },
                                     className: `w-12 h-12 rounded-full flex items-center justify-center text-white transition-colors duration-200 ${
                                       isPlaying
                                         ? "bg-red-500 hover:bg-red-600"
                                         : "bg-green-500 hover:bg-green-600"
                                     }`,
+                                    title: "Play/Pause (Space)",
                                   },
                                   isPlaying ? "⏸️" : "▶️"
+                                ),
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: "next",
+                                    onClick: handleNextTrack,
+                                    className:
+                                      "w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors duration-200",
+                                    title: "Next Track (→)",
+                                  },
+                                  "⏭️"
                                 ),
                                 React.createElement(
                                   "button",
@@ -4067,6 +4188,7 @@
                                     onClick: handleStop,
                                     className:
                                       "w-10 h-10 rounded-full bg-gray-500 hover:bg-gray-600 text-white flex items-center justify-center transition-colors duration-200",
+                                    title: "Stop (Esc)",
                                   },
                                   "⏹️"
                                 ),
@@ -4108,6 +4230,76 @@
                                 className: "text-sm text-gray-600 w-8",
                               },
                               Math.round(volume * 100)
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "mute-toggle",
+                                onClick: () => {
+                                  const newVolume = volume > 0 ? 0 : 0.7;
+                                  handleVolumeChange(newVolume);
+                                },
+                                className:
+                                  "ml-2 px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded transition-colors",
+                                title: "Toggle Mute (M)",
+                              },
+                              volume > 0 ? "🔊" : "🔇"
+                            ),
+                          ]
+                        ),
+
+                        // Keyboard Shortcuts Help
+                        React.createElement(
+                          "div",
+                          {
+                            key: "keyboard-shortcuts",
+                            className:
+                              "mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg",
+                          },
+                          [
+                            React.createElement(
+                              "h4",
+                              {
+                                key: "shortcuts-title",
+                                className:
+                                  "text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2",
+                              },
+                              "⌨️ Keyboard Shortcuts"
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "shortcuts-list",
+                                className:
+                                  "grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  { key: "space" },
+                                  "Space: Play/Pause"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  { key: "left" },
+                                  "←: Previous"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  { key: "right" },
+                                  "→: Next"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  { key: "esc" },
+                                  "Esc: Stop"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  { key: "m" },
+                                  "M: Mute"
+                                ),
+                              ]
                             ),
                           ]
                         ),
