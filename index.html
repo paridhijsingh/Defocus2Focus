@@ -1143,6 +1143,244 @@
         );
       };
 
+      // Welcome Screen Component
+      const WelcomeScreen = ({ onStart }) => {
+        return React.createElement(
+          "div",
+          {
+            className: "fixed inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center z-50",
+          },
+          [
+            React.createElement(
+              "div",
+              {
+                key: "welcome-content",
+                className: "text-center max-w-4xl mx-auto px-8 py-12",
+              },
+              [
+                // Main Title
+                React.createElement(
+                  "div",
+                  {
+                    key: "title-section",
+                    className: "mb-12",
+                  },
+                  [
+                    React.createElement(
+                      "h1",
+                      {
+                        key: "main-title",
+                        className: "text-6xl md:text-8xl font-bold text-white mb-6 animate-pulse",
+                      },
+                      "🎯 Defocus2Focus"
+                    ),
+                    React.createElement(
+                      "h2",
+                      {
+                        key: "subtitle",
+                        className: "text-2xl md:text-4xl font-semibold text-blue-200 mb-8",
+                      },
+                      "Where Productivity Meets Play"
+                    ),
+                    React.createElement(
+                      "p",
+                      {
+                        key: "description",
+                        className: "text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed",
+                      },
+                      "Transform your productivity journey with our gamified approach to focus and mindful breaks. Turn procrastination into play!"
+                    ),
+                  ]
+                ),
+
+                // Feature Highlights
+                React.createElement(
+                  "div",
+                  {
+                    key: "features-section",
+                    className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-12",
+                  },
+                  [
+                    React.createElement(
+                      "div",
+                      {
+                        key: "focus-feature",
+                        className: "bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20 hover:bg-opacity-20 transition-all duration-300",
+                      },
+                      [
+                        React.createElement(
+                          "div",
+                          {
+                            key: "focus-icon",
+                            className: "text-4xl mb-4",
+                          },
+                          "🎯"
+                        ),
+                        React.createElement(
+                          "h3",
+                          {
+                            key: "focus-title",
+                            className: "text-xl font-semibold text-white mb-2",
+                          },
+                          "Focus Mode"
+                        ),
+                        React.createElement(
+                          "p",
+                          {
+                            key: "focus-desc",
+                            className: "text-gray-300 text-sm",
+                          },
+                          "Deep work sessions with Pomodoro timers and progress tracking"
+                        ),
+                      ]
+                    ),
+                    React.createElement(
+                      "div",
+                      {
+                        key: "defocus-feature",
+                        className: "bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20 hover:bg-opacity-20 transition-all duration-300",
+                      },
+                      [
+                        React.createElement(
+                          "div",
+                          {
+                            key: "defocus-icon",
+                            className: "text-4xl mb-4",
+                          },
+                          "🌿"
+                        ),
+                        React.createElement(
+                          "h3",
+                          {
+                            key: "defocus-title",
+                            className: "text-xl font-semibold text-white mb-2",
+                          },
+                          "Defocus Mode"
+                        ),
+                        React.createElement(
+                          "p",
+                          {
+                            key: "defocus-desc",
+                            className: "text-gray-300 text-sm",
+                          },
+                          "Mindful breaks with mini-games and relaxation activities"
+                        ),
+                      ]
+                    ),
+                    React.createElement(
+                      "div",
+                      {
+                        key: "rewards-feature",
+                        className: "bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20 hover:bg-opacity-20 transition-all duration-300",
+                      },
+                      [
+                        React.createElement(
+                          "div",
+                          {
+                            key: "rewards-icon",
+                            className: "text-4xl mb-4",
+                          },
+                          "🏆"
+                        ),
+                        React.createElement(
+                          "h3",
+                          {
+                            key: "rewards-title",
+                            className: "text-xl font-semibold text-white mb-2",
+                          },
+                          "Rewards & Progress"
+                        ),
+                        React.createElement(
+                          "p",
+                          {
+                            key: "rewards-desc",
+                            className: "text-gray-300 text-sm",
+                          },
+                          "Earn energy points and unlock achievements as you grow"
+                        ),
+                      ]
+                    ),
+                  ]
+                ),
+
+                // Start Button
+                React.createElement(
+                  "div",
+                  {
+                    key: "start-section",
+                    className: "mb-8",
+                  },
+                  [
+                    React.createElement(
+                      "button",
+                      {
+                        key: "start-button",
+                        onClick: onStart,
+                        className: "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-12 rounded-full text-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg",
+                      },
+                      [
+                        React.createElement(
+                          "span",
+                          {
+                            key: "start-icon",
+                            className: "mr-3",
+                          },
+                          "🚀"
+                        ),
+                        "Start Your Journey"
+                      ]
+                    ),
+                  ]
+                ),
+
+                // Additional Info
+                React.createElement(
+                  "div",
+                  {
+                    key: "info-section",
+                    className: "text-center",
+                  },
+                  [
+                    React.createElement(
+                      "p",
+                      {
+                        key: "info-text",
+                        className: "text-gray-400 text-sm",
+                      },
+                      "Join thousands of users who have transformed their productivity"
+                    ),
+                    React.createElement(
+                      "div",
+                      {
+                        key: "stats",
+                        className: "flex justify-center space-x-8 mt-4 text-gray-400 text-sm",
+                      },
+                      [
+                        React.createElement(
+                          "span",
+                          { key: "stat1" },
+                          "✨ Gamified Experience"
+                        ),
+                        React.createElement(
+                          "span",
+                          { key: "stat2" },
+                          "🎵 Background Music"
+                        ),
+                        React.createElement(
+                          "span",
+                          { key: "stat3" },
+                          "📊 Progress Tracking"
+                        ),
+                      ]
+                    ),
+                  ]
+                ),
+              ]
+            ),
+          ]
+        );
+      };
+
       const OnboardingTutorial = ({ onComplete, onSkip }) => {
         const [currentStep, setCurrentStep] = useState(0);
         const [isVisible, setIsVisible] = useState(true);
@@ -1553,6 +1791,7 @@
       };
 
       const WebApp = () => {
+        const [showWelcome, setShowWelcome] = useState(false);
         const [showOnboarding, setShowOnboarding] = useState(false);
         const [currentScreen, setCurrentScreen] = useState("dashboard");
         const [hasCompletedOnboarding, setHasCompletedOnboarding] =
@@ -1768,7 +2007,7 @@
             "defocus2focus_onboarding_completed"
           );
           if (!completed) {
-            setShowOnboarding(true);
+            setShowWelcome(true);
           } else {
             setHasCompletedOnboarding(true);
           }
@@ -1789,6 +2028,11 @@
           if (savedAchievements) setAchievements(JSON.parse(savedAchievements));
         }, []);
 
+        const handleWelcomeStart = () => {
+          setShowWelcome(false);
+          setShowOnboarding(true);
+        };
+
         const handleOnboardingComplete = () => {
           localStorage.setItem("defocus2focus_onboarding_completed", "true");
           setShowOnboarding(false);
@@ -1805,7 +2049,8 @@
 
         const resetOnboarding = () => {
           localStorage.removeItem("defocus2focus_onboarding_completed");
-          setShowOnboarding(true);
+          setShowWelcome(true);
+          setShowOnboarding(false);
           setHasCompletedOnboarding(false);
         };
 
@@ -3081,70 +3326,121 @@
           const [newTask, setNewTask] = useState("");
           const [showAddModal, setShowAddModal] = useState(false);
           const [editingTask, setEditingTask] = useState(null);
-          const [activeFilter, setActiveFilter] = useState('all');
-          const [sortBy, setSortBy] = useState('created');
-          const [sortOrder, setSortOrder] = useState('desc');
+          const [activeFilter, setActiveFilter] = useState("all");
+          const [sortBy, setSortBy] = useState("created");
+          const [sortOrder, setSortOrder] = useState("desc");
           const [expandedTasks, setExpandedTasks] = useState(new Set());
           const [newSubtask, setNewSubtask] = useState({});
 
           // Task categories and priorities
           const categories = {
-            work: { name: 'Work', color: 'bg-blue-100 text-blue-800', icon: '💼' },
-            study: { name: 'Study', color: 'bg-green-100 text-green-800', icon: '📚' },
-            personal: { name: 'Personal', color: 'bg-purple-100 text-purple-800', icon: '🏠' },
-            health: { name: 'Health', color: 'bg-red-100 text-red-800', icon: '🏥' },
-            shopping: { name: 'Shopping', color: 'bg-yellow-100 text-yellow-800', icon: '🛒' }
+            work: {
+              name: "Work",
+              color: "bg-blue-100 text-blue-800",
+              icon: "💼",
+            },
+            study: {
+              name: "Study",
+              color: "bg-green-100 text-green-800",
+              icon: "📚",
+            },
+            personal: {
+              name: "Personal",
+              color: "bg-purple-100 text-purple-800",
+              icon: "🏠",
+            },
+            health: {
+              name: "Health",
+              color: "bg-red-100 text-red-800",
+              icon: "🏥",
+            },
+            shopping: {
+              name: "Shopping",
+              color: "bg-yellow-100 text-yellow-800",
+              icon: "🛒",
+            },
           };
 
           const priorities = {
-            urgent: { name: 'Urgent', color: 'bg-red-100 text-red-800', icon: '🔴' },
-            high: { name: 'High', color: 'bg-orange-100 text-orange-800', icon: '🟠' },
-            medium: { name: 'Medium', color: 'bg-yellow-100 text-yellow-800', icon: '🟡' },
-            low: { name: 'Low', color: 'bg-green-100 text-green-800', icon: '🟢' }
+            urgent: {
+              name: "Urgent",
+              color: "bg-red-100 text-red-800",
+              icon: "🔴",
+            },
+            high: {
+              name: "High",
+              color: "bg-orange-100 text-orange-800",
+              icon: "🟠",
+            },
+            medium: {
+              name: "Medium",
+              color: "bg-yellow-100 text-yellow-800",
+              icon: "🟡",
+            },
+            low: {
+              name: "Low",
+              color: "bg-green-100 text-green-800",
+              icon: "🟢",
+            },
           };
 
           // Filter and sort tasks
-          const filteredTasks = tasks.filter(task => {
-            if (activeFilter === 'all') return true;
-            if (activeFilter === 'completed') return task.completed;
-            if (activeFilter === 'pending') return !task.completed;
-            if (activeFilter === 'overdue') {
-              return task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
-            }
-            return task.category === activeFilter;
-          }).sort((a, b) => {
-            let comparison = 0;
-            switch (sortBy) {
-              case 'created':
-                comparison = new Date(a.createdAt) - new Date(b.createdAt);
-                break;
-              case 'dueDate':
-                comparison = (a.dueDate ? new Date(a.dueDate) : new Date('9999-12-31')) - 
-                           (b.dueDate ? new Date(b.dueDate) : new Date('9999-12-31'));
-                break;
-              case 'priority':
-                const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
-                comparison = (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
-                break;
-              case 'text':
-                comparison = a.text.localeCompare(b.text);
-                break;
-            }
-            return sortOrder === 'desc' ? -comparison : comparison;
-          });
+          const filteredTasks = tasks
+            .filter((task) => {
+              if (activeFilter === "all") return true;
+              if (activeFilter === "completed") return task.completed;
+              if (activeFilter === "pending") return !task.completed;
+              if (activeFilter === "overdue") {
+                return (
+                  task.dueDate &&
+                  new Date(task.dueDate) < new Date() &&
+                  !task.completed
+                );
+              }
+              return task.category === activeFilter;
+            })
+            .sort((a, b) => {
+              let comparison = 0;
+              switch (sortBy) {
+                case "created":
+                  comparison = new Date(a.createdAt) - new Date(b.createdAt);
+                  break;
+                case "dueDate":
+                  comparison =
+                    (a.dueDate ? new Date(a.dueDate) : new Date("9999-12-31")) -
+                    (b.dueDate ? new Date(b.dueDate) : new Date("9999-12-31"));
+                  break;
+                case "priority":
+                  const priorityOrder = {
+                    urgent: 4,
+                    high: 3,
+                    medium: 2,
+                    low: 1,
+                  };
+                  comparison =
+                    (priorityOrder[b.priority] || 0) -
+                    (priorityOrder[a.priority] || 0);
+                  break;
+                case "text":
+                  comparison = a.text.localeCompare(b.text);
+                  break;
+              }
+              return sortOrder === "desc" ? -comparison : comparison;
+            });
 
           // Calculate progress
-          const completedTasks = tasks.filter(task => task.completed).length;
+          const completedTasks = tasks.filter((task) => task.completed).length;
           const totalTasks = tasks.length;
-          const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+          const progressPercentage =
+            totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
           const handleAddTask = (e) => {
             e.preventDefault();
             if (newTask.trim()) {
               addTask({
                 text: newTask.trim(),
-                category: 'personal',
-                priority: 'medium'
+                category: "personal",
+                priority: "medium",
               });
               setNewTask("");
             }
@@ -3153,7 +3449,7 @@
           const handleAddSubtask = (taskId) => {
             if (newSubtask[taskId] && newSubtask[taskId].trim()) {
               addSubtask(taskId, newSubtask[taskId].trim());
-              setNewSubtask({ ...newSubtask, [taskId]: '' });
+              setNewSubtask({ ...newSubtask, [taskId]: "" });
             }
           };
 
@@ -3241,7 +3537,8 @@
                             {
                               key: "add-task-btn",
                               onClick: () => setShowAddModal(true),
-                              className: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors",
+                              className:
+                                "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors",
                             },
                             "Add Task"
                           ),
@@ -4269,6 +4566,11 @@
         };
 
         return React.createElement("div", null, [
+          showWelcome &&
+            React.createElement(WelcomeScreen, {
+              key: "welcome",
+              onStart: handleWelcomeStart,
+            }),
           showOnboarding &&
             React.createElement(OnboardingTutorial, {
               key: "onboarding",
