@@ -1814,13 +1814,22 @@
           setCurrentScreen(screen);
         };
 
-        // Task management functions
-        const addTask = (taskText) => {
+        // Enhanced task management functions
+        const addTask = (taskData) => {
           const newTask = {
-            id: Date.now(),
-            text: taskText,
+            id: Date.now().toString(),
+            text: taskData.text,
+            description: taskData.description || "",
+            category: taskData.category || "personal",
+            priority: taskData.priority || "medium",
+            dueDate: taskData.dueDate || null,
             completed: false,
             createdAt: new Date().toISOString(),
+            estimatedTime: taskData.estimatedTime || null,
+            tags: taskData.tags || [],
+            subtasks: taskData.subtasks || [],
+            focusSessions: 0,
+            totalFocusTime: 0,
           };
           const updatedTasks = [...tasks, newTask];
           setTasks(updatedTasks);
@@ -1830,7 +1839,19 @@
           );
         };
 
+        const updateTask = (taskId, updates) => {
+          const updatedTasks = tasks.map((task) =>
+            task.id === taskId ? { ...task, ...updates } : task
+          );
+          setTasks(updatedTasks);
+          localStorage.setItem(
+            "defocus2focus_tasks",
+            JSON.stringify(updatedTasks)
+          );
+        };
+
         const toggleTask = (taskId) => {
+          const task = tasks.find((t) => t.id === taskId);
           const updatedTasks = tasks.map((task) =>
             task.id === taskId ? { ...task, completed: !task.completed } : task
           );
@@ -1841,12 +1862,55 @@
           );
 
           // Award energy points for completing tasks
-          const task = tasks.find((t) => t.id === taskId);
           if (!task.completed) {
             const newEnergy = energyPoints + 10;
             setEnergyPoints(newEnergy);
             localStorage.setItem("defocus2focus_energy", newEnergy.toString());
           }
+        };
+
+        const addSubtask = (taskId, subtaskText) => {
+          const updatedTasks = tasks.map((task) => {
+            if (task.id === taskId) {
+              const newSubtask = {
+                id: Date.now().toString(),
+                text: subtaskText,
+                completed: false,
+                createdAt: new Date().toISOString(),
+              };
+              return {
+                ...task,
+                subtasks: [...task.subtasks, newSubtask],
+              };
+            }
+            return task;
+          });
+          setTasks(updatedTasks);
+          localStorage.setItem(
+            "defocus2focus_tasks",
+            JSON.stringify(updatedTasks)
+          );
+        };
+
+        const toggleSubtask = (taskId, subtaskId) => {
+          const updatedTasks = tasks.map((task) => {
+            if (task.id === taskId) {
+              return {
+                ...task,
+                subtasks: task.subtasks.map((subtask) =>
+                  subtask.id === subtaskId
+                    ? { ...subtask, completed: !subtask.completed }
+                    : subtask
+                ),
+              };
+            }
+            return task;
+          });
+          setTasks(updatedTasks);
+          localStorage.setItem(
+            "defocus2focus_tasks",
+            JSON.stringify(updatedTasks)
+          );
         };
 
         const deleteTask = (taskId) => {
@@ -3015,13 +3079,92 @@
         // Task Management Screen
         const TaskManagement = () => {
           const [newTask, setNewTask] = useState("");
+          const [showAddModal, setShowAddModal] = useState(false);
+          const [editingTask, setEditingTask] = useState(null);
+          const [activeFilter, setActiveFilter] = useState('all');
+          const [sortBy, setSortBy] = useState('created');
+          const [sortOrder, setSortOrder] = useState('desc');
+          const [expandedTasks, setExpandedTasks] = useState(new Set());
+          const [newSubtask, setNewSubtask] = useState({});
+
+          // Task categories and priorities
+          const categories = {
+            work: { name: 'Work', color: 'bg-blue-100 text-blue-800', icon: '💼' },
+            study: { name: 'Study', color: 'bg-green-100 text-green-800', icon: '📚' },
+            personal: { name: 'Personal', color: 'bg-purple-100 text-purple-800', icon: '🏠' },
+            health: { name: 'Health', color: 'bg-red-100 text-red-800', icon: '🏥' },
+            shopping: { name: 'Shopping', color: 'bg-yellow-100 text-yellow-800', icon: '🛒' }
+          };
+
+          const priorities = {
+            urgent: { name: 'Urgent', color: 'bg-red-100 text-red-800', icon: '🔴' },
+            high: { name: 'High', color: 'bg-orange-100 text-orange-800', icon: '🟠' },
+            medium: { name: 'Medium', color: 'bg-yellow-100 text-yellow-800', icon: '🟡' },
+            low: { name: 'Low', color: 'bg-green-100 text-green-800', icon: '🟢' }
+          };
+
+          // Filter and sort tasks
+          const filteredTasks = tasks.filter(task => {
+            if (activeFilter === 'all') return true;
+            if (activeFilter === 'completed') return task.completed;
+            if (activeFilter === 'pending') return !task.completed;
+            if (activeFilter === 'overdue') {
+              return task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
+            }
+            return task.category === activeFilter;
+          }).sort((a, b) => {
+            let comparison = 0;
+            switch (sortBy) {
+              case 'created':
+                comparison = new Date(a.createdAt) - new Date(b.createdAt);
+                break;
+              case 'dueDate':
+                comparison = (a.dueDate ? new Date(a.dueDate) : new Date('9999-12-31')) - 
+                           (b.dueDate ? new Date(b.dueDate) : new Date('9999-12-31'));
+                break;
+              case 'priority':
+                const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+                comparison = (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+                break;
+              case 'text':
+                comparison = a.text.localeCompare(b.text);
+                break;
+            }
+            return sortOrder === 'desc' ? -comparison : comparison;
+          });
+
+          // Calculate progress
+          const completedTasks = tasks.filter(task => task.completed).length;
+          const totalTasks = tasks.length;
+          const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
           const handleAddTask = (e) => {
             e.preventDefault();
             if (newTask.trim()) {
-              addTask(newTask.trim());
+              addTask({
+                text: newTask.trim(),
+                category: 'personal',
+                priority: 'medium'
+              });
               setNewTask("");
             }
+          };
+
+          const handleAddSubtask = (taskId) => {
+            if (newSubtask[taskId] && newSubtask[taskId].trim()) {
+              addSubtask(taskId, newSubtask[taskId].trim());
+              setNewSubtask({ ...newSubtask, [taskId]: '' });
+            }
+          };
+
+          const toggleTaskExpansion = (taskId) => {
+            const newExpanded = new Set(expandedTasks);
+            if (newExpanded.has(taskId)) {
+              newExpanded.delete(taskId);
+            } else {
+              newExpanded.add(taskId);
+            }
+            setExpandedTasks(newExpanded);
           };
 
           return React.createElement(
@@ -3072,19 +3215,37 @@
                               key: "main-title",
                               className: "text-3xl font-bold text-gray-900",
                             },
-                            "📝 Task Management"
+                            "📝 My Tasks"
                           ),
                         ]
                       ),
                       React.createElement(
                         "div",
                         {
-                          key: "stats",
-                          className: "text-sm text-gray-600",
+                          key: "header-actions",
+                          className: "flex items-center space-x-4",
                         },
-                        `${tasks.filter((t) => t.completed).length}/${
-                          tasks.length
-                        } completed`
+                        [
+                          React.createElement(
+                            "div",
+                            {
+                              key: "stats",
+                              className: "text-sm text-gray-600",
+                            },
+                            `${tasks.filter((t) => t.completed).length}/${
+                              tasks.length
+                            } completed`
+                          ),
+                          React.createElement(
+                            "button",
+                            {
+                              key: "add-task-btn",
+                              onClick: () => setShowAddModal(true),
+                              className: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors",
+                            },
+                            "Add Task"
+                          ),
+                        ]
                       ),
                     ]
                   )
