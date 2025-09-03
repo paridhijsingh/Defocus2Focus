@@ -14,6 +14,7 @@ import Animated, {
   interpolate,
   Extrapolate 
 } from 'react-native-reanimated';
+import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import ActionButton from '../components/ActionButton';
 

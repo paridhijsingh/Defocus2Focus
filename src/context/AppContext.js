@@ -252,44 +252,56 @@ export function AppProvider({ children }) {
       const xpEarned = Math.floor(duration / 5) * 10; // 10 XP per 5 minutes
       const coinsEarned = Math.floor(duration / 10) * 5; // 5 coins per 10 minutes
       
-      actions.updateStats({
+      dispatch({ type: ActionTypes.UPDATE_STATS, payload: {
         totalSessions: state.stats.totalSessions + 1,
         totalHours: state.stats.totalHours + (duration / 60),
         todaySessions: state.stats.todaySessions + 1,
         xp: state.stats.xp + xpEarned,
         coins: state.stats.coins + coinsEarned,
         streak: state.stats.streak + 1,
-      });
+      }});
       
-      actions.addHistoryEntry({
+      const historyEntry = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
         type: 'defocus',
         duration,
         xpEarned,
         coinsEarned,
-      });
+      };
+      dispatch({ type: ActionTypes.ADD_HISTORY_ENTRY, payload: historyEntry });
     },
     
     completeGame: (gameType, score) => {
       const xpEarned = Math.floor(score / 100) * 5; // 5 XP per 100 points
       const coinsEarned = Math.floor(score / 200) * 2; // 2 coins per 200 points
       
-      actions.updateStats({
+      dispatch({ type: ActionTypes.UPDATE_STATS, payload: {
         xp: state.stats.xp + xpEarned,
         coins: state.stats.coins + coinsEarned,
+      }});
+      
+      dispatch({ 
+        type: ActionTypes.UPDATE_GAME_STATS, 
+        payload: { 
+          game: gameType, 
+          stats: {
+            highScore: Math.max(state.games[gameType]?.highScore || 0, score),
+            gamesPlayed: (state.games[gameType]?.gamesPlayed || 0) + 1,
+          }
+        } 
       });
       
-      actions.updateGameStats(gameType, {
-        highScore: Math.max(state.games[gameType]?.highScore || 0, score),
-        gamesPlayed: (state.games[gameType]?.gamesPlayed || 0) + 1,
-      });
-      
-      actions.addHistoryEntry({
+      const historyEntry = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
         type: 'game',
         gameType,
         score,
         xpEarned,
         coinsEarned,
-      });
+      };
+      dispatch({ type: ActionTypes.ADD_HISTORY_ENTRY, payload: historyEntry });
     },
   };
 
