@@ -7608,26 +7608,12 @@
                       )
                     ),
                 ]
-              ),
-
-              // Dashboard Content
-              React.createElement(
-                "div",
-                {
-                  key: "dashboard",
-                  className: "flex-1 p-6 bg-gray-50 dark:bg-gray-900",
-                },
-                React.createElement("div", {
-                  className: "max-w-7xl mx-auto"
-                }, [
-                  React.createElement("h2", {
-                    className: "text-xl font-semibold text-gray-900 dark:text-white mb-6"
-                  }, `Hi ${username} 👋, here's your focus report`)
-                ])
-              ),
+              )
             ]
           );
 
+                // Screen rendering function
+        console.log("JavaScript is executing!");
         const renderCurrentScreen = () => {
           switch (currentScreen) {
             case "tasks":
