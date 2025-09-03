@@ -4262,15 +4262,2258 @@
                   "fixed bottom-6 right-6 w-12 h-12 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 rounded-full flex items-center justify-center shadow-lg z-50 hover:scale-105 transition-transform",
               },
               isDarkMode ? "☀️" : "🌙"
-            ),
+            )
           ]
         );
       };
 
       const WebApp = () => {
+        // Always show welcome screen first for all users
+        const [showWelcome, setShowWelcome] = useState(true);
+        const [showOnboarding, setShowOnboarding] = useState(false);
         const [currentScreen, setCurrentScreen] = useState("dashboard");
-        const username =
-          localStorage.getItem("defocus2focus_username") || "User";
+        const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(
+          () => {
+            return !!localStorage.getItem("defocus2focus_onboarding_completed");
+          }
+        );
+
+        // App state
+        const [tasks, setTasks] = useState([]);
+        const [energyPoints, setEnergyPoints] = useState(0);
+        const [focusSessions, setFocusSessions] = useState(0);
+        const [currentStreak, setCurrentStreak] = useState(0);
+        const [achievements, setAchievements] = useState([]);
+
+        // New features state
+        const [sessionHistory, setSessionHistory] = useState([]);
+        const [leaderboards, setLeaderboards] = useState({
+          focus: [],
+          defocus: [],
+          journaling: [],
+          games: [],
+          global: [],
+        });
+        const [username, setUsername] = useState(() => {
+          return (
+            localStorage.getItem("defocus2focus_username") || "Anonymous User"
+          );
+        });
+
+        // Modal states
+        const [showPomodoro, setShowPomodoro] = useState(false);
+        const [showDefocus, setShowDefocus] = useState(false);
+        const [showBreakTime, setShowBreakTime] = useState(false);
+
+        // New screen states
+        const [showHistory, setShowHistory] = useState(false);
+        const [showLeaderboards, setShowLeaderboards] = useState(false);
+
+        // Audio Manager Class
+        class AudioManager {
+          constructor() {
+            this.currentAudio = null;
+            this.volume = 0.7;
+            this.isPlaying = false;
+            this.audioSources = {
+              nature: {
+                rain: "assets/audio/nature/rain.mp3",
+                forest: "assets/audio/nature/forest.mp3",
+                ocean: "assets/audio/nature/ocean.mp3",
+                thunder: "assets/audio/nature/thunder.mp3",
+                birds: "assets/audio/nature/birds.mp3",
+                wind: "assets/audio/nature/wind.mp3",
+              },
+              ambient: {
+                space: "assets/audio/ambient/space.mp3",
+                city: "assets/audio/ambient/city.mp3",
+                cafe: "assets/audio/ambient/cafe.mp3",
+                library: "assets/audio/ambient/library.mp3",
+                fireplace: "assets/audio/ambient/fireplace.mp3",
+                train: "assets/audio/ambient/train.mp3",
+              },
+              focus: {
+                binaural: "assets/audio/focus/Binaural.mp3",
+                classical: "assets/audio/focus/classical.mp3",
+                lofi: "assets/audio/focus/lofi.mp3",
+                piano: "assets/audio/focus/piano.mp3",
+                white_noise: "assets/audio/focus/white noise.mp3",
+                brown_noise: "assets/audio/focus/brown noise.mp3",
+              },
+              relax: {
+                meditation: "assets/audio/relax/meditation.mp3",
+                spa: "assets/audio/relax/spa.mp3",
+                zen: "assets/audio/relax/zen.mp3",
+                chimes: "assets/audio/relax/chimes.mp3",
+                singing_bowl: "assets/audio/relax/singing bowl.mp3",
+                flute: "assets/audio/relax/flute.mp3",
+              },
+            };
+          }
+
+          playAudio(category, trackId) {
+            this.stopAudio();
+
+            const audioPath = this.audioSources[category]?.[trackId];
+            if (!audioPath) {
+              console.warn(`Audio not found: ${category}/${trackId}`);
+              return;
+            }
+
+            this.currentAudio = new Audio(audioPath);
+            this.currentAudio.volume = this.volume;
+            this.currentAudio.loop = true;
+
+            this.currentAudio.addEventListener("canplaythrough", () => {
+              this.currentAudio
+                .play()
+                .then(() => {
+                  this.isPlaying = true;
+                })
+                .catch((error) => {
+                  console.warn("Audio play failed:", error);
+                  // Fallback: try to play a simple tone
+                  this.playFallbackTone();
+                });
+            });
+
+            this.currentAudio.addEventListener("error", (error) => {
+              console.warn("Audio load failed:", error);
+              // Fallback: try to play a simple tone
+              this.playFallbackTone();
+            });
+
+            this.currentAudio.load();
+          }
+
+          playFallbackTone() {
+            // Create a simple audio context for fallback
+            try {
+              const audioContext = new (window.AudioContext ||
+                window.webkitAudioContext)();
+              const oscillator = audioContext.createOscillator();
+              const gainNode = audioContext.createGain();
+
+              oscillator.connect(gainNode);
+              gainNode.connect(audioContext.destination);
+
+              oscillator.frequency.setValueAtTime(
+                440,
+                audioContext.currentTime
+              );
+              gainNode.gain.setValueAtTime(
+                this.volume * 0.1,
+                audioContext.currentTime
+              );
+
+              oscillator.start();
+              this.isPlaying = true;
+
+              // Store reference for stopping
+              this.currentAudio = {
+                pause: () => {
+                  oscillator.stop();
+                  this.isPlaying = false;
+                },
+                volume: this.volume,
+              };
+            } catch (error) {
+              console.warn("Fallback audio failed:", error);
+            }
+          }
+
+          pauseAudio() {
+            if (this.currentAudio && this.isPlaying) {
+              this.currentAudio.pause();
+              this.isPlaying = false;
+            }
+          }
+
+          resumeAudio() {
+            if (this.currentAudio && !this.isPlaying) {
+              this.currentAudio
+                .play()
+                .then(() => {
+                  this.isPlaying = true;
+                })
+                .catch((error) => {
+                  console.warn("Audio resume failed:", error);
+                });
+            }
+          }
+
+          stopAudio() {
+            if (this.currentAudio) {
+              this.currentAudio.pause();
+              this.currentAudio.currentTime = 0;
+              this.isPlaying = false;
+              this.currentAudio = null;
+            }
+          }
+
+          setVolume(volume) {
+            this.volume = Math.max(0, Math.min(1, volume));
+            if (this.currentAudio && this.currentAudio.volume !== undefined) {
+              this.currentAudio.volume = this.volume;
+            }
+          }
+
+          getVolume() {
+            return this.volume;
+          }
+
+          isCurrentlyPlaying() {
+            return this.isPlaying;
+          }
+        }
+
+        // Initialize audio manager
+        const audioManager = new AudioManager();
+
+        // Handle user interaction for audio
+        const enableAudio = () => {
+          // Create a silent audio context to enable audio
+          try {
+            const audioContext = new (window.AudioContext ||
+              window.webkitAudioContext)();
+            if (audioContext.state === "suspended") {
+              audioContext.resume();
+            }
+          } catch (error) {
+            console.warn("Audio context creation failed:", error);
+          }
+        };
+
+        // Enable audio on first user interaction
+        useEffect(() => {
+          const handleFirstInteraction = () => {
+            enableAudio();
+            document.removeEventListener("click", handleFirstInteraction);
+            document.removeEventListener("touchstart", handleFirstInteraction);
+          };
+
+          document.addEventListener("click", handleFirstInteraction);
+          document.addEventListener("touchstart", handleFirstInteraction);
+
+          return () => {
+            document.removeEventListener("click", handleFirstInteraction);
+            document.removeEventListener("touchstart", handleFirstInteraction);
+          };
+        }, []);
+
+        useEffect(() => {
+          // Load saved data
+          const savedTasks = localStorage.getItem("defocus2focus_tasks");
+          const savedEnergy = localStorage.getItem("defocus2focus_energy");
+          const savedSessions = localStorage.getItem("defocus2focus_sessions");
+          const savedStreak = localStorage.getItem("defocus2focus_streak");
+          const savedAchievements = localStorage.getItem(
+            "defocus2focus_achievements"
+          );
+          const savedHistory = localStorage.getItem("defocus2focus_history");
+          const savedLeaderboards = localStorage.getItem(
+            "defocus2focus_leaderboards"
+          );
+
+          if (savedTasks) setTasks(JSON.parse(savedTasks));
+          if (savedEnergy) setEnergyPoints(parseInt(savedEnergy));
+          if (savedSessions) setFocusSessions(parseInt(savedSessions));
+          if (savedStreak) setCurrentStreak(parseInt(savedStreak));
+          if (savedAchievements) setAchievements(JSON.parse(savedAchievements));
+          if (savedHistory) setSessionHistory(JSON.parse(savedHistory));
+          if (savedLeaderboards) setLeaderboards(JSON.parse(savedLeaderboards));
+
+          // Initialize leaderboards with sample data if empty
+          if (!savedLeaderboards) {
+            const sampleLeaderboards = {
+              focus: [
+                { username: "FocusMaster", score: 1250, badge: "🥇" },
+                { username: "DeepWorker", score: 980, badge: "🥈" },
+                { username: "ConcentrationPro", score: 750, badge: "🥉" },
+              ],
+              defocus: [
+                { username: "ZenMaster", score: 890, badge: "🥇" },
+                { username: "MindfulBreaker", score: 650, badge: "🥈" },
+                { username: "RelaxationGuru", score: 420, badge: "🥉" },
+              ],
+              journaling: [
+                { username: "ReflectionKing", score: 320, badge: "🥇" },
+                { username: "ThoughtWriter", score: 280, badge: "🥈" },
+                { username: "MindScribe", score: 200, badge: "🥉" },
+              ],
+              games: [
+                { username: "GameChampion", score: 1500, badge: "🥇" },
+                { username: "PlayMaster", score: 1200, badge: "🥈" },
+                { username: "FunSeeker", score: 900, badge: "🥉" },
+              ],
+              global: [
+                { username: "ProductivityGuru", score: 2850, badge: "👑" },
+                { username: "BalanceMaster", score: 2200, badge: "🥇" },
+                { username: "GrowthSeeker", score: 1800, badge: "🥈" },
+              ],
+            };
+            setLeaderboards(sampleLeaderboards);
+            localStorage.setItem(
+              "defocus2focus_leaderboards",
+              JSON.stringify(sampleLeaderboards)
+            );
+          }
+        }, []);
+
+        const handleWelcomeStart = () => {
+          setShowWelcome(false);
+          // Always show onboarding carousel for all users
+          setShowOnboarding(true);
+        };
+
+        const handleOnboardingComplete = () => {
+          localStorage.setItem("defocus2focus_onboarding_completed", "true");
+          setShowOnboarding(false);
+          setHasCompletedOnboarding(true);
+          setCurrentScreen("dashboard");
+        };
+
+        const handleOnboardingSkip = () => {
+          localStorage.setItem("defocus2focus_onboarding_completed", "true");
+          setShowOnboarding(false);
+          setHasCompletedOnboarding(true);
+          setCurrentScreen("dashboard");
+        };
+
+        const resetOnboarding = () => {
+          localStorage.removeItem("defocus2focus_onboarding_completed");
+          setShowWelcome(true);
+          setShowOnboarding(false);
+          setHasCompletedOnboarding(false);
+          setCurrentScreen("dashboard");
+        };
+
+        // Debug function to clear onboarding (can be called from console)
+        window.clearOnboarding = () => {
+          localStorage.removeItem("defocus2focus_onboarding_completed");
+          window.location.reload();
+        };
+
+        // Function to record session history
+        const recordSession = (sessionData) => {
+          const newSession = {
+            id: Date.now(),
+            feature: sessionData.feature,
+            date: new Date().toISOString(),
+            duration: sessionData.duration,
+            outcome: sessionData.outcome,
+            points: sessionData.points || 0,
+            details: sessionData.details || {},
+          };
+
+          const updatedHistory = [newSession, ...sessionHistory];
+          setSessionHistory(updatedHistory);
+          localStorage.setItem(
+            "defocus2focus_history",
+            JSON.stringify(updatedHistory)
+          );
+
+          // Update leaderboards
+          updateLeaderboards(sessionData.feature, sessionData.points || 0);
+        };
+
+        // Function to update leaderboards
+        const updateLeaderboards = (feature, points) => {
+          const currentScore =
+            leaderboards[feature]?.find((entry) => entry.username === username)
+              ?.score || 0;
+          const newScore = currentScore + points;
+
+          const updatedLeaderboards = { ...leaderboards };
+          if (!updatedLeaderboards[feature]) {
+            updatedLeaderboards[feature] = [];
+          }
+
+          // Remove existing entry for this user
+          updatedLeaderboards[feature] = updatedLeaderboards[feature].filter(
+            (entry) => entry.username !== username
+          );
+
+          // Add new entry
+          updatedLeaderboards[feature].push({
+            username: username,
+            score: newScore,
+            badge: newScore >= 1000 ? "🥇" : newScore >= 500 ? "🥈" : "🥉",
+          });
+
+          // Sort by score
+          updatedLeaderboards[feature].sort((a, b) => b.score - a.score);
+
+          // Update global leaderboard
+          const globalScore = Object.values(updatedLeaderboards)
+            .flat()
+            .filter((entry) => entry.username === username)
+            .reduce((sum, entry) => sum + entry.score, 0);
+
+          updatedLeaderboards.global = updatedLeaderboards.global.filter(
+            (entry) => entry.username !== username
+          );
+          updatedLeaderboards.global.push({
+            username: username,
+            score: globalScore,
+            badge:
+              globalScore >= 2000 ? "👑" : globalScore >= 1000 ? "🥇" : "🥈",
+          });
+          updatedLeaderboards.global.sort((a, b) => b.score - a.score);
+
+          setLeaderboards(updatedLeaderboards);
+          localStorage.setItem(
+            "defocus2focus_leaderboards",
+            JSON.stringify(updatedLeaderboards)
+          );
+        };
+
+        // Navigation functions
+        const navigateTo = (screen) => {
+          setCurrentScreen(screen);
+        };
+
+        // Enhanced task management functions
+        const addTask = (taskData) => {
+          const newTask = {
+            id: Date.now().toString(),
+            text: taskData.text,
+            description: taskData.description || "",
+            category: taskData.category || "personal",
+            priority: taskData.priority || "medium",
+            dueDate: taskData.dueDate || null,
+            completed: false,
+            createdAt: new Date().toISOString(),
+            estimatedTime: taskData.estimatedTime || null,
+            tags: taskData.tags || [],
+            subtasks: taskData.subtasks || [],
+            focusSessions: 0,
+            totalFocusTime: 0,
+          };
+          const updatedTasks = [...tasks, newTask];
+          setTasks(updatedTasks);
+          localStorage.setItem(
+            "defocus2focus_tasks",
+            JSON.stringify(updatedTasks)
+          );
+        };
+
+        const updateTask = (taskId, updates) => {
+          const updatedTasks = tasks.map((task) =>
+            task.id === taskId ? { ...task, ...updates } : task
+          );
+          setTasks(updatedTasks);
+          localStorage.setItem(
+            "defocus2focus_tasks",
+            JSON.stringify(updatedTasks)
+          );
+        };
+
+        const toggleTask = (taskId) => {
+          const task = tasks.find((t) => t.id === taskId);
+          const updatedTasks = tasks.map((task) =>
+            task.id === taskId ? { ...task, completed: !task.completed } : task
+          );
+          setTasks(updatedTasks);
+          localStorage.setItem(
+            "defocus2focus_tasks",
+            JSON.stringify(updatedTasks)
+          );
+
+          // Award energy points for completing tasks
+          if (!task.completed) {
+            const newEnergy = energyPoints + 10;
+            setEnergyPoints(newEnergy);
+            localStorage.setItem("defocus2focus_energy", newEnergy.toString());
+          }
+        };
+
+        const addSubtask = (taskId, subtaskText) => {
+          const updatedTasks = tasks.map((task) => {
+            if (task.id === taskId) {
+              const newSubtask = {
+                id: Date.now().toString(),
+                text: subtaskText,
+                completed: false,
+                createdAt: new Date().toISOString(),
+              };
+              return {
+                ...task,
+                subtasks: [...task.subtasks, newSubtask],
+              };
+            }
+            return task;
+          });
+          setTasks(updatedTasks);
+          localStorage.setItem(
+            "defocus2focus_tasks",
+            JSON.stringify(updatedTasks)
+          );
+        };
+
+        const toggleSubtask = (taskId, subtaskId) => {
+          const updatedTasks = tasks.map((task) => {
+            if (task.id === taskId) {
+              return {
+                ...task,
+                subtasks: task.subtasks.map((subtask) =>
+                  subtask.id === subtaskId
+                    ? { ...subtask, completed: !subtask.completed }
+                    : subtask
+                ),
+              };
+            }
+            return task;
+          });
+          setTasks(updatedTasks);
+          localStorage.setItem(
+            "defocus2focus_tasks",
+            JSON.stringify(updatedTasks)
+          );
+        };
+
+        const deleteTask = (taskId) => {
+          const updatedTasks = tasks.filter((task) => task.id !== taskId);
+          setTasks(updatedTasks);
+          localStorage.setItem(
+            "defocus2focus_tasks",
+            JSON.stringify(updatedTasks)
+          );
+        };
+
+        // Focus session functions
+        const completeFocusSession = () => {
+          const newSessions = focusSessions + 1;
+          const newEnergy = energyPoints + 25;
+          const newStreak = currentStreak + 1;
+
+          setFocusSessions(newSessions);
+          setEnergyPoints(newEnergy);
+          setCurrentStreak(newStreak);
+
+          localStorage.setItem(
+            "defocus2focus_sessions",
+            newSessions.toString()
+          );
+          localStorage.setItem("defocus2focus_energy", newEnergy.toString());
+          localStorage.setItem("defocus2focus_streak", newStreak.toString());
+
+          // Check for achievements
+          checkAchievements(newSessions, newStreak);
+        };
+
+        const checkAchievements = (sessions, streak) => {
+          const newAchievements = [...achievements];
+
+          if (
+            sessions >= 1 &&
+            !newAchievements.find((a) => a.id === "first_session")
+          ) {
+            newAchievements.push({
+              id: "first_session",
+              name: "First Focus",
+              description: "Complete your first focus session",
+              icon: "🎯",
+            });
+          }
+          if (
+            sessions >= 5 &&
+            !newAchievements.find((a) => a.id === "focused_5")
+          ) {
+            newAchievements.push({
+              id: "focused_5",
+              name: "Focused Five",
+              description: "Complete 5 focus sessions",
+              icon: "🔥",
+            });
+          }
+          if (
+            streak >= 3 &&
+            !newAchievements.find((a) => a.id === "streak_3")
+          ) {
+            newAchievements.push({
+              id: "streak_3",
+              name: "Streak Master",
+              description: "3-day focus streak",
+              icon: "⚡",
+            });
+          }
+
+          if (newAchievements.length > achievements.length) {
+            setAchievements(newAchievements);
+            localStorage.setItem(
+              "defocus2focus_achievements",
+              JSON.stringify(newAchievements)
+            );
+          }
+        };
+
+        // Music & Relaxation Screen
+        const MusicScreen = () => {
+          const [selectedCategory, setSelectedCategory] = useState("focus");
+          const [currentTrack, setCurrentTrack] = useState(null);
+          const [isPlaying, setIsPlaying] = useState(false);
+          const [volume, setVolume] = useState(0.7);
+          const [audioStatus, setAudioStatus] = useState("ready");
+
+          // Sync with audio manager
+          useEffect(() => {
+            setIsPlaying(audioManager.isCurrentlyPlaying());
+            setVolume(audioManager.getVolume());
+          }, []);
+
+          const musicCategories = [
+            {
+              id: "nature",
+              title: "Nature Sounds",
+              subtitle: "Forest, rain, ocean waves",
+              icon: "🌿",
+              color: "green",
+              tracks: [
+                { id: "rain", name: "Rain", icon: "🌧️", duration: "5:30" },
+                { id: "forest", name: "Forest", icon: "🌲", duration: "4:45" },
+                { id: "ocean", name: "Ocean", icon: "🌊", duration: "6:15" },
+                {
+                  id: "thunder",
+                  name: "Thunder",
+                  icon: "⛈️",
+                  duration: "3:50",
+                },
+                { id: "birds", name: "Birds", icon: "🐦", duration: "4:20" },
+                { id: "wind", name: "Wind", icon: "🍃", duration: "5:10" },
+              ],
+            },
+            {
+              id: "ambient",
+              title: "Ambient Sounds",
+              subtitle: "Space, city, cafe atmosphere",
+              icon: "🌆",
+              color: "purple",
+              tracks: [
+                { id: "space", name: "Space", icon: "🚀", duration: "6:40" },
+                { id: "city", name: "City", icon: "🏙️", duration: "4:55" },
+                { id: "cafe", name: "Cafe", icon: "☕", duration: "5:25" },
+                {
+                  id: "library",
+                  name: "Library",
+                  icon: "📚",
+                  duration: "4:10",
+                },
+                {
+                  id: "fireplace",
+                  name: "Fireplace",
+                  icon: "🔥",
+                  duration: "6:20",
+                },
+                { id: "train", name: "Train", icon: "🚂", duration: "5:45" },
+              ],
+            },
+            {
+              id: "focus",
+              title: "Focus Music",
+              subtitle: "Binaural beats, classical, lofi",
+              icon: "🎯",
+              color: "blue",
+              tracks: [
+                {
+                  id: "binaural",
+                  name: "Binaural",
+                  icon: "🧠",
+                  duration: "4:30",
+                },
+                {
+                  id: "classical",
+                  name: "Classical",
+                  icon: "🎼",
+                  duration: "5:15",
+                },
+                { id: "lofi", name: "Lo-Fi", icon: "🎧", duration: "4:45" },
+                { id: "piano", name: "Piano", icon: "🎹", duration: "5:50" },
+                {
+                  id: "white_noise",
+                  name: "White Noise",
+                  icon: "📻",
+                  duration: "6:00",
+                },
+                {
+                  id: "brown_noise",
+                  name: "Brown Noise",
+                  icon: "🌊",
+                  duration: "5:30",
+                },
+              ],
+            },
+            {
+              id: "relax",
+              title: "Relaxation",
+              subtitle: "Meditation, spa, zen sounds",
+              icon: "🧘",
+              color: "orange",
+              tracks: [
+                {
+                  id: "meditation",
+                  name: "Meditation",
+                  icon: "🧘‍♀️",
+                  duration: "8:00",
+                },
+                { id: "spa", name: "Spa", icon: "🛁", duration: "6:30" },
+                { id: "zen", name: "Zen", icon: "🏯", duration: "7:15" },
+                { id: "chimes", name: "Chimes", icon: "🔔", duration: "4:20" },
+                {
+                  id: "singing_bowl",
+                  name: "Singing Bowl",
+                  icon: "🥣",
+                  duration: "5:45",
+                },
+                { id: "flute", name: "Flute", icon: "🎵", duration: "6:10" },
+              ],
+            },
+          ];
+
+          const handlePlayTrack = (track) => {
+            console.log(`Attempting to play: ${selectedCategory}/${track.id}`);
+            setAudioStatus("loading");
+
+            if (currentTrack?.id === track.id) {
+              // Toggle play/pause for current track
+              if (isPlaying) {
+                audioManager.pauseAudio();
+                setIsPlaying(false);
+                setAudioStatus("paused");
+                console.log("Audio paused");
+              } else {
+                audioManager.resumeAudio();
+                setIsPlaying(true);
+                setAudioStatus("playing");
+                console.log("Audio resumed");
+              }
+            } else {
+              // Play new track
+              setCurrentTrack(track);
+              audioManager.playAudio(selectedCategory, track.id);
+              setIsPlaying(true);
+              setAudioStatus("playing");
+              console.log(`Playing: ${track.name} from ${selectedCategory}`);
+
+              // Show notification
+              if (navigator.vibrate) {
+                navigator.vibrate(100); // Haptic feedback
+              }
+            }
+          };
+
+          const handleVolumeChange = (newVolume) => {
+            setVolume(newVolume);
+            audioManager.setVolume(newVolume);
+          };
+
+          const handleStop = () => {
+            audioManager.stopAudio();
+            setCurrentTrack(null);
+            setIsPlaying(false);
+            setAudioStatus("stopped");
+          };
+
+          const handleNextTrack = () => {
+            const currentCategory = musicCategories.find(
+              (cat) => cat.id === selectedCategory
+            );
+            if (!currentCategory || !currentTrack) return;
+
+            const currentIndex = currentCategory.tracks.findIndex(
+              (track) => track.id === currentTrack.id
+            );
+            const nextIndex =
+              (currentIndex + 1) % currentCategory.tracks.length;
+            const nextTrack = currentCategory.tracks[nextIndex];
+
+            handlePlayTrack(nextTrack);
+          };
+
+          const handlePreviousTrack = () => {
+            const currentCategory = musicCategories.find(
+              (cat) => cat.id === selectedCategory
+            );
+            if (!currentCategory || !currentTrack) return;
+
+            const currentIndex = currentCategory.tracks.findIndex(
+              (track) => track.id === currentTrack.id
+            );
+            const prevIndex =
+              currentIndex === 0
+                ? currentCategory.tracks.length - 1
+                : currentIndex - 1;
+            const prevTrack = currentCategory.tracks[prevIndex];
+
+            handlePlayTrack(prevTrack);
+          };
+
+          // Keyboard shortcuts
+          useEffect(() => {
+            const handleKeyPress = (event) => {
+              // Only handle shortcuts when music screen is active
+              if (
+                event.target.tagName === "INPUT" ||
+                event.target.tagName === "TEXTAREA"
+              )
+                return;
+
+              switch (event.code) {
+                case "Space":
+                  event.preventDefault();
+                  if (currentTrack) {
+                    if (isPlaying) {
+                      audioManager.pauseAudio();
+                      setIsPlaying(false);
+                      setAudioStatus("paused");
+                    } else {
+                      audioManager.resumeAudio();
+                      setIsPlaying(true);
+                      setAudioStatus("playing");
+                    }
+                  }
+                  break;
+                case "ArrowRight":
+                  event.preventDefault();
+                  handleNextTrack();
+                  break;
+                case "ArrowLeft":
+                  event.preventDefault();
+                  handlePreviousTrack();
+                  break;
+                case "Escape":
+                  event.preventDefault();
+                  handleStop();
+                  break;
+                case "KeyM":
+                  event.preventDefault();
+                  // Toggle mute
+                  const newVolume = volume > 0 ? 0 : 0.7;
+                  handleVolumeChange(newVolume);
+                  break;
+              }
+            };
+
+            document.addEventListener("keydown", handleKeyPress);
+            return () =>
+              document.removeEventListener("keydown", handleKeyPress);
+          }, [currentTrack, isPlaying, volume]);
+
+          const getCurrentCategory = () => {
+            return musicCategories.find((cat) => cat.id === selectedCategory);
+          };
+
+          return React.createElement(
+            "div",
+            {
+              className:
+                "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
+            },
+            [
+              // Header
+              React.createElement(
+                "header",
+                {
+                  key: "header",
+                  className: "bg-white shadow-sm border-b border-gray-200",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className: "max-w-6xl mx-auto px-4 sm:px-6 lg:px-8",
+                  },
+                  React.createElement(
+                    "div",
+                    {
+                      className: "flex justify-between items-center py-6",
+                    },
+                    [
+                      React.createElement(
+                        "div",
+                        {
+                          key: "title",
+                          className: "flex items-center",
+                        },
+                        [
+                          React.createElement(
+                            "button",
+                            {
+                              key: "back-btn",
+                              onClick: () => navigateTo("dashboard"),
+                              className:
+                                "mr-4 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
+                            },
+                            "←"
+                          ),
+                          React.createElement(
+                            "h1",
+                            {
+                              key: "main-title",
+                              className: "text-3xl font-bold text-gray-900",
+                            },
+                            "🎵 Music & Relaxation"
+                          ),
+                        ]
+                      ),
+                      currentTrack &&
+                        React.createElement(
+                          "div",
+                          {
+                            key: "now-playing",
+                            className: "text-sm text-gray-600",
+                          },
+                          [
+                            `Now Playing: ${currentTrack.name}`,
+                            React.createElement(
+                              "span",
+                              {
+                                key: "status",
+                                className: `ml-2 px-2 py-1 rounded text-xs ${
+                                  audioStatus === "playing"
+                                    ? "bg-green-100 text-green-800"
+                                    : audioStatus === "loading"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : audioStatus === "paused"
+                                    ? "bg-orange-100 text-orange-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`,
+                              },
+                              audioStatus
+                            ),
+                          ]
+                        ),
+                    ]
+                  )
+                )
+              ),
+
+              // Main Content
+              React.createElement(
+                "main",
+                {
+                  key: "main",
+                  className: "max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+                },
+                [
+                  // Category Selector
+                  React.createElement(
+                    "div",
+                    {
+                      key: "categories",
+                      className: "mb-8",
+                    },
+                    [
+                      React.createElement(
+                        "h2",
+                        {
+                          key: "section-title",
+                          className: "text-xl font-semibold text-gray-900 mb-4",
+                        },
+                        "Choose Your Sound"
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "category-grid",
+                          className: "grid grid-cols-2 md:grid-cols-4 gap-4",
+                        },
+                        musicCategories.map((category) =>
+                          React.createElement(
+                            "button",
+                            {
+                              key: category.id,
+                              onClick: () => setSelectedCategory(category.id),
+                              className: `p-4 rounded-xl border-2 transition-all duration-200 ${
+                                selectedCategory === category.id
+                                  ? `border-${category.color}-500 bg-${category.color}-50`
+                                  : "border-gray-200 bg-white hover:border-gray-300"
+                              }`,
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "icon",
+                                  className: "text-3xl mb-2",
+                                },
+                                category.icon
+                              ),
+                              React.createElement(
+                                "h3",
+                                {
+                                  key: "title",
+                                  className: "font-semibold text-gray-900 mb-1",
+                                },
+                                category.title
+                              ),
+                              React.createElement(
+                                "p",
+                                {
+                                  key: "subtitle",
+                                  className: "text-xs text-gray-600",
+                                },
+                                category.subtitle
+                              ),
+                            ]
+                          )
+                        )
+                      ),
+                    ]
+                  ),
+
+                  // Current Track Display
+                  currentTrack &&
+                    React.createElement(
+                      "div",
+                      {
+                        key: "now-playing-card",
+                        className: "bg-white rounded-xl shadow-lg p-6 mb-8",
+                      },
+                      [
+                        React.createElement(
+                          "h3",
+                          {
+                            key: "now-playing-title",
+                            className:
+                              "text-lg font-semibold text-gray-900 mb-4",
+                          },
+                          "Now Playing"
+                        ),
+                        React.createElement(
+                          "div",
+                          {
+                            key: "track-info",
+                            className: "flex items-center justify-between",
+                          },
+                          [
+                            React.createElement(
+                              "div",
+                              {
+                                key: "track-details",
+                                className: "flex items-center",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "track-icon",
+                                    className: "text-4xl mr-4",
+                                  },
+                                  currentTrack.icon
+                                ),
+                                React.createElement(
+                                  "div",
+                                  { key: "track-text" },
+                                  [
+                                    React.createElement(
+                                      "h4",
+                                      {
+                                        key: "track-name",
+                                        className:
+                                          "text-xl font-semibold text-gray-900",
+                                      },
+                                      currentTrack.name
+                                    ),
+                                    React.createElement(
+                                      "p",
+                                      {
+                                        key: "track-category",
+                                        className: "text-sm text-gray-600",
+                                      },
+                                      getCurrentCategory()?.title
+                                    ),
+                                  ]
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "track-controls",
+                                className: "flex items-center space-x-4",
+                              },
+                              [
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: "previous",
+                                    onClick: handlePreviousTrack,
+                                    className:
+                                      "w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors duration-200",
+                                    title: "Previous Track (←)",
+                                  },
+                                  "⏮️"
+                                ),
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: "play-pause",
+                                    onClick: () => {
+                                      if (currentTrack) {
+                                        if (isPlaying) {
+                                          audioManager.pauseAudio();
+                                          setIsPlaying(false);
+                                          setAudioStatus("paused");
+                                        } else {
+                                          audioManager.resumeAudio();
+                                          setIsPlaying(true);
+                                          setAudioStatus("playing");
+                                        }
+                                      }
+                                    },
+                                    className: `w-12 h-12 rounded-full flex items-center justify-center text-white transition-colors duration-200 ${
+                                      isPlaying
+                                        ? "bg-red-500 hover:bg-red-600"
+                                        : "bg-green-500 hover:bg-green-600"
+                                    }`,
+                                    title: "Play/Pause (Space)",
+                                  },
+                                  isPlaying ? "⏸️" : "▶️"
+                                ),
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: "next",
+                                    onClick: handleNextTrack,
+                                    className:
+                                      "w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors duration-200",
+                                    title: "Next Track (→)",
+                                  },
+                                  "⏭️"
+                                ),
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: "stop",
+                                    onClick: handleStop,
+                                    className:
+                                      "w-10 h-10 rounded-full bg-gray-500 hover:bg-gray-600 text-white flex items-center justify-center transition-colors duration-200",
+                                    title: "Stop (Esc)",
+                                  },
+                                  "⏹️"
+                                ),
+                              ]
+                            ),
+                          ]
+                        ),
+                        React.createElement(
+                          "div",
+                          {
+                            key: "volume-control",
+                            className: "mt-4 flex items-center space-x-3",
+                          },
+                          [
+                            React.createElement(
+                              "span",
+                              {
+                                key: "volume-icon",
+                                className: "text-gray-600",
+                              },
+                              "🔊"
+                            ),
+                            React.createElement("input", {
+                              key: "volume-slider",
+                              type: "range",
+                              min: "0",
+                              max: "1",
+                              step: "0.1",
+                              value: volume,
+                              onChange: (e) =>
+                                handleVolumeChange(parseFloat(e.target.value)),
+                              className:
+                                "flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer",
+                            }),
+                            React.createElement(
+                              "span",
+                              {
+                                key: "volume-value",
+                                className: "text-sm text-gray-600 w-8",
+                              },
+                              Math.round(volume * 100)
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "mute-toggle",
+                                onClick: () => {
+                                  const newVolume = volume > 0 ? 0 : 0.7;
+                                  handleVolumeChange(newVolume);
+                                },
+                                className:
+                                  "ml-2 px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded transition-colors",
+                                title: "Toggle Mute (M)",
+                              },
+                              volume > 0 ? "🔊" : "🔇"
+                            ),
+                          ]
+                        ),
+
+                        // Keyboard Shortcuts Help
+                        React.createElement(
+                          "div",
+                          {
+                            key: "keyboard-shortcuts",
+                            className:
+                              "mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg",
+                          },
+                          [
+                            React.createElement(
+                              "h4",
+                              {
+                                key: "shortcuts-title",
+                                className:
+                                  "text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2",
+                              },
+                              "⌨️ Keyboard Shortcuts"
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "shortcuts-list",
+                                className:
+                                  "grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  { key: "space" },
+                                  "Space: Play/Pause"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  { key: "left" },
+                                  "←: Previous"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  { key: "right" },
+                                  "→: Next"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  { key: "esc" },
+                                  "Esc: Stop"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  { key: "m" },
+                                  "M: Mute"
+                                ),
+                              ]
+                            ),
+                          ]
+                        ),
+                      ]
+                    ),
+
+                  // Tracks List
+                  React.createElement(
+                    "div",
+                    {
+                      key: "tracks-section",
+                      className: "bg-white rounded-xl shadow-lg p-6",
+                    },
+                    [
+                      React.createElement(
+                        "h3",
+                        {
+                          key: "tracks-title",
+                          className: "text-lg font-semibold text-gray-900 mb-4",
+                        },
+                        `${getCurrentCategory()?.title} Tracks`
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "tracks-grid",
+                          className: "grid grid-cols-1 md:grid-cols-2 gap-4",
+                        },
+                        getCurrentCategory()?.tracks.map((track) => {
+                          const isCurrentTrack = currentTrack?.id === track.id;
+                          const isPlayingTrack = isCurrentTrack && isPlaying;
+
+                          return React.createElement(
+                            "div",
+                            {
+                              key: track.id,
+                              className: `p-4 rounded-lg border transition-all duration-200 cursor-pointer ${
+                                isCurrentTrack
+                                  ? "border-blue-500 bg-blue-50"
+                                  : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100"
+                              }`,
+                              onClick: () => handlePlayTrack(track),
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "track-header",
+                                  className:
+                                    "flex items-center justify-between mb-2",
+                                },
+                                [
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "track-info",
+                                      className: "flex items-center",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "track-icon",
+                                          className: "text-2xl mr-3",
+                                        },
+                                        track.icon
+                                      ),
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "track-name",
+                                          className: `font-medium ${
+                                            isCurrentTrack
+                                              ? "text-blue-600"
+                                              : "text-gray-900"
+                                          }`,
+                                        },
+                                        track.name
+                                      ),
+                                    ]
+                                  ),
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "track-controls",
+                                      className: "flex items-center space-x-2",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "duration",
+                                          className: "text-sm text-gray-500",
+                                        },
+                                        track.duration
+                                      ),
+                                      React.createElement(
+                                        "div",
+                                        {
+                                          key: "play-indicator",
+                                          className: `w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                                            isPlayingTrack
+                                              ? "bg-red-500 text-white"
+                                              : "bg-green-500 text-white"
+                                          }`,
+                                        },
+                                        isPlayingTrack ? "⏸️" : "▶️"
+                                      ),
+                                    ]
+                                  ),
+                                ]
+                              ),
+                            ]
+                          );
+                        })
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+            ]
+          );
+        };
+
+        // Rewards & Achievements Screen
+        const RewardsScreen = () => {
+          return React.createElement(
+            "div",
+            {
+              className:
+                "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
+            },
+            [
+              // Header
+              React.createElement(
+                "header",
+                {
+                  key: "header",
+                  className: "bg-white shadow-sm border-b border-gray-200",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8",
+                  },
+                  React.createElement(
+                    "div",
+                    {
+                      className: "flex justify-between items-center py-6",
+                    },
+                    [
+                      React.createElement(
+                        "div",
+                        {
+                          key: "title",
+                          className: "flex items-center",
+                        },
+                        [
+                          React.createElement(
+                            "button",
+                            {
+                              key: "back-btn",
+                              onClick: () => navigateTo("dashboard"),
+                              className:
+                                "mr-4 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
+                            },
+                            "←"
+                          ),
+                          React.createElement(
+                            "h1",
+                            {
+                              key: "main-title",
+                              className: "text-3xl font-bold text-gray-900",
+                            },
+                            "🏆 Rewards & Achievements"
+                          ),
+                        ]
+                      ),
+                    ]
+                  )
+                )
+              ),
+
+              // Main Content
+              React.createElement(
+                "main",
+                {
+                  key: "main",
+                  className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+                },
+                [
+                  // Energy Points Summary
+                  React.createElement(
+                    "div",
+                    {
+                      key: "energy-summary",
+                      className:
+                        "bg-gradient-to-r from-green-500 to-blue-500 rounded-xl p-6 text-white mb-8",
+                    },
+                    [
+                      React.createElement(
+                        "h2",
+                        {
+                          key: "energy-title",
+                          className: "text-2xl font-bold mb-2",
+                        },
+                        "Your Energy Points"
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "energy-stats",
+                          className: "flex justify-between items-center",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            { key: "current-energy" },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "energy-value",
+                                  className: "text-4xl font-bold",
+                                },
+                                energyPoints
+                              ),
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "energy-label",
+                                  className: "text-green-100",
+                                },
+                                "Current Points"
+                              ),
+                            ]
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "energy-icon", className: "text-6xl" },
+                            "⚡"
+                          ),
+                        ]
+                      ),
+                    ]
+                  ),
+
+                  // Achievements
+                  React.createElement(
+                    "div",
+                    {
+                      key: "achievements",
+                      className: "bg-white rounded-xl shadow-lg p-6",
+                    },
+                    [
+                      React.createElement(
+                        "h3",
+                        {
+                          key: "achievements-title",
+                          className: "text-xl font-semibold text-gray-900 mb-4",
+                        },
+                        "Your Achievements"
+                      ),
+                      achievements.length === 0
+                        ? React.createElement(
+                            "div",
+                            {
+                              key: "no-achievements",
+                              className: "text-center py-8 text-gray-500",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "empty-icon",
+                                  className: "text-4xl mb-2",
+                                },
+                                "🏆"
+                              ),
+                              React.createElement(
+                                "p",
+                                { key: "empty-text" },
+                                "Complete focus sessions to unlock achievements!"
+                              ),
+                            ]
+                          )
+                        : React.createElement(
+                            "div",
+                            {
+                              key: "achievements-grid",
+                              className:
+                                "grid grid-cols-1 md:grid-cols-2 gap-4",
+                            },
+                            achievements.map((achievement) =>
+                              React.createElement(
+                                "div",
+                                {
+                                  key: achievement.id,
+                                  className:
+                                    "p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200",
+                                },
+                                [
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "achievement-header",
+                                      className: "flex items-center mb-2",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "achievement-icon",
+                                          className: "text-2xl mr-3",
+                                        },
+                                        achievement.icon
+                                      ),
+                                      React.createElement(
+                                        "h4",
+                                        {
+                                          key: "achievement-name",
+                                          className:
+                                            "font-semibold text-gray-900",
+                                        },
+                                        achievement.name
+                                      ),
+                                    ]
+                                  ),
+                                  React.createElement(
+                                    "p",
+                                    {
+                                      key: "achievement-description",
+                                      className: "text-sm text-gray-600",
+                                    },
+                                    achievement.description
+                                  ),
+                                ]
+                              )
+                            )
+                          ),
+                    ]
+                  ),
+                ]
+              ),
+            ]
+          );
+        };
+
+        // Statistics Screen
+        const StatsScreen = () => {
+          return React.createElement(
+            "div",
+            {
+              className:
+                "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
+            },
+            [
+              // Header
+              React.createElement(
+                "header",
+                {
+                  key: "header",
+                  className: "bg-white shadow-sm border-b border-gray-200",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8",
+                  },
+                  React.createElement(
+                    "div",
+                    {
+                      className: "flex justify-between items-center py-6",
+                    },
+                    [
+                      React.createElement(
+                        "div",
+                        {
+                          key: "title",
+                          className: "flex items-center",
+                        },
+                        [
+                          React.createElement(
+                            "button",
+                            {
+                              key: "back-btn",
+                              onClick: () => navigateTo("dashboard"),
+                              className:
+                                "mr-4 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
+                            },
+                            "←"
+                          ),
+                          React.createElement(
+                            "h1",
+                            {
+                              key: "main-title",
+                              className: "text-3xl font-bold text-gray-900",
+                            },
+                            "📊 Statistics & Analytics"
+                          ),
+                        ]
+                      ),
+                    ]
+                  )
+                )
+              ),
+
+              // Main Content
+              React.createElement(
+                "main",
+                {
+                  key: "main",
+                  className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+                },
+                [
+                  // Stats Grid
+                  React.createElement(
+                    "div",
+                    {
+                      key: "stats-grid",
+                      className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-8",
+                    },
+                    [
+                      React.createElement(
+                        "div",
+                        {
+                          key: "focus-sessions-card",
+                          className:
+                            "bg-white rounded-xl shadow-lg p-6 text-center",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            { key: "focus-icon", className: "text-4xl mb-2" },
+                            "🎯"
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "focus-value",
+                              className:
+                                "text-3xl font-bold text-blue-600 mb-1",
+                            },
+                            focusSessions
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "focus-label", className: "text-gray-600" },
+                            "Focus Sessions"
+                          ),
+                        ]
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "energy-points-card",
+                          className:
+                            "bg-white rounded-xl shadow-lg p-6 text-center",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            { key: "energy-icon", className: "text-4xl mb-2" },
+                            "⚡"
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "energy-value",
+                              className:
+                                "text-3xl font-bold text-green-600 mb-1",
+                            },
+                            energyPoints
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "energy-label", className: "text-gray-600" },
+                            "Energy Points"
+                          ),
+                        ]
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "streak-card",
+                          className:
+                            "bg-white rounded-xl shadow-lg p-6 text-center",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            { key: "streak-icon", className: "text-4xl mb-2" },
+                            "🔥"
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "streak-value",
+                              className:
+                                "text-3xl font-bold text-orange-600 mb-1",
+                            },
+                            currentStreak
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "streak-label", className: "text-gray-600" },
+                            "Day Streak"
+                          ),
+                        ]
+                      ),
+                    ]
+                  ),
+
+                  // Task Statistics
+                  React.createElement(
+                    "div",
+                    {
+                      key: "task-stats",
+                      className: "bg-white rounded-xl shadow-lg p-6",
+                    },
+                    [
+                      React.createElement(
+                        "h3",
+                        {
+                          key: "task-stats-title",
+                          className: "text-xl font-semibold text-gray-900 mb-4",
+                        },
+                        "Task Statistics"
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "task-progress",
+                          className: "space-y-4",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            {
+                              key: "total-tasks",
+                              className: "flex justify-between items-center",
+                            },
+                            [
+                              React.createElement(
+                                "span",
+                                {
+                                  key: "total-label",
+                                  className: "text-gray-600",
+                                },
+                                "Total Tasks"
+                              ),
+                              React.createElement(
+                                "span",
+                                {
+                                  key: "total-value",
+                                  className: "font-semibold",
+                                },
+                                tasks.length
+                              ),
+                            ]
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "completed-tasks",
+                              className: "flex justify-between items-center",
+                            },
+                            [
+                              React.createElement(
+                                "span",
+                                {
+                                  key: "completed-label",
+                                  className: "text-gray-600",
+                                },
+                                "Completed Tasks"
+                              ),
+                              React.createElement(
+                                "span",
+                                {
+                                  key: "completed-value",
+                                  className: "font-semibold text-green-600",
+                                },
+                                tasks.filter((t) => t.completed).length
+                              ),
+                            ]
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "completion-rate",
+                              className: "flex justify-between items-center",
+                            },
+                            [
+                              React.createElement(
+                                "span",
+                                {
+                                  key: "rate-label",
+                                  className: "text-gray-600",
+                                },
+                                "Completion Rate"
+                              ),
+                              React.createElement(
+                                "span",
+                                {
+                                  key: "rate-value",
+                                  className: "font-semibold text-blue-600",
+                                },
+                                tasks.length > 0
+                                  ? `${Math.round(
+                                      (tasks.filter((t) => t.completed).length /
+                                        tasks.length) *
+                                        100
+                                    )}%`
+                                  : "0%"
+                              ),
+                            ]
+                          ),
+                        ]
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+            ]
+          );
+        };
+
+        // Task Management Screen
+        const TaskManagement = () => {
+          const [newTask, setNewTask] = useState("");
+          const [showAddModal, setShowAddModal] = useState(false);
+          const [editingTask, setEditingTask] = useState(null);
+          const [activeFilter, setActiveFilter] = useState("all");
+          const [sortBy, setSortBy] = useState("created");
+          const [sortOrder, setSortOrder] = useState("desc");
+          const [expandedTasks, setExpandedTasks] = useState(new Set());
+          const [newSubtask, setNewSubtask] = useState({});
+
+          // Task categories and priorities
+          const categories = {
+            work: {
+              name: "Work",
+              color: "bg-blue-100 text-blue-800",
+              icon: "💼",
+            },
+            study: {
+              name: "Study",
+              color: "bg-green-100 text-green-800",
+              icon: "📚",
+            },
+            personal: {
+              name: "Personal",
+              color: "bg-purple-100 text-purple-800",
+              icon: "🏠",
+            },
+            health: {
+              name: "Health",
+              color: "bg-red-100 text-red-800",
+              icon: "🏥",
+            },
+            shopping: {
+              name: "Shopping",
+              color: "bg-yellow-100 text-yellow-800",
+              icon: "🛒",
+            },
+          };
+
+          const priorities = {
+            urgent: {
+              name: "Urgent",
+              color: "bg-red-100 text-red-800",
+              icon: "🔴",
+            },
+            high: {
+              name: "High",
+              color: "bg-orange-100 text-orange-800",
+              icon: "🟠",
+            },
+            medium: {
+              name: "Medium",
+              color: "bg-yellow-100 text-yellow-800",
+              icon: "🟡",
+            },
+            low: {
+              name: "Low",
+              color: "bg-green-100 text-green-800",
+              icon: "🟢",
+            },
+          };
+
+          // Filter and sort tasks
+          const filteredTasks = tasks
+            .filter((task) => {
+              if (activeFilter === "all") return true;
+              if (activeFilter === "completed") return task.completed;
+              if (activeFilter === "pending") return !task.completed;
+              if (activeFilter === "overdue") {
+                return (
+                  task.dueDate &&
+                  new Date(task.dueDate) < new Date() &&
+                  !task.completed
+                );
+              }
+              return task.category === activeFilter;
+            })
+            .sort((a, b) => {
+              let comparison = 0;
+              switch (sortBy) {
+                case "created":
+                  comparison = new Date(a.createdAt) - new Date(b.createdAt);
+                  break;
+                case "dueDate":
+                  comparison =
+                    (a.dueDate ? new Date(a.dueDate) : new Date("9999-12-31")) -
+                    (b.dueDate ? new Date(b.dueDate) : new Date("9999-12-31"));
+                  break;
+                case "priority":
+                  const priorityOrder = {
+                    urgent: 4,
+                    high: 3,
+                    medium: 2,
+                    low: 1,
+                  };
+                  comparison =
+                    (priorityOrder[b.priority] || 0) -
+                    (priorityOrder[a.priority] || 0);
+                  break;
+                case "text":
+                  comparison = a.text.localeCompare(b.text);
+                  break;
+              }
+              return sortOrder === "desc" ? -comparison : comparison;
+            });
+
+          // Calculate progress
+          const completedTasks = tasks.filter((task) => task.completed).length;
+          const totalTasks = tasks.length;
+          const progressPercentage =
+            totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+          const handleAddTask = (e) => {
+            e.preventDefault();
+            if (newTask.trim()) {
+              addTask({
+                text: newTask.trim(),
+                category: "personal",
+                priority: "medium",
+              });
+              setNewTask("");
+            }
+          };
+
+          const handleAddSubtask = (taskId) => {
+            if (newSubtask[taskId] && newSubtask[taskId].trim()) {
+              addSubtask(taskId, newSubtask[taskId].trim());
+              setNewSubtask({ ...newSubtask, [taskId]: "" });
+            }
+          };
+
+          const toggleTaskExpansion = (taskId) => {
+            const newExpanded = new Set(expandedTasks);
+            if (newExpanded.has(taskId)) {
+              newExpanded.delete(taskId);
+            } else {
+              newExpanded.add(taskId);
+            }
+            setExpandedTasks(newExpanded);
+          };
+
+          return React.createElement(
+            "div",
+            {
+              className:
+                "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
+            },
+            [
+              // Header
+              React.createElement(
+                "header",
+                {
+                  key: "header",
+                  className: "bg-white shadow-sm border-b border-gray-200",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8",
+                  },
+                  React.createElement(
+                    "div",
+                    {
+                      className: "flex justify-between items-center py-6",
+                    },
+                    [
+                      React.createElement(
+                        "div",
+                        {
+                          key: "title",
+                          className: "flex items-center",
+                        },
+                        [
+                          React.createElement(
+                            "button",
+                            {
+                              key: "back-btn",
+                              onClick: () => navigateTo("dashboard"),
+                              className:
+                                "mr-4 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
+                            },
+                            "←"
+                          ),
+                          React.createElement(
+                            "h1",
+                            {
+                              key: "main-title",
+                              className: "text-3xl font-bold text-gray-900",
+                            },
+                            "📝 My Tasks"
+                          ),
+                        ]
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "header-actions",
+                          className: "flex items-center space-x-4",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            {
+                              key: "stats",
+                              className: "text-sm text-gray-600",
+                            },
+                            `${tasks.filter((t) => t.completed).length}/${
+                              tasks.length
+                            } completed`
+                          ),
+                          React.createElement(
+                            "button",
+                            {
+                              key: "add-task-btn",
+                              onClick: () => setShowAddModal(true),
+                              className:
+                                "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors",
+                            },
+                            "Add Task"
+                          ),
+                        ]
+                      ),
+                    ]
+                  )
+                )
+              ),
+
+              // Main Content
+              React.createElement(
+                "main",
+                {
+                  key: "main",
+                  className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+                },
+                [
+                  // Add Task Form
+                  React.createElement(
+                    "div",
+                    {
+                      key: "add-task",
+                      className: "bg-white rounded-xl shadow-lg p-6 mb-6",
+                    },
+                    [
+                      React.createElement(
+                        "h2",
+                        {
+                          key: "form-title",
+                          className: "text-xl font-semibold text-gray-900 mb-4",
+                        },
+                        "Add New Task"
+                      ),
+                      React.createElement(
+                        "form",
+                        {
+                          key: "task-form",
+                          onSubmit: handleAddTask,
+                          className: "flex gap-4",
+                        },
+                        [
+                          React.createElement("input", {
+                            key: "task-input",
+                            type: "text",
+                            value: newTask,
+                            onChange: (e) => setNewTask(e.target.value),
+                            placeholder: "What do you need to focus on?",
+                            className:
+                              "flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                          }),
+                          React.createElement(
+                            "button",
+                            {
+                              key: "add-btn",
+                              type: "submit",
+                              className:
+                                "px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200",
+                            },
+                            "Add Task"
+                          ),
+                        ]
+                      ),
+                    ]
+                  ),
+
+                  // Task List
+                  React.createElement(
+                    "div",
+                    {
+                      key: "task-list",
+                      className: "bg-white rounded-xl shadow-lg p-6",
+                    },
+                    [
+                      React.createElement(
+                        "h2",
+                        {
+                          key: "list-title",
+                          className: "text-xl font-semibold text-gray-900 mb-4",
+                        },
+                        "Your Tasks"
+                      ),
+                      tasks.length === 0
+                        ? React.createElement(
+                            "div",
+                            {
+                              key: "empty-state",
+                              className: "text-center py-8 text-gray-500",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "empty-icon",
+                                  className: "text-4xl mb-2",
+                                },
+                                "📝"
+                              ),
+                              React.createElement(
+                                "p",
+                                { key: "empty-text" },
+                                "No tasks yet. Add your first task above!"
+                              ),
+                            ]
+                          )
+                        : React.createElement(
+                            "div",
+                            {
+                              key: "tasks",
+                              className: "space-y-3",
+                            },
+                            tasks.map((task) =>
+                              React.createElement(
+                                "div",
+                                {
+                                  key: task.id,
+                                  className: `flex items-center p-4 rounded-lg border ${
+                                    task.completed
+                                      ? "bg-green-50 border-green-200"
+                                      : "bg-gray-50 border-gray-200"
+                                  }`,
+                                },
+                                [
+                                  React.createElement(
+                                    "button",
+                                    {
+                                      key: "toggle",
+                                      onClick: () => toggleTask(task.id),
+                                      className: `w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center ${
+                                        task.completed
+                                          ? "bg-green-500 border-green-500 text-white"
+                                          : "border-gray-300"
+                                      }`,
+                                    },
+                                    task.completed ? "✓" : ""
+                                  ),
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      key: "text",
+                                      className: `flex-1 ${
+                                        task.completed
+                                          ? "line-through text-gray-500"
+                                          : "text-gray-900"
+                                      }`,
+                                    },
+                                    task.text
+                                  ),
+                                  React.createElement(
+                                    "button",
+                                    {
+                                      key: "delete",
+                                      onClick: () => deleteTask(task.id),
+                                      className:
+                                        "p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200",
+                                    },
+                                    "🗑️"
+                                  ),
+                                ]
+                              )
+                            )
+                          ),
+                    ]
+                  ),
+                ]
+              ),
+            ]
+          );
+        };
 
         const renderDashboard = () => {
           return React.createElement(
@@ -4282,162 +6525,49 @@
               "h1",
               {
                 key: "test-title",
-                className: "text-2xl font-bold text-center mb-8",
+                className: "text-2xl font-bold text-center"
               },
-              `Hi ${username} 👋, here's your focus report`
-            ),
-            React.createElement(
-              "div",
-              {
-                className:
-                  "max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-              },
-              [
-                React.createElement(
-                  "div",
-                  {
-                    key: "focus-progress",
-                    className: "bg-white rounded-2xl shadow-sm p-6",
-                  },
-                  [
-                    React.createElement(
-                      "h3",
-                      {
-                        className: "text-lg font-semibold text-gray-900 mb-4",
-                      },
-                      "Focus Progress"
-                    ),
-                    React.createElement(
-                      "div",
-                      {
-                        className: "flex items-center justify-center",
-                      },
-                      React.createElement(
-                        "div",
-                        {
-                          className:
-                            "w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center",
-                        },
-                        React.createElement(
-                          "span",
-                          {
-                            className: "text-2xl font-bold text-blue-600",
-                          },
-                          "75%"
-                        )
-                      )
-                    ),
-                  ]
-                ),
-                React.createElement(
-                  "div",
-                  {
-                    key: "journals",
-                    className: "bg-white rounded-2xl shadow-sm p-6",
-                  },
-                  [
-                    React.createElement(
-                      "h3",
-                      {
-                        className: "text-lg font-semibold text-gray-900 mb-4",
-                      },
-                      "Journals Written"
-                    ),
-                    React.createElement(
-                      "div",
-                      {
-                        className: "flex items-center justify-center",
-                      },
-                      React.createElement(
-                        "div",
-                        {
-                          className:
-                            "w-24 h-24 bg-green-100 rounded-full flex items-center justify-center",
-                        },
-                        React.createElement(
-                          "span",
-                          {
-                            className: "text-2xl font-bold text-green-600",
-                          },
-                          "12"
-                        )
-                      )
-                    ),
-                  ]
-                ),
-                React.createElement(
-                  "div",
-                  {
-                    key: "quick-actions",
-                    className: "bg-white rounded-2xl shadow-sm p-6",
-                  },
-                  [
-                    React.createElement(
-                      "h3",
-                      {
-                        className: "text-lg font-semibold text-gray-900 mb-4",
-                      },
-                      "Quick Actions"
-                    ),
-                    React.createElement(
-                      "div",
-                      {
-                        className: "space-y-3",
-                      },
-                      [
-                        React.createElement(
-                          "button",
-                          {
-                            key: "start-defocus",
-                            className:
-                              "w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700",
-                          },
-                          "Start Defocus"
-                        ),
-                        React.createElement(
-                          "button",
-                          {
-                            key: "write-journal",
-                            className:
-                              "w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700",
-                          },
-                          "Write Journal"
-                        ),
-                        React.createElement(
-                          "button",
-                          {
-                            key: "play-game",
-                            className:
-                              "w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700",
-                          },
-                          "Play Game"
-                        ),
-                      ]
-                    ),
-                  ]
-                ),
-              ]
+              "Dashboard Test - JavaScript is Working!"
             )
           );
         };
-
+        // Screen rendering function
+        console.log("JavaScript is executing!");
         const renderCurrentScreen = () => {
           switch (currentScreen) {
+            case "tasks":
+              return React.createElement(TaskManagement);
+            case "music":
+              return React.createElement(MusicScreen);
+            case "rewards":
+              return React.createElement(RewardsScreen);
+            case "stats":
+              return React.createElement(StatsScreen);
+            case "analytics":
+              return React.createElement(AnalyticsDashboard, {
+                user: { name: username, level: 12 },
+                onBack: () => setCurrentScreen("dashboard"),
+              });
             case "dashboard":
-              return renderDashboard();
             default:
               return renderDashboard();
           }
         };
 
-        return React.createElement(
-          "div",
-          {
-            className: "min-h-screen bg-gray-50",
-          },
-          renderCurrentScreen()
-        );
-      };
+        return React.createElement("div", null, [
+          showWelcome &&
+            React.createElement(WelcomeScreen, {
+              key: "welcome",
+              onStart: handleWelcomeStart,
+            }),
+          showOnboarding &&
+            React.createElement(OnboardingTutorial, {
+              key: "onboarding",
+              onComplete: handleOnboardingComplete,
+              onSkip: handleOnboardingSkip,
+            }),
+          hasCompletedOnboarding && renderCurrentScreen(),
+        ]);
 
       // Render the app
       ReactDOM.render(
