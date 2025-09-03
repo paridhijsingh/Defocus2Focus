@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingTutorial from './components/OnboardingTutorial';
+import WebAnalyticsDashboard from './components/WebAnalyticsDashboard';
 
 const WebApp = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -46,12 +47,20 @@ const WebApp = () => {
               <h1 className="text-3xl font-bold text-gray-900">🎯 Defocus2Focus</h1>
               <span className="ml-3 text-sm text-gray-500">Where Procrastination Meets Play</span>
             </div>
-            <button
-              onClick={resetOnboarding}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-            >
-              🔄 Reset Tutorial
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setCurrentScreen('analytics')}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+              >
+                📊 Analytics Dashboard
+              </button>
+              <button
+                onClick={resetOnboarding}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              >
+                🔄 Reset Tutorial
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -199,7 +208,13 @@ const WebApp = () => {
           onSkip={handleOnboardingSkip}
         />
       )}
-      {hasCompletedOnboarding && renderDashboard()}
+      {hasCompletedOnboarding && currentScreen === 'analytics' && (
+        <WebAnalyticsDashboard 
+          user={{ name: 'Paridhi', level: 12 }} 
+          onBack={() => setCurrentScreen('dashboard')}
+        />
+      )}
+      {hasCompletedOnboarding && currentScreen === 'dashboard' && renderDashboard()}
     </div>
   );
 };
