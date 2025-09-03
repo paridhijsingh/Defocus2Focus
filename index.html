@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Defocus2Focus - Where Procrastination Meets Play</title>
@@ -81,24 +81,24 @@
           opacity: 0;
           transform: translateX(50px);
         }
-        }
-        
-        @keyframes bounce {
+      }
+
+      @keyframes bounce {
         0%,
         20%,
         50%,
         80%,
         100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
+          transform: translateY(0);
         }
-        
+        40% {
+          transform: translateY(-10px);
+        }
+        60% {
+          transform: translateY(-5px);
+        }
+      }
+
       @keyframes pulse {
         0% {
           transform: scale(1);
@@ -268,9 +268,9 @@
 
       ::-webkit-scrollbar-thumb:hover {
         background: #a8a8a8;
-        }
+      }
     </style>
-</head>
+  </head>
   <body class="bg-gray-50">
     <div id="root"></div>
 
@@ -1610,7 +1610,7 @@
       };
 
       // Welcome Screen Component
-      const WelcomeScreen = ({ onStart, isReturningUser = false }) => {
+      const WelcomeScreen = ({ onStart }) => {
         return React.createElement(
           "div",
           {
@@ -1649,7 +1649,7 @@
                         className:
                           "text-2xl md:text-4xl font-semibold text-blue-200 mb-8",
                       },
-                      isReturningUser ? "Welcome Back!" : "Where Productivity Meets Play"
+                      "Where Productivity Meets Play"
                     ),
                     React.createElement(
                       "p",
@@ -1658,9 +1658,7 @@
                         className:
                           "text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed",
                       },
-                      isReturningUser 
-                        ? "Ready to continue your productivity journey? Let's get back to focusing and defocusing!"
-                        : "Transform your productivity journey with our gamified approach to focus and mindful breaks. Turn procrastination into play!"
+                      "Transform your productivity journey with our gamified approach to focus and mindful breaks. Turn procrastination into play!"
                     ),
                   ]
                 ),
@@ -1801,9 +1799,9 @@
                             key: "start-icon",
                             className: "mr-3",
                           },
-                          isReturningUser ? "🎯" : "🚀"
+                          "🚀"
                         ),
-                        isReturningUser ? "Continue Journey" : "Start Your Journey",
+                        "Start Your Journey",
                       ]
                     ),
                   ]
@@ -1950,11 +1948,11 @@
             ],
           },
           {
-            id: "rewards",
-            title: "Rewards & Progress 🏆",
-            subtitle: "Stay Motivated & Track Growth",
+            id: "gamification",
+            title: "Gamification & Community 🏆",
+            subtitle: "Compete, Achieve & Grow Together",
             description:
-              "Earn achievement badges, build daily streaks, collect energy points, and watch your productivity habits grow stronger.",
+              "Earn badges, climb leaderboards, track your history, and compete with others in a fun, supportive community.",
             icon: "🏆",
             illustration: "⭐",
             gradient: "from-green-500 to-emerald-600",
@@ -1962,10 +1960,10 @@
             animation: "glow",
             color: "green",
             features: [
+              "Leaderboards",
               "Achievement Badges",
-              "Daily Streaks",
-              "Energy Points",
-              "Progress Analytics",
+              "Session History",
+              "Community Rankings",
             ],
           },
         ];
@@ -2374,6 +2372,701 @@
         );
       };
 
+      // History Component
+      const HistoryScreen = ({ history, onClose }) => {
+        const [filter, setFilter] = useState("all");
+        const [sortBy, setSortBy] = useState("date");
+        const [sortOrder, setSortOrder] = useState("desc");
+
+        const filteredHistory = history.filter((session) => {
+          if (filter === "all") return true;
+          return session.feature === filter;
+        });
+
+        const sortedHistory = [...filteredHistory].sort((a, b) => {
+          let aValue, bValue;
+          switch (sortBy) {
+            case "date":
+              aValue = new Date(a.date);
+              bValue = new Date(b.date);
+              break;
+            case "duration":
+              aValue = a.duration;
+              bValue = b.duration;
+              break;
+            case "points":
+              aValue = a.points;
+              bValue = b.points;
+              break;
+            default:
+              aValue = a.feature;
+              bValue = b.feature;
+          }
+
+          if (sortOrder === "asc") {
+            return aValue > bValue ? 1 : -1;
+          } else {
+            return aValue < bValue ? 1 : -1;
+          }
+        });
+
+        const exportHistory = () => {
+          const dataStr = JSON.stringify(sortedHistory, null, 2);
+          const dataBlob = new Blob([dataStr], { type: "application/json" });
+          const url = URL.createObjectURL(dataBlob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `defocus2focus-history-${
+            new Date().toISOString().split("T")[0]
+          }.json`;
+          link.click();
+          URL.revokeObjectURL(url);
+        };
+
+        return React.createElement(
+          "div",
+          {
+            className:
+              "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4",
+          },
+          React.createElement(
+            "div",
+            {
+              className:
+                "bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden",
+            },
+            [
+              // Header
+              React.createElement(
+                "div",
+                {
+                  key: "header",
+                  className:
+                    "bg-gradient-to-r from-purple-500 to-pink-500 p-6 text-white",
+                },
+                [
+                  React.createElement(
+                    "div",
+                    {
+                      key: "header-content",
+                      className: "flex justify-between items-center",
+                    },
+                    [
+                      React.createElement(
+                        "h2",
+                        {
+                          key: "title",
+                          className: "text-2xl font-bold",
+                        },
+                        "📊 Session History"
+                      ),
+                      React.createElement(
+                        "button",
+                        {
+                          key: "close-btn",
+                          onClick: onClose,
+                          className: "text-white hover:text-gray-200 text-2xl",
+                        },
+                        "×"
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+
+              // Filters and Controls
+              React.createElement(
+                "div",
+                {
+                  key: "controls",
+                  className:
+                    "p-6 border-b border-gray-200 dark:border-gray-700",
+                },
+                [
+                  React.createElement(
+                    "div",
+                    {
+                      key: "filters",
+                      className: "flex flex-wrap gap-4 mb-4",
+                    },
+                    [
+                      React.createElement(
+                        "select",
+                        {
+                          key: "filter-select",
+                          value: filter,
+                          onChange: (e) => setFilter(e.target.value),
+                          className:
+                            "px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white",
+                        },
+                        [
+                          React.createElement(
+                            "option",
+                            { key: "all", value: "all" },
+                            "All Features"
+                          ),
+                          React.createElement(
+                            "option",
+                            { key: "focus", value: "focus" },
+                            "Focus Mode"
+                          ),
+                          React.createElement(
+                            "option",
+                            { key: "defocus", value: "defocus" },
+                            "Defocus Mode"
+                          ),
+                          React.createElement(
+                            "option",
+                            { key: "journaling", value: "journaling" },
+                            "Journaling"
+                          ),
+                          React.createElement(
+                            "option",
+                            { key: "games", value: "games" },
+                            "Games"
+                          ),
+                        ]
+                      ),
+                      React.createElement(
+                        "select",
+                        {
+                          key: "sort-select",
+                          value: sortBy,
+                          onChange: (e) => setSortBy(e.target.value),
+                          className:
+                            "px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white",
+                        },
+                        [
+                          React.createElement(
+                            "option",
+                            { key: "date", value: "date" },
+                            "Sort by Date"
+                          ),
+                          React.createElement(
+                            "option",
+                            { key: "duration", value: "duration" },
+                            "Sort by Duration"
+                          ),
+                          React.createElement(
+                            "option",
+                            { key: "points", value: "points" },
+                            "Sort by Points"
+                          ),
+                          React.createElement(
+                            "option",
+                            { key: "feature", value: "feature" },
+                            "Sort by Feature"
+                          ),
+                        ]
+                      ),
+                      React.createElement(
+                        "button",
+                        {
+                          key: "sort-order",
+                          onClick: () =>
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc"),
+                          className:
+                            "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors",
+                        },
+                        sortOrder === "asc" ? "↑ Ascending" : "↓ Descending"
+                      ),
+                      React.createElement(
+                        "button",
+                        {
+                          key: "export-btn",
+                          onClick: exportHistory,
+                          className:
+                            "px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors",
+                        },
+                        "📤 Export"
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+
+              // History List
+              React.createElement(
+                "div",
+                {
+                  key: "history-list",
+                  className: "p-6 max-h-96 overflow-y-auto",
+                },
+                sortedHistory.length === 0
+                  ? React.createElement(
+                      "div",
+                      {
+                        key: "empty-state",
+                        className:
+                          "text-center py-12 text-gray-500 dark:text-gray-400",
+                      },
+                      [
+                        React.createElement(
+                          "div",
+                          {
+                            key: "empty-icon",
+                            className: "text-6xl mb-4",
+                          },
+                          "📝"
+                        ),
+                        React.createElement(
+                          "p",
+                          {
+                            key: "empty-text",
+                            className: "text-lg",
+                          },
+                          "No sessions recorded yet. Start using the app to build your history!"
+                        ),
+                      ]
+                    )
+                  : sortedHistory.map((session) =>
+                      React.createElement(
+                        "div",
+                        {
+                          key: session.id,
+                          className:
+                            "bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4 border border-gray-200 dark:border-gray-600",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            {
+                              key: "session-header",
+                              className:
+                                "flex justify-between items-start mb-2",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "session-info",
+                                  className: "flex items-center space-x-3",
+                                },
+                                [
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      key: "feature-icon",
+                                      className: "text-2xl",
+                                    },
+                                    session.feature === "focus"
+                                      ? "🎯"
+                                      : session.feature === "defocus"
+                                      ? "🌿"
+                                      : session.feature === "journaling"
+                                      ? "📝"
+                                      : "🎮"
+                                  ),
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "session-details",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "h3",
+                                        {
+                                          key: "session-title",
+                                          className:
+                                            "font-semibold text-gray-900 dark:text-white capitalize",
+                                        },
+                                        `${session.feature} Session`
+                                      ),
+                                      React.createElement(
+                                        "p",
+                                        {
+                                          key: "session-date",
+                                          className:
+                                            "text-sm text-gray-600 dark:text-gray-400",
+                                        },
+                                        new Date(session.date).toLocaleString()
+                                      ),
+                                    ]
+                                  ),
+                                ]
+                              ),
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "session-stats",
+                                  className: "text-right",
+                                },
+                                [
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "points",
+                                      className:
+                                        "text-lg font-bold text-green-600 dark:text-green-400",
+                                    },
+                                    `+${session.points} pts`
+                                  ),
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "duration",
+                                      className:
+                                        "text-sm text-gray-600 dark:text-gray-400",
+                                    },
+                                    `${session.duration} min`
+                                  ),
+                                ]
+                              ),
+                            ]
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "session-outcome",
+                              className:
+                                "text-sm text-gray-700 dark:text-gray-300",
+                            },
+                            session.outcome
+                          ),
+                        ]
+                      )
+                    )
+              ),
+            ]
+          )
+        );
+      };
+
+      // Leaderboards Component
+      const LeaderboardsScreen = ({ leaderboards, username, onClose }) => {
+        const [activeTab, setActiveTab] = useState("global");
+
+        const tabs = [
+          { id: "global", name: "Global", icon: "👑" },
+          { id: "focus", name: "Focus", icon: "🎯" },
+          { id: "defocus", name: "Defocus", icon: "🌿" },
+          { id: "journaling", name: "Journaling", icon: "📝" },
+          { id: "games", name: "Games", icon: "🎮" },
+        ];
+
+        const getCurrentUserRank = (board) => {
+          const userEntry = board.find((entry) => entry.username === username);
+          return userEntry ? board.indexOf(userEntry) + 1 : null;
+        };
+
+        const getCurrentUserScore = (board) => {
+          const userEntry = board.find((entry) => entry.username === username);
+          return userEntry ? userEntry.score : 0;
+        };
+
+        return React.createElement(
+          "div",
+          {
+            className:
+              "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4",
+          },
+          React.createElement(
+            "div",
+            {
+              className:
+                "bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden",
+            },
+            [
+              // Header
+              React.createElement(
+                "div",
+                {
+                  key: "header",
+                  className:
+                    "bg-gradient-to-r from-yellow-500 to-orange-500 p-6 text-white",
+                },
+                [
+                  React.createElement(
+                    "div",
+                    {
+                      key: "header-content",
+                      className: "flex justify-between items-center",
+                    },
+                    [
+                      React.createElement(
+                        "h2",
+                        {
+                          key: "title",
+                          className: "text-2xl font-bold",
+                        },
+                        "🏆 Leaderboards"
+                      ),
+                      React.createElement(
+                        "button",
+                        {
+                          key: "close-btn",
+                          onClick: onClose,
+                          className: "text-white hover:text-gray-200 text-2xl",
+                        },
+                        "×"
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+
+              // Tabs
+              React.createElement(
+                "div",
+                {
+                  key: "tabs",
+                  className: "border-b border-gray-200 dark:border-gray-700",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    key: "tab-list",
+                    className: "flex overflow-x-auto",
+                  },
+                  tabs.map((tab) =>
+                    React.createElement(
+                      "button",
+                      {
+                        key: tab.id,
+                        onClick: () => setActiveTab(tab.id),
+                        className: `px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                          activeTab === tab.id
+                            ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                        }`,
+                      },
+                      [
+                        React.createElement(
+                          "span",
+                          {
+                            key: "tab-icon",
+                            className: "mr-2",
+                          },
+                          tab.icon
+                        ),
+                        tab.name,
+                      ]
+                    )
+                  )
+                )
+              ),
+
+              // Leaderboard Content
+              React.createElement(
+                "div",
+                {
+                  key: "content",
+                  className: "p-6 max-h-96 overflow-y-auto",
+                },
+                [
+                  // Current User Stats
+                  React.createElement(
+                    "div",
+                    {
+                      key: "user-stats",
+                      className:
+                        "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900 rounded-lg p-4 mb-6",
+                    },
+                    [
+                      React.createElement(
+                        "h3",
+                        {
+                          key: "user-title",
+                          className:
+                            "text-lg font-semibold text-gray-900 dark:text-white mb-2",
+                        },
+                        `Your ${
+                          tabs.find((t) => t.id === activeTab)?.name
+                        } Stats`
+                      ),
+                      React.createElement(
+                        "div",
+                        {
+                          key: "user-info",
+                          className: "flex justify-between items-center",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            {
+                              key: "user-rank",
+                              className: "text-center",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "rank-label",
+                                  className:
+                                    "text-sm text-gray-600 dark:text-gray-400",
+                                },
+                                "Rank"
+                              ),
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "rank-value",
+                                  className:
+                                    "text-2xl font-bold text-blue-600 dark:text-blue-400",
+                                },
+                                getCurrentUserRank(leaderboards[activeTab]) ||
+                                  "—"
+                              ),
+                            ]
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "user-score",
+                              className: "text-center",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "score-label",
+                                  className:
+                                    "text-sm text-gray-600 dark:text-gray-400",
+                                },
+                                "Score"
+                              ),
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "score-value",
+                                  className:
+                                    "text-2xl font-bold text-green-600 dark:text-green-400",
+                                },
+                                getCurrentUserScore(leaderboards[activeTab])
+                              ),
+                            ]
+                          ),
+                        ]
+                      ),
+                    ]
+                  ),
+
+                  // Leaderboard List
+                  leaderboards[activeTab]?.length === 0
+                    ? React.createElement(
+                        "div",
+                        {
+                          key: "empty-state",
+                          className:
+                            "text-center py-12 text-gray-500 dark:text-gray-400",
+                        },
+                        [
+                          React.createElement(
+                            "div",
+                            {
+                              key: "empty-icon",
+                              className: "text-6xl mb-4",
+                            },
+                            "🏆"
+                          ),
+                          React.createElement(
+                            "p",
+                            {
+                              key: "empty-text",
+                              className: "text-lg",
+                            },
+                            "No rankings yet. Be the first to compete!"
+                          ),
+                        ]
+                      )
+                    : leaderboards[activeTab]?.map((entry, index) =>
+                        React.createElement(
+                          "div",
+                          {
+                            key: entry.username,
+                            className: `flex items-center justify-between p-4 rounded-lg mb-3 transition-all ${
+                              entry.username === username
+                                ? "bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900 border-2 border-yellow-300 dark:border-yellow-600"
+                                : "bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
+                            }`,
+                          },
+                          [
+                            React.createElement(
+                              "div",
+                              {
+                                key: "rank-info",
+                                className: "flex items-center space-x-4",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "rank",
+                                    className: `w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                                      index === 0
+                                        ? "bg-yellow-500 text-white"
+                                        : index === 1
+                                        ? "bg-gray-400 text-white"
+                                        : index === 2
+                                        ? "bg-orange-600 text-white"
+                                        : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                                    }`,
+                                  },
+                                  index + 1
+                                ),
+                                React.createElement(
+                                  "span",
+                                  {
+                                    key: "badge",
+                                    className: "text-2xl",
+                                  },
+                                  entry.badge
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "user-info",
+                                  },
+                                  [
+                                    React.createElement(
+                                      "div",
+                                      {
+                                        key: "username",
+                                        className: `font-semibold ${
+                                          entry.username === username
+                                            ? "text-yellow-800 dark:text-yellow-200"
+                                            : "text-gray-900 dark:text-white"
+                                        }`,
+                                      },
+                                      entry.username
+                                    ),
+                                    React.createElement(
+                                      "div",
+                                      {
+                                        key: "score",
+                                        className:
+                                          "text-sm text-gray-600 dark:text-gray-400",
+                                      },
+                                      `${entry.score} points`
+                                    ),
+                                  ]
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "medal",
+                                className: "text-3xl",
+                              },
+                              index === 0
+                                ? "🥇"
+                                : index === 1
+                                ? "🥈"
+                                : index === 2
+                                ? "🥉"
+                                : "🏅"
+                            ),
+                          ]
+                        )
+                      ),
+                ]
+              ),
+            ]
+          )
+        );
+      };
+
       const WebApp = () => {
         // Always show welcome screen first for all users
         const [showWelcome, setShowWelcome] = useState(true);
@@ -2392,10 +3085,29 @@
         const [currentStreak, setCurrentStreak] = useState(0);
         const [achievements, setAchievements] = useState([]);
 
+        // New features state
+        const [sessionHistory, setSessionHistory] = useState([]);
+        const [leaderboards, setLeaderboards] = useState({
+          focus: [],
+          defocus: [],
+          journaling: [],
+          games: [],
+          global: [],
+        });
+        const [username, setUsername] = useState(() => {
+          return (
+            localStorage.getItem("defocus2focus_username") || "Anonymous User"
+          );
+        });
+
         // Modal states
         const [showPomodoro, setShowPomodoro] = useState(false);
         const [showDefocus, setShowDefocus] = useState(false);
         const [showBreakTime, setShowBreakTime] = useState(false);
+
+        // New screen states
+        const [showHistory, setShowHistory] = useState(false);
+        const [showLeaderboards, setShowLeaderboards] = useState(false);
 
         // Audio Manager Class
         class AudioManager {
@@ -2598,25 +3310,60 @@
           const savedAchievements = localStorage.getItem(
             "defocus2focus_achievements"
           );
+          const savedHistory = localStorage.getItem("defocus2focus_history");
+          const savedLeaderboards = localStorage.getItem(
+            "defocus2focus_leaderboards"
+          );
 
           if (savedTasks) setTasks(JSON.parse(savedTasks));
           if (savedEnergy) setEnergyPoints(parseInt(savedEnergy));
           if (savedSessions) setFocusSessions(parseInt(savedSessions));
           if (savedStreak) setCurrentStreak(parseInt(savedStreak));
           if (savedAchievements) setAchievements(JSON.parse(savedAchievements));
+          if (savedHistory) setSessionHistory(JSON.parse(savedHistory));
+          if (savedLeaderboards) setLeaderboards(JSON.parse(savedLeaderboards));
+
+          // Initialize leaderboards with sample data if empty
+          if (!savedLeaderboards) {
+            const sampleLeaderboards = {
+              focus: [
+                { username: "FocusMaster", score: 1250, badge: "🥇" },
+                { username: "DeepWorker", score: 980, badge: "🥈" },
+                { username: "ConcentrationPro", score: 750, badge: "🥉" },
+              ],
+              defocus: [
+                { username: "ZenMaster", score: 890, badge: "🥇" },
+                { username: "MindfulBreaker", score: 650, badge: "🥈" },
+                { username: "RelaxationGuru", score: 420, badge: "🥉" },
+              ],
+              journaling: [
+                { username: "ReflectionKing", score: 320, badge: "🥇" },
+                { username: "ThoughtWriter", score: 280, badge: "🥈" },
+                { username: "MindScribe", score: 200, badge: "🥉" },
+              ],
+              games: [
+                { username: "GameChampion", score: 1500, badge: "🥇" },
+                { username: "PlayMaster", score: 1200, badge: "🥈" },
+                { username: "FunSeeker", score: 900, badge: "🥉" },
+              ],
+              global: [
+                { username: "ProductivityGuru", score: 2850, badge: "👑" },
+                { username: "BalanceMaster", score: 2200, badge: "🥇" },
+                { username: "GrowthSeeker", score: 1800, badge: "🥈" },
+              ],
+            };
+            setLeaderboards(sampleLeaderboards);
+            localStorage.setItem(
+              "defocus2focus_leaderboards",
+              JSON.stringify(sampleLeaderboards)
+            );
+          }
         }, []);
 
         const handleWelcomeStart = () => {
           setShowWelcome(false);
-          // Check if user has completed onboarding before
-          const completed = localStorage.getItem("defocus2focus_onboarding_completed");
-          if (completed) {
-            // Skip onboarding for returning users
-            setHasCompletedOnboarding(true);
-          } else {
-            // Show onboarding for new users
-            setShowOnboarding(true);
-          }
+          // Always show onboarding carousel for all users
+          setShowOnboarding(true);
         };
 
         const handleOnboardingComplete = () => {
@@ -2645,6 +3392,80 @@
         window.clearOnboarding = () => {
           localStorage.removeItem("defocus2focus_onboarding_completed");
           window.location.reload();
+        };
+
+        // Function to record session history
+        const recordSession = (sessionData) => {
+          const newSession = {
+            id: Date.now(),
+            feature: sessionData.feature,
+            date: new Date().toISOString(),
+            duration: sessionData.duration,
+            outcome: sessionData.outcome,
+            points: sessionData.points || 0,
+            details: sessionData.details || {},
+          };
+
+          const updatedHistory = [newSession, ...sessionHistory];
+          setSessionHistory(updatedHistory);
+          localStorage.setItem(
+            "defocus2focus_history",
+            JSON.stringify(updatedHistory)
+          );
+
+          // Update leaderboards
+          updateLeaderboards(sessionData.feature, sessionData.points || 0);
+        };
+
+        // Function to update leaderboards
+        const updateLeaderboards = (feature, points) => {
+          const currentScore =
+            leaderboards[feature]?.find((entry) => entry.username === username)
+              ?.score || 0;
+          const newScore = currentScore + points;
+
+          const updatedLeaderboards = { ...leaderboards };
+          if (!updatedLeaderboards[feature]) {
+            updatedLeaderboards[feature] = [];
+          }
+
+          // Remove existing entry for this user
+          updatedLeaderboards[feature] = updatedLeaderboards[feature].filter(
+            (entry) => entry.username !== username
+          );
+
+          // Add new entry
+          updatedLeaderboards[feature].push({
+            username: username,
+            score: newScore,
+            badge: newScore >= 1000 ? "🥇" : newScore >= 500 ? "🥈" : "🥉",
+          });
+
+          // Sort by score
+          updatedLeaderboards[feature].sort((a, b) => b.score - a.score);
+
+          // Update global leaderboard
+          const globalScore = Object.values(updatedLeaderboards)
+            .flat()
+            .filter((entry) => entry.username === username)
+            .reduce((sum, entry) => sum + entry.score, 0);
+
+          updatedLeaderboards.global = updatedLeaderboards.global.filter(
+            (entry) => entry.username !== username
+          );
+          updatedLeaderboards.global.push({
+            username: username,
+            score: globalScore,
+            badge:
+              globalScore >= 2000 ? "👑" : globalScore >= 1000 ? "🥇" : "🥈",
+          });
+          updatedLeaderboards.global.sort((a, b) => b.score - a.score);
+
+          setLeaderboards(updatedLeaderboards);
+          localStorage.setItem(
+            "defocus2focus_leaderboards",
+            JSON.stringify(updatedLeaderboards)
+          );
         };
 
         // Navigation functions
@@ -4307,7 +5128,7 @@
             "div",
             {
               className:
-                "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
+                "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-900",
             },
             [
               // Header
@@ -4899,7 +5720,8 @@
                             "div",
                             {
                               key: "nav-grid",
-                              className: "grid grid-cols-2 gap-3",
+                              className:
+                                "grid grid-cols-2 md:grid-cols-3 gap-3",
                             },
                             [
                               React.createElement(
@@ -4968,6 +5790,40 @@
                                     "📝"
                                   ),
                                   "Tasks",
+                                ]
+                              ),
+                              React.createElement(
+                                "button",
+                                {
+                                  key: "history-nav",
+                                  onClick: () => setShowHistory(true),
+                                  className:
+                                    "p-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center",
+                                },
+                                [
+                                  React.createElement(
+                                    "span",
+                                    { key: "icon", className: "mr-2" },
+                                    "📊"
+                                  ),
+                                  "History",
+                                ]
+                              ),
+                              React.createElement(
+                                "button",
+                                {
+                                  key: "leaderboards-nav",
+                                  onClick: () => setShowLeaderboards(true),
+                                  className:
+                                    "p-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center",
+                                },
+                                [
+                                  React.createElement(
+                                    "span",
+                                    { key: "icon", className: "mr-2" },
+                                    "🏆"
+                                  ),
+                                  "Leaderboards",
                                 ]
                               ),
                             ]
@@ -5163,7 +6019,6 @@
             React.createElement(WelcomeScreen, {
               key: "welcome",
               onStart: handleWelcomeStart,
-              isReturningUser: hasCompletedOnboarding,
             }),
           showOnboarding &&
             React.createElement(OnboardingTutorial, {
@@ -5172,6 +6027,19 @@
               onSkip: handleOnboardingSkip,
             }),
           hasCompletedOnboarding && renderCurrentScreen(),
+          showHistory &&
+            React.createElement(HistoryScreen, {
+              key: "history",
+              history: sessionHistory,
+              onClose: () => setShowHistory(false),
+            }),
+          showLeaderboards &&
+            React.createElement(LeaderboardsScreen, {
+              key: "leaderboards",
+              leaderboards: leaderboards,
+              username: username,
+              onClose: () => setShowLeaderboards(false),
+            }),
           showPomodoro &&
             React.createElement(PomodoroTimer, {
               key: "pomodoro",
@@ -5197,6 +6065,17 @@
                   "defocus2focus_streak",
                   newStreak.toString()
                 );
+
+                // Record session history
+                recordSession({
+                  feature: "focus",
+                  duration: sessions * 25, // 25 minutes per session
+                  outcome: `Completed ${sessions} Pomodoro session${
+                    sessions > 1 ? "s" : ""
+                  }`,
+                  points: sessions * 25,
+                  details: { sessions: sessions, type: "pomodoro" },
+                });
 
                 checkAchievements(newSessions, newStreak);
               },
@@ -5239,5 +6118,5 @@
         document.getElementById("root")
       );
     </script>
-</body>
+  </body>
 </html>
