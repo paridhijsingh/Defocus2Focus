@@ -2156,7 +2156,7 @@
                       key: "skip-button",
                       onClick: handleSkip,
                       className:
-                        "absolute top-4 left-4 text-white hover:text-gray-200 transition-colors duration-200 text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full",
+                        "absolute top-4 right-4 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-all duration-200 text-sm font-medium bg-white dark:bg-gray-800 px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700",
                     },
                     "Skip"
                   ),
@@ -2329,6 +2329,20 @@
                             "Back"
                           ),
                         ]
+                      ),
+
+                      // Skip Button (Center)
+                      React.createElement(
+                        "button",
+                        {
+                          key: "skip-button-footer",
+                          onClick: handleSkip,
+                          disabled: isAnimating,
+                          className: `px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 font-medium ${
+                            isAnimating ? "opacity-50 cursor-not-allowed" : ""
+                          }`,
+                        },
+                        "Skip Tutorial"
                       ),
 
                       // Next/Complete Button

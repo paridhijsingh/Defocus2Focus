@@ -94,7 +94,7 @@ const OnboardingTutorial = ({ onComplete, onSkip }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all duration-300 ease-in-out">
         {/* Header */}
-        <div className="relative">
+        <div className="relative bg-gray-50 px-4 py-3">
           <div className={`h-2 bg-gradient-to-r ${
             currentStepData.color === 'blue' ? 'from-blue-400 to-blue-600' :
             currentStepData.color === 'orange' ? 'from-orange-400 to-orange-600' :
@@ -105,9 +105,9 @@ const OnboardingTutorial = ({ onComplete, onSkip }) => {
           {/* Skip Button */}
           <button
             onClick={handleSkip}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 text-sm font-medium"
+            className="absolute top-2 right-4 px-3 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 transition-all duration-200 text-sm font-medium rounded-lg border border-gray-300 bg-white shadow-sm"
           >
-            Skip Tutorial
+            Skip
           </button>
         </div>
 
@@ -191,6 +191,14 @@ const OnboardingTutorial = ({ onComplete, onSkip }) => {
               }`}
             >
               Back
+            </button>
+
+            {/* Skip Button (Center) */}
+            <button
+              onClick={handleSkip}
+              className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium"
+            >
+              Skip Tutorial
             </button>
 
             {/* Next/Complete Button */}
