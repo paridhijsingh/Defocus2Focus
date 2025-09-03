@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Defocus2Focus - Where Procrastination Meets Play</title>
@@ -81,24 +81,24 @@
           opacity: 0;
           transform: translateX(50px);
         }
-      }
-
-      @keyframes bounce {
+        }
+        
+        @keyframes bounce {
         0%,
         20%,
         50%,
         80%,
         100% {
-          transform: translateY(0);
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
         }
-        40% {
-          transform: translateY(-10px);
-        }
-        60% {
-          transform: translateY(-5px);
-        }
-      }
-
+        
       @keyframes pulse {
         0% {
           transform: scale(1);
@@ -268,9 +268,9 @@
 
       ::-webkit-scrollbar-thumb:hover {
         background: #a8a8a8;
-      }
+        }
     </style>
-  </head>
+</head>
   <body class="bg-gray-50">
     <div id="root"></div>
 
@@ -1610,7 +1610,7 @@
       };
 
       // Welcome Screen Component
-      const WelcomeScreen = ({ onStart }) => {
+      const WelcomeScreen = ({ onStart, isReturningUser = false }) => {
         return React.createElement(
           "div",
           {
@@ -1649,7 +1649,7 @@
                         className:
                           "text-2xl md:text-4xl font-semibold text-blue-200 mb-8",
                       },
-                      "Where Productivity Meets Play"
+                      isReturningUser ? "Welcome Back!" : "Where Productivity Meets Play"
                     ),
                     React.createElement(
                       "p",
@@ -1658,7 +1658,9 @@
                         className:
                           "text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed",
                       },
-                      "Transform your productivity journey with our gamified approach to focus and mindful breaks. Turn procrastination into play!"
+                      isReturningUser 
+                        ? "Ready to continue your productivity journey? Let's get back to focusing and defocusing!"
+                        : "Transform your productivity journey with our gamified approach to focus and mindful breaks. Turn procrastination into play!"
                     ),
                   ]
                 ),
@@ -1799,9 +1801,9 @@
                             key: "start-icon",
                             className: "mr-3",
                           },
-                          "🚀"
+                          isReturningUser ? "🎯" : "🚀"
                         ),
-                        "Start Your Journey",
+                        isReturningUser ? "Continue Journey" : "Start Your Journey",
                       ]
                     ),
                   ]
@@ -2373,10 +2375,8 @@
       };
 
       const WebApp = () => {
-        // Initialize states based on localStorage to prevent flash
-        const [showWelcome, setShowWelcome] = useState(() => {
-          return !localStorage.getItem("defocus2focus_onboarding_completed");
-        });
+        // Always show welcome screen first for all users
+        const [showWelcome, setShowWelcome] = useState(true);
         const [showOnboarding, setShowOnboarding] = useState(false);
         const [currentScreen, setCurrentScreen] = useState("dashboard");
         const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(
@@ -2608,7 +2608,15 @@
 
         const handleWelcomeStart = () => {
           setShowWelcome(false);
-          setShowOnboarding(true);
+          // Check if user has completed onboarding before
+          const completed = localStorage.getItem("defocus2focus_onboarding_completed");
+          if (completed) {
+            // Skip onboarding for returning users
+            setHasCompletedOnboarding(true);
+          } else {
+            // Show onboarding for new users
+            setShowOnboarding(true);
+          }
         };
 
         const handleOnboardingComplete = () => {
@@ -2630,6 +2638,7 @@
           setShowWelcome(true);
           setShowOnboarding(false);
           setHasCompletedOnboarding(false);
+          setCurrentScreen("dashboard");
         };
 
         // Debug function to clear onboarding (can be called from console)
@@ -5154,6 +5163,7 @@
             React.createElement(WelcomeScreen, {
               key: "welcome",
               onStart: handleWelcomeStart,
+              isReturningUser: hasCompletedOnboarding,
             }),
           showOnboarding &&
             React.createElement(OnboardingTutorial, {
@@ -5229,5 +5239,5 @@
         document.getElementById("root")
       );
     </script>
-  </body>
+</body>
 </html>
