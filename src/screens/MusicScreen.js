@@ -1,564 +1,470 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
   ScrollView,
-  TouchableOpacity,
-  Animated,
-  Dimensions,
+  Alert,
+  BackHandler 
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
+import * as Haptics from 'expo-haptics';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring,
+  withRepeat,
+  withTiming 
+} from 'react-native-reanimated';
+import { useApp } from '../context/AppContext';
+import Card from '../components/Card';
+import ActionButton from '../components/ActionButton';
 
-const { width, height } = Dimensions.get('window');
+const musicCategories = [
+  {
+    id: 'nature',
+    title: 'Nature Sounds',
+    icon: '🌿',
+    color: ['#10b981', '#059669'],
+    tracks: [
+      { id: 1, title: 'Rain Sounds', duration: '2:45', file: 'rain.mp3' },
+      { id: 2, title: 'Forest Ambience', duration: '3:20', file: 'forest.mp3' },
+      { id: 3, title: 'Ocean Waves', duration: '4:15', file: 'ocean.mp3' },
+      { id: 4, title: 'Thunderstorm', duration: '3:50', file: 'thunder.mp3' },
+      { id: 5, title: 'Birds Chirping', duration: '2:30', file: 'birds.mp3' },
+      { id: 6, title: 'Wind Through Trees', duration: '3:10', file: 'wind.mp3' },
+    ]
+  },
+  {
+    id: 'ambient',
+    title: 'Ambient',
+    icon: '🌌',
+    color: ['#8b5cf6', '#7c3aed'],
+    tracks: [
+      { id: 7, title: 'Space Ambience', duration: '4:00', file: 'space.mp3' },
+      { id: 8, title: 'City Sounds', duration: '3:30', file: 'city.mp3' },
+      { id: 9, title: 'Cafe Ambience', duration: '2:45', file: 'cafe.mp3' },
+      { id: 10, title: 'Library Sounds', duration: '3:15', file: 'library.mp3' },
+      { id: 11, title: 'Fireplace', duration: '4:20', file: 'fireplace.mp3' },
+      { id: 12, title: 'Train Journey', duration: '3:45', file: 'train.mp3' },
+    ]
+  },
+  {
+    id: 'focus',
+    title: 'Focus',
+    icon: '🎯',
+    color: ['#3b82f6', '#1d4ed8'],
+    tracks: [
+      { id: 13, title: 'Binaural Beats', duration: '5:00', file: 'binaural.mp3' },
+      { id: 14, title: 'Classical Piano', duration: '4:30', file: 'piano.mp3' },
+      { id: 15, title: 'Lo-fi Hip Hop', duration: '3:20', file: 'lofi.mp3' },
+      { id: 16, title: 'White Noise', duration: '4:00', file: 'whitenoise.mp3' },
+      { id: 17, title: 'Brown Noise', duration: '4:00', file: 'brownnoise.mp3' },
+      { id: 18, title: 'Pink Noise', duration: '4:00', file: 'pinknoise.mp3' },
+    ]
+  },
+  {
+    id: 'relax',
+    title: 'Relaxation',
+    icon: '🧘',
+    color: ['#f59e0b', '#d97706'],
+    tracks: [
+      { id: 19, title: 'Meditation Bell', duration: '3:00', file: 'meditation.mp3' },
+      { id: 20, title: 'Spa Music', duration: '4:15', file: 'spa.mp3' },
+      { id: 21, title: 'Zen Garden', duration: '3:45', file: 'zen.mp3' },
+      { id: 22, title: 'Singing Bowls', duration: '4:30', file: 'bowls.mp3' },
+      { id: 23, title: 'Flute Meditation', duration: '3:20', file: 'flute.mp3' },
+      { id: 24, title: 'Chimes', duration: '2:50', file: 'chimes.mp3' },
+    ]
+  }
+];
 
-const MusicScreen = ({ navigation }) => {
-  const [selectedCategory, setSelectedCategory] = useState('lofi');
-  const [isPlaying, setIsPlaying] = useState(false);
+export default function MusicScreen() {
+  const { state, actions } = useApp();
   const [currentTrack, setCurrentTrack] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.7);
-  const [fadeAnim] = useState(new Animated.Value(0));
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  
+  const soundRef = useRef(null);
+  const progressAnim = useSharedValue(0);
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
+    // Set up audio mode for background playback
+    Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      staysActiveInBackground: true,
+      playsInSilentModeIOS: true,
+      shouldDuckAndroid: true,
+      playThroughEarpieceAndroid: false,
+    });
+
+    // Set up keyboard shortcuts
+    const handleKeyPress = (event) => {
+      if (event.key === ' ') {
+        event.preventDefault();
+        togglePlayPause();
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        seekBackward();
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        seekForward();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        stopMusic();
+      }
+    };
+
+    // Add keyboard event listeners (web only)
+    if (typeof document !== 'undefined') {
+      document.addEventListener('keydown', handleKeyPress);
+    }
+
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('keydown', handleKeyPress);
+      }
+      if (soundRef.current) {
+        soundRef.current.unloadAsync();
+      }
+    };
   }, []);
 
-  const musicCategories = [
-    {
-      id: 'lofi',
-      title: 'Lo-Fi',
-      subtitle: 'Chill beats to study/relax',
-      icon: 'musical-notes',
-      color: '#8b5cf6',
-      tracks: [
-        { id: 'lofi1', name: 'Chill Vibes', duration: '3:45' },
-        { id: 'lofi2', name: 'Study Session', duration: '4:20' },
-        { id: 'lofi3', name: 'Late Night', duration: '3:15' },
-        { id: 'lofi4', name: 'Coffee Shop', duration: '4:05' },
-      ],
-    },
-    {
-      id: 'nature',
-      title: 'Nature Sounds',
-      subtitle: 'Forest, rain, ocean waves',
-      icon: 'leaf',
-      color: '#10b981',
-      tracks: [
-        { id: 'nature1', name: 'Forest Ambience', duration: '5:30' },
-        { id: 'nature2', name: 'Ocean Waves', duration: '4:45' },
-        { id: 'nature3', name: 'Rain Sounds', duration: '6:15' },
-        { id: 'nature4', name: 'Birds Chirping', duration: '3:50' },
-      ],
-    },
-    {
-      id: 'relaxing',
-      title: 'Relaxing Music',
-      subtitle: 'Piano, ambient, meditation',
-      icon: 'heart',
-      color: '#ef4444',
-      tracks: [
-        { id: 'relax1', name: 'Piano Dreams', duration: '4:10' },
-        { id: 'relax2', name: 'Meditation Flow', duration: '5:25' },
-        { id: 'relax3', name: 'Ambient Space', duration: '6:40' },
-        { id: 'relax4', name: 'Peaceful Mind', duration: '4:55' },
-      ],
-    },
-    {
-      id: 'focus',
-      title: 'Focus Music',
-      subtitle: 'Productivity and concentration',
-      icon: 'brain',
-      color: '#6366f1',
-      tracks: [
-        { id: 'focus1', name: 'Deep Focus', duration: '4:30' },
-        { id: 'focus2', name: 'Productivity Flow', duration: '5:15' },
-        { id: 'focus3', name: 'Concentration', duration: '4:45' },
-        { id: 'focus4', name: 'Work Mode', duration: '5:50' },
-      ],
-    },
-  ];
+  useEffect(() => {
+    // Update progress animation
+    if (duration > 0) {
+      progressAnim.value = withTiming((currentTime / duration) * 100, { duration: 100 });
+    }
+  }, [currentTime, duration]);
 
-  const handlePlayTrack = (track) => {
-    if (currentTrack?.id === track.id) {
-      setIsPlaying(!isPlaying);
-    } else {
+  const loadTrack = async (track) => {
+    try {
+      if (soundRef.current) {
+        await soundRef.current.unloadAsync();
+      }
+
+      // For demo purposes, we'll use a placeholder sound
+      // In a real app, you'd load the actual audio file
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' }, // Placeholder
+        { 
+          shouldPlay: false,
+          volume: volume,
+          isLooping: false,
+        }
+      );
+
+      soundRef.current = sound;
       setCurrentTrack(track);
-      setIsPlaying(true);
+      setDuration(parseFloat(track.duration.split(':')[0]) * 60 + parseFloat(track.duration.split(':')[1]));
+      
+      // Set up status update listener
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded) {
+          setCurrentTime(status.positionMillis / 1000);
+          setIsPlaying(status.isPlaying);
+        }
+      });
+
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch (error) {
+      console.error('Error loading track:', error);
+      Alert.alert('Error', 'Could not load the selected track');
     }
   };
 
-  const handleVolumeChange = (newVolume) => {
+  const togglePlayPause = async () => {
+    try {
+      if (!soundRef.current) return;
+
+      if (isPlaying) {
+      await soundRef.current.pauseAsync();
+      } else {
+        await soundRef.current.playAsync();
+      }
+      
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch (error) {
+      console.error('Error toggling playback:', error);
+    }
+  };
+
+  const stopMusic = async () => {
+    try {
+      if (soundRef.current) {
+        await soundRef.current.stopAsync();
+        setCurrentTime(0);
+        setIsPlaying(false);
+      }
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } catch (error) {
+      console.error('Error stopping music:', error);
+    }
+  };
+
+  const seekForward = async () => {
+    try {
+      if (soundRef.current && duration > 0) {
+        const newPosition = Math.min(currentTime + 10, duration);
+        await soundRef.current.setPositionAsync(newPosition * 1000);
+      }
+    } catch (error) {
+      console.error('Error seeking forward:', error);
+    }
+  };
+
+  const seekBackward = async () => {
+    try {
+      if (soundRef.current) {
+        const newPosition = Math.max(currentTime - 10, 0);
+        await soundRef.current.setPositionAsync(newPosition * 1000);
+      }
+    } catch (error) {
+      console.error('Error seeking backward:', error);
+    }
+  };
+
+  const changeVolume = async (newVolume) => {
     setVolume(newVolume);
+    if (soundRef.current) {
+      await soundRef.current.setVolumeAsync(newVolume);
+    }
   };
 
-  const getCurrentCategory = () => {
-    return musicCategories.find(cat => cat.id === selectedCategory);
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const renderTrack = (track) => {
-    const isCurrentTrack = currentTrack?.id === track.id;
-    const isPlayingTrack = isCurrentTrack && isPlaying;
+  const progressAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      width: `${progressAnim.value}%`,
+    };
+  });
 
+  if (selectedCategory) {
+    const category = musicCategories.find(cat => cat.id === selectedCategory);
+    
     return (
-      <TouchableOpacity
-        key={track.id}
-        style={[
-          styles.trackItem,
-          isCurrentTrack && styles.currentTrackItem,
-        ]}
-        onPress={() => handlePlayTrack(track)}
-      >
-        <View style={styles.trackInfo}>
-          <View style={styles.trackHeader}>
-            <Text style={[
-              styles.trackName,
-              isCurrentTrack && styles.currentTrackName,
-            ]}>
-              {track.name}
-            </Text>
-            <Text style={styles.trackDuration}>{track.duration}</Text>
-          </View>
-          <View style={styles.trackControls}>
-            <TouchableOpacity
-              style={[styles.playButton, isPlayingTrack && styles.pauseButton]}
-              onPress={() => handlePlayTrack(track)}
-            >
-              <Ionicons
-                name={isPlayingTrack ? 'pause' : 'play'}
-                size={16}
-                color="#ffffff"
-              />
+      <View className="flex-1 bg-gray-50 dark:bg-gray-900">
+        <LinearGradient
+          colors={category.color}
+          className="px-6 pt-12 pb-8"
+        >
+          <View className="flex-row items-center justify-between mb-6">
+            <TouchableOpacity onPress={() => setSelectedCategory(null)}>
+              <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
-            {isCurrentTrack && (
-              <View style={styles.volumeControl}>
-                <Ionicons name="volume-low" size={16} color="#6b7280" />
-                <View style={styles.volumeSlider}>
-                  <View style={[styles.volumeFill, { width: `${volume * 100}%` }]} />
-                </View>
-                <Ionicons name="volume-high" size={16} color="#6b7280" />
-              </View>
-            )}
+            <Text className="text-white text-xl font-bold">
+              {category.title}
+            </Text>
+            <View className="w-6" />
           </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+        </LinearGradient>
 
-  return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Music & Relaxation</Text>
-          <Text style={styles.subtitle}>
-            Choose your perfect background sound
-          </Text>
-        </View>
-
-        {/* Category Selector */}
-        <View style={styles.categorySection}>
-          <Text style={styles.sectionTitle}>Categories</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoryScroll}
-          >
-            {musicCategories.map((category) => (
+        <ScrollView className="flex-1 px-6">
+          <View className="py-6">
+            {category.tracks.map((track) => (
               <TouchableOpacity
-                key={category.id}
-                style={[
-                  styles.categoryCard,
-                  selectedCategory === category.id && styles.selectedCategoryCard,
-                ]}
-                onPress={() => setSelectedCategory(category.id)}
+                key={track.id}
+                onPress={() => loadTrack(track)}
+                className={`mb-3 p-4 rounded-xl ${
+                  currentTrack?.id === track.id
+                    ? 'bg-blue-100 dark:bg-blue-900'
+                    : 'bg-white dark:bg-gray-800'
+                } shadow-sm`}
               >
-                <LinearGradient
-                  colors={[
-                    category.color,
-                    `${category.color}dd`,
-                  ]}
-                  style={[
-                    styles.categoryGradient,
-                    selectedCategory === category.id && styles.selectedCategoryGradient,
-                  ]}
-                >
-                  <Ionicons
-                    name={category.icon}
-                    size={32}
-                    color="#ffffff"
-                    style={styles.categoryIcon}
-                  />
-                  <Text style={styles.categoryTitle}>{category.title}</Text>
-                  <Text style={styles.categorySubtitle}>{category.subtitle}</Text>
-                </LinearGradient>
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1">
+                    <Text className={`font-semibold ${
+                      currentTrack?.id === track.id
+                        ? 'text-blue-800 dark:text-blue-200'
+                        : 'text-gray-900 dark:text-white'
+                    }`}>
+                      {track.title}
+                    </Text>
+                    <Text className={`text-sm ${
+                      currentTrack?.id === track.id
+                        ? 'text-blue-600 dark:text-blue-300'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {track.duration}
+                    </Text>
+                  </View>
+                  {currentTrack?.id === track.id && isPlaying && (
+                    <View className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
+                  )}
+                </View>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  return (
+    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
+      <LinearGradient
+        colors={['#8b5cf6', '#7c3aed']}
+        className="px-6 pt-12 pb-8"
+      >
+        <View className="flex-row items-center justify-between mb-6">
+          <View>
+            <Text className="text-white text-2xl font-bold">
+              Music & Relax 🎵
+            </Text>
+            <Text className="text-purple-100 text-sm">
+              Background music for focus and relaxation
+            </Text>
+          </View>
+          <View className="flex-row items-center space-x-2">
+            <Text className="text-white text-sm">🔊</Text>
+            <View className="w-20 bg-white/20 rounded-full h-1">
+              <View 
+                className="bg-white h-1 rounded-full"
+                style={{ width: `${volume * 100}%` }}
+              />
+            </View>
+          </View>
+        </View>
+      </LinearGradient>
+
+      <ScrollView className="flex-1 px-6">
+        {/* Music Categories */}
+        <View className="py-6">
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Categories
+          </Text>
+          
+          <View className="flex-row flex-wrap justify-between">
+            {musicCategories.map((category) => (
+              <Card
+                key={category.id}
+                onPress={() => setSelectedCategory(category.id)}
+                gradient
+                gradientColors={category.color}
+                className="w-[48%] mb-4"
+              >
+                <View className="p-6 items-center">
+                  <Text className="text-4xl mb-3">{category.icon}</Text>
+                  <Text className="text-white font-bold text-lg mb-1">
+                    {category.title}
+                  </Text>
+                  <Text className="text-white/80 text-sm text-center">
+                    {category.tracks.length} tracks
+                  </Text>
+                </View>
+              </Card>
+            ))}
+          </View>
         </View>
 
-        {/* Current Track Display */}
+        {/* Now Playing */}
         {currentTrack && (
-          <View style={styles.currentTrackSection}>
-            <Text style={styles.sectionTitle}>Now Playing</Text>
-            <View style={styles.currentTrackCard}>
-              <View style={styles.currentTrackInfo}>
-                <Text style={styles.currentTrackName}>{currentTrack.name}</Text>
-                <Text style={styles.currentTrackCategory}>
-                  {getCurrentCategory()?.title}
+          <Card className="mb-6">
+            <View className="p-6">
+              <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                🎵 Now Playing
+              </Text>
+              
+              <View className="items-center mb-6">
+                <Text className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                  {currentTrack.title}
+                </Text>
+                <Text className="text-gray-600 dark:text-gray-400 text-sm">
+                  {currentTrack.duration}
                 </Text>
               </View>
-              <View style={styles.currentTrackControls}>
+
+              {/* Progress Bar */}
+              <View className="mb-6">
+                <View className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mb-2">
+                  <Animated.View 
+                    style={progressAnimatedStyle}
+                    className="bg-purple-500 h-2 rounded-full"
+                  />
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-sm text-gray-600 dark:text-gray-400">
+                    {formatTime(currentTime)}
+                  </Text>
+                  <Text className="text-sm text-gray-600 dark:text-gray-400">
+                    {formatTime(duration)}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Controls */}
+              <View className="flex-row justify-center items-center space-x-6">
                 <TouchableOpacity
-                  style={styles.mainPlayButton}
-                  onPress={() => setIsPlaying(!isPlaying)}
+                  onPress={seekBackward}
+                  className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full items-center justify-center"
                 >
-                  <Ionicons
-                    name={isPlaying ? 'pause' : 'play'}
-                    size={24}
-                    color="#ffffff"
+                  <Ionicons name="play-skip-back" size={24} color="#6b7280" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={togglePlayPause}
+                  className="w-16 h-16 bg-purple-500 rounded-full items-center justify-center shadow-lg"
+                >
+                  <Ionicons 
+                    name={isPlaying ? "pause" : "play"} 
+                    size={32} 
+                    color="white" 
                   />
                 </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        )}
 
-        {/* Tracks List */}
-        <View style={styles.tracksSection}>
-          <Text style={styles.sectionTitle}>
-            {getCurrentCategory()?.title} Tracks
-          </Text>
-          <View style={styles.tracksList}>
-            {getCurrentCategory()?.tracks.map(renderTrack)}
-          </View>
-        </View>
-
-        {/* Volume Control */}
-        {currentTrack && (
-          <View style={styles.volumeSection}>
-            <Text style={styles.sectionTitle}>Volume</Text>
-            <View style={styles.volumeContainer}>
-              <Ionicons name="volume-low" size={20} color="#6b7280" />
-              <View style={styles.volumeSliderContainer}>
                 <TouchableOpacity
-                  style={styles.volumeSlider}
-                  onPress={(event) => {
-                    // In a real app, you'd calculate the volume based on touch position
-                    const newVolume = Math.random(); // Placeholder
-                    handleVolumeChange(newVolume);
-                  }}
+                  onPress={seekForward}
+                  className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full items-center justify-center"
                 >
-                  <View style={[styles.volumeFill, { width: `${volume * 100}%` }]} />
+                  <Ionicons name="play-skip-forward" size={24} color="#6b7280" />
                 </TouchableOpacity>
               </View>
-              <Ionicons name="volume-high" size={20} color="#6b7280" />
+
+              {/* Stop Button */}
+              <View className="mt-4">
+                <ActionButton
+                  title="Stop"
+                  onPress={stopMusic}
+                  variant="outline"
+                  className="w-full"
+                />
+              </View>
             </View>
-          </View>
+          </Card>
         )}
 
-        {/* Quick Actions */}
-        <View style={styles.actionsSection}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.stopButton]}
-              onPress={() => {
-                setIsPlaying(false);
-                setCurrentTrack(null);
-              }}
-            >
-              <Ionicons name="stop" size={20} color="#ffffff" />
-              <Text style={styles.actionButtonText}>Stop</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[styles.actionButton, styles.shuffleButton]}
-              onPress={() => {
-                const category = getCurrentCategory();
-                const randomTrack = category.tracks[Math.floor(Math.random() * category.tracks.length)];
-                setCurrentTrack(randomTrack);
-                setIsPlaying(true);
-              }}
-            >
-              <Ionicons name="shuffle" size={20} color="#ffffff" />
-              <Text style={styles.actionButtonText}>Shuffle</Text>
-            </TouchableOpacity>
+        {/* Keyboard Shortcuts Info */}
+        <Card className="mb-6">
+          <View className="p-6">
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              ⌨️ Keyboard Shortcuts
+            </Text>
+            <View className="space-y-2">
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600 dark:text-gray-400">Space</Text>
+                <Text className="text-gray-900 dark:text-white font-medium">Play/Pause</Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600 dark:text-gray-400">← →</Text>
+                <Text className="text-gray-900 dark:text-white font-medium">Seek 10s</Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600 dark:text-gray-400">Esc</Text>
+                <Text className="text-gray-900 dark:text-white font-medium">Stop</Text>
+              </View>
+            </View>
           </View>
-        </View>
-
-        {/* Navigation */}
-        <View style={styles.navigationSection}>
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => navigation.navigate('Break')}
-          >
-            <Text style={styles.navButtonText}>Break Activities</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
-    </ScrollView>
+        </Card>
+      </ScrollView>
+    </View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  content: {
-    padding: 20,
-  },
-  header: {
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  categorySection: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 16,
-  },
-  categoryScroll: {
-    marginHorizontal: -20,
-    paddingHorizontal: 20,
-  },
-  categoryCard: {
-    width: 160,
-    marginRight: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  selectedCategoryCard: {
-    transform: [{ scale: 1.05 }],
-  },
-  categoryGradient: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  selectedCategoryGradient: {
-    opacity: 1,
-  },
-  categoryIcon: {
-    marginBottom: 12,
-  },
-  categoryTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 4,
-  },
-  categorySubtitle: {
-    fontSize: 12,
-    color: '#ffffff',
-    opacity: 0.9,
-    textAlign: 'center',
-  },
-  currentTrackSection: {
-    marginBottom: 30,
-  },
-  currentTrackCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  currentTrackInfo: {
-    flex: 1,
-  },
-  currentTrackName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 4,
-  },
-  currentTrackCategory: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  currentTrackControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  mainPlayButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#6366f1',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tracksSection: {
-    marginBottom: 30,
-  },
-  tracksList: {
-    gap: 12,
-  },
-  trackItem: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  currentTrackItem: {
-    borderWidth: 2,
-    borderColor: '#6366f1',
-  },
-  trackInfo: {
-    flex: 1,
-  },
-  trackHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  trackName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-  },
-  currentTrackName: {
-    color: '#6366f1',
-  },
-  trackDuration: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  trackControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#10b981',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pauseButton: {
-    backgroundColor: '#f59e0b',
-  },
-  volumeControl: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  volumeSlider: {
-    flex: 1,
-    height: 4,
-    backgroundColor: '#e5e7eb',
-    borderRadius: 2,
-    position: 'relative',
-  },
-  volumeFill: {
-    height: '100%',
-    backgroundColor: '#6366f1',
-    borderRadius: 2,
-  },
-  volumeSection: {
-    marginBottom: 30,
-  },
-  volumeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  volumeSliderContainer: {
-    flex: 1,
-  },
-  actionsSection: {
-    marginBottom: 30,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    borderRadius: 12,
-    gap: 8,
-  },
-  stopButton: {
-    backgroundColor: '#ef4444',
-  },
-  shuffleButton: {
-    backgroundColor: '#8b5cf6',
-  },
-  actionButtonText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  navigationSection: {
-    alignItems: 'center',
-  },
-  navButton: {
-    backgroundColor: '#6366f1',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 25,
-    gap: 10,
-  },
-  navButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
-
-export default MusicScreen;
+}

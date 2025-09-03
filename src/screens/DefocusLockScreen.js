@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import Animated, { 
   useSharedValue, 
@@ -25,6 +26,7 @@ const durationOptions = [5, 10, 15, 20, 25, 30]; // minutes
 
 export default function DefocusLockScreen() {
   const { state, actions } = useApp();
+  const navigation = useNavigation();
   const [selectedDuration, setSelectedDuration] = useState(10);
   const [timeLeft, setTimeLeft] = useState(selectedDuration * 60); // seconds
   const [isRunning, setIsRunning] = useState(false);
@@ -90,7 +92,7 @@ export default function DefocusLockScreen() {
             style: 'destructive',
             onPress: () => {
               actions.setDefocusLock(false);
-              actions.setCurrentScreen('MainTabs');
+              navigation.navigate('MainTabs');
             }
           },
         ]
@@ -150,7 +152,7 @@ export default function DefocusLockScreen() {
 
   const finishSession = () => {
     actions.setDefocusLock(false);
-    actions.setCurrentScreen('MainTabs');
+    navigation.navigate('MainTabs');
   };
 
   const formatTime = (seconds) => {

@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import Card from '../components/Card';
 import StatCard from '../components/StatCard';
@@ -25,6 +26,7 @@ const motivationalQuotes = [
 
 export default function DashboardScreen() {
   const { state, actions } = useApp();
+  const navigation = useNavigation();
   const [currentQuote, setCurrentQuote] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
@@ -44,7 +46,7 @@ export default function DashboardScreen() {
 
   const handleStartDefocus = () => {
     actions.setDefocusLock(true);
-    actions.setCurrentScreen('DefocusLock');
+    navigation.navigate('DefocusLock');
   };
 
   const todayProgress = (state.stats.todaySessions / state.stats.todayGoal) * 100;
@@ -199,7 +201,7 @@ export default function DashboardScreen() {
           {/* Feature Grid */}
           <View className="flex-row flex-wrap justify-between">
             <Card 
-              onPress={() => actions.setCurrentScreen('Journal')}
+              onPress={() => navigation.navigate('Journal')}
               className="w-[48%] mb-3"
             >
               <View className="p-4 items-center">
@@ -211,7 +213,7 @@ export default function DashboardScreen() {
             </Card>
 
             <Card 
-              onPress={() => actions.setCurrentScreen('Games')}
+              onPress={() => navigation.navigate('Games')}
               className="w-[48%] mb-3"
             >
               <View className="p-4 items-center">
@@ -223,7 +225,19 @@ export default function DashboardScreen() {
             </Card>
 
             <Card 
-              onPress={() => actions.setCurrentScreen('History')}
+              onPress={() => navigation.navigate('Music')}
+              className="w-[48%] mb-3"
+            >
+              <View className="p-4 items-center">
+                <Text className="text-3xl mb-2">🎵</Text>
+                <Text className="font-semibold text-gray-900 dark:text-white">
+                  Music
+                </Text>
+              </View>
+            </Card>
+
+            <Card 
+              onPress={() => navigation.navigate('History')}
               className="w-[48%]"
             >
               <View className="p-4 items-center">
@@ -235,7 +249,7 @@ export default function DashboardScreen() {
             </Card>
 
             <Card 
-              onPress={() => actions.setCurrentScreen('Profile')}
+              onPress={() => navigation.navigate('Profile')}
               className="w-[48%]"
             >
               <View className="p-4 items-center">

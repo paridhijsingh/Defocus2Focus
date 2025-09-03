@@ -29,7 +29,7 @@ export default function AppNavigator() {
 
   return (
     <Stack.Navigator
-      initialRouteName={getInitialRouteName()}
+      initialRouteName="Onboarding"
       screenOptions={{
         headerShown: false,
         gestureEnabled: false, // Prevent back gesture during defocus lock

@@ -10,11 +10,13 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import ActionButton from '../components/ActionButton';
 
 export default function LoginScreen() {
   const { actions } = useApp();
+  const navigation = useNavigation();
   const [username, setUsername] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,6 +33,7 @@ export default function LoginScreen() {
     setTimeout(() => {
       actions.login(username.trim());
       setLoading(false);
+      navigation.navigate('MainTabs');
     }, 1000);
   };
 
@@ -46,6 +49,7 @@ export default function LoginScreen() {
     setTimeout(() => {
       actions.login(username.trim());
       setLoading(false);
+      navigation.navigate('MainTabs');
     }, 1000);
   };
 

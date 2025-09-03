@@ -56,6 +56,7 @@ const onboardingData = [
 
 export default function OnboardingScreen() {
   const { actions } = useApp();
+  const navigation = useNavigation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef(null);
   const translateX = useSharedValue(0);
@@ -70,11 +71,13 @@ export default function OnboardingScreen() {
       });
     } else {
       actions.completeOnboarding();
+      navigation.navigate('Login');
     }
   };
 
   const handleSkip = () => {
     actions.completeOnboarding();
+    navigation.navigate('Login');
   };
 
   const handleScroll = (event) => {

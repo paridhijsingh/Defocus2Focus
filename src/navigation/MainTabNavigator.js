@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import DashboardScreen from '../screens/DashboardScreen';
 import JournalScreen from '../screens/JournalScreen';
 import GamesScreen from '../screens/GamesScreen';
+import MusicScreen from '../screens/MusicScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
@@ -24,6 +25,8 @@ export default function MainTabNavigator() {
             iconName = focused ? 'book' : 'book-outline';
           } else if (route.name === 'Games') {
             iconName = focused ? 'game-controller' : 'game-controller-outline';
+          } else if (route.name === 'Music') {
+            iconName = focused ? 'musical-notes' : 'musical-notes-outline';
           } else if (route.name === 'History') {
             iconName = focused ? 'bar-chart' : 'bar-chart-outline';
           } else if (route.name === 'Profile') {
@@ -59,6 +62,11 @@ export default function MainTabNavigator() {
         name="Games" 
         component={GamesScreen}
         options={{ title: 'Games' }}
+      />
+      <Tab.Screen 
+        name="Music" 
+        component={MusicScreen}
+        options={{ title: 'Music' }}
       />
       <Tab.Screen 
         name="History" 
