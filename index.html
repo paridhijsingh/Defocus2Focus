@@ -222,7 +222,6 @@
     <div id="root"></div>
 
     <script type="text/babel">
-      console.log("Script starting...");
       const { useState, useEffect } = React;
 
       // Pomodoro Timer Component
@@ -1295,8 +1294,6 @@
         const isFirstStep = currentStep === 0;
 
         if (!isVisible) return null;
-
-        const currentStepData = steps[currentStep];
 
         return React.createElement(
           "div",
@@ -4180,12 +4177,10 @@
       };
 
       // Render the app
-      console.log("About to render WebApp...");
       ReactDOM.render(
         React.createElement(WebApp),
         document.getElementById("root")
       );
-      console.log("WebApp rendered!");
     </script>
   </body>
 </html>
