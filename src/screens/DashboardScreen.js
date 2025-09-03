@@ -1,377 +1,580 @@
-import React from 'react';
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  StyleSheet, 
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
   TouchableOpacity,
-  SafeAreaView 
+  Dimensions,
+  StatusBar,
 } from 'react-native';
-import { useUserData } from '../contexts/UserDataContext';
-import ProgressRing from '../components/ProgressRing';
-import StatCard from '../components/StatCard';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  interpolate,
+} from 'react-native-reanimated';
+import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
+import {
+  BookOpen,
+  Gamepad2,
+  Bot,
+  Trophy,
+  BarChart3,
+  Target,
+  Users,
+  Flame,
+  Star,
+  Coins,
+  Clock,
+  BookMarked,
+} from 'lucide-react-native';
 
-/**
- * Dashboard Screen
- * Main home screen showing user stats, progress, and quick actions
- */
-const DashboardScreen = ({ navigation }) => {
-  const { user, stats, sessions } = useUserData();
+const { width } = Dimensions.get('window');
 
-  // Calculate weekly progress percentage
-  const weeklyProgressPercentage = Math.min(
-    (stats.weeklyProgress / stats.weeklyGoal) * 100, 
-    100
-  );
+// Reusable components
+const StatCard = ({ icon: Icon, title, value, color, delay = 0 }) => {
+  const { isDark } = useTheme();
+  const scale = useSharedValue(0);
+  const opacity = useSharedValue(0);
 
-  // Get recent sessions for activity feed
-  const recentSessions = sessions
-    .slice(-5)
-    .reverse()
-    .map(session => ({
-      ...session,
-      date: new Date(session.date).toLocaleDateString(),
-      duration: Math.round(session.duration / 60 * 10) / 10, // Convert to hours
-    }));
+  useEffect(() => {
+    scale.value = withSpring(1, { delay });
+    opacity.value = withTiming(1, { delay });
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Welcome Section */}
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>Welcome back,</Text>
-          <Text style={styles.userName}>{user.name}!</Text>
-          <View style={styles.levelContainer}>
-            <Text style={styles.levelText}>Level {user.level}</Text>
-            <Text style={styles.experienceText}>
-              {user.experience % 100}/100 XP
-            </Text>
+    <Animated.View
+      style={[
+        animatedStyle,
+        {
+          backgroundColor: isDark ? '#1f2937' : '#ffffff',
+          borderRadius: 16,
+          padding: 16,
+          marginHorizontal: 4,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 4,
+          borderWidth: 1,
+          borderColor: isDark ? '#374151' : '#f3f4f6',
+        },
+      ]}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        <View
+          style={{
+            backgroundColor: color + '20',
+            borderRadius: 8,
+            padding: 6,
+            marginRight: 8,
+          }}
+        >
+          <Icon size={20} color={color} />
+        </View>
+        <Text
+          style={{
+            fontSize: 12,
+            color: isDark ? '#9ca3af' : '#6b7280',
+            fontWeight: '500',
+          }}
+        >
+          {title}
+        </Text>
+      </View>
+      <Text
+        style={{
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: isDark ? '#ffffff' : '#111827',
+        }}
+      >
+        {value}
+      </Text>
+    </Animated.View>
+  );
+};
+
+const ActionButton = ({ 
+  title, 
+  icon: Icon, 
+  color, 
+  onPress, 
+  isLarge = false,
+  delay = 0 
+}) => {
+  const { isDark } = useTheme();
+  const scale = useSharedValue(0);
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    scale.value = withSpring(1, { delay });
+    opacity.value = withTiming(1, { delay });
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+
+  const handlePress = () => {
+    scale.value = withSpring(0.95, {}, () => {
+      scale.value = withSpring(1);
+    });
+    onPress();
+  };
+
+  return (
+    <Animated.View style={[animatedStyle, { flex: isLarge ? 2 : 1 }]}>
+      <TouchableOpacity
+        onPress={handlePress}
+        style={{
+          backgroundColor: isDark ? '#1f2937' : '#ffffff',
+          borderRadius: 20,
+          padding: isLarge ? 24 : 20,
+          margin: 6,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
+          elevation: 6,
+          borderWidth: 1,
+          borderColor: isDark ? '#374151' : '#f3f4f6',
+        }}
+      >
+        <LinearGradient
+          colors={[color + '20', color + '10']}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: 20,
+          }}
+        />
+        <View style={{ alignItems: 'center' }}>
+          <View
+            style={{
+              backgroundColor: color,
+              borderRadius: 16,
+              padding: 12,
+              marginBottom: 12,
+            }}
+          >
+            <Icon size={isLarge ? 32 : 24} color="#ffffff" />
           </View>
+          <Text
+            style={{
+              fontSize: isLarge ? 16 : 14,
+              fontWeight: '600',
+              color: isDark ? '#ffffff' : '#111827',
+              textAlign: 'center',
+            }}
+          >
+            {title}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+const CircularProgress = ({ progress, size = 120, strokeWidth = 8, color = '#3b82f6' }) => {
+  const { isDark } = useTheme();
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  return (
+    <View style={{ alignItems: 'center' }}>
+      <View style={{ position: 'relative', width: size, height: size }}>
+        <View
+          style={{
+            position: 'absolute',
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            borderWidth: strokeWidth,
+            borderColor: isDark ? '#374151' : '#e5e7eb',
+          }}
+        />
+        <View
+          style={{
+            position: 'absolute',
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            borderWidth: strokeWidth,
+            borderColor: color,
+            borderTopColor: 'transparent',
+            borderRightColor: 'transparent',
+            transform: [{ rotate: '-90deg' }],
+          }}
+        />
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: 'bold',
+              color: isDark ? '#ffffff' : '#111827',
+            }}
+          >
+            {progress}%
+          </Text>
+          <Text
+            style={{
+              fontSize: 12,
+              color: isDark ? '#9ca3af' : '#6b7280',
+            }}
+          >
+            Complete
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const DashboardScreen = () => {
+  const { isDark, theme } = useTheme();
+  const { user, stats, dailyProgress } = useUser();
+  
+  // Calculate progress percentage
+  const progressPercentage = Math.round(
+    (dailyProgress.focusSessionsCompleted / dailyProgress.focusSessionsGoal) * 100
+  );
+
+  const motivationalQuotes = [
+    "Every expert was once a beginner! 🌟",
+    "Progress, not perfection! 🚀",
+    "You're doing better than you think! 💪",
+    "Small steps lead to big changes! 🎯",
+    "Focus is a superpower! ⚡",
+  ];
+
+  const [currentQuote, setCurrentQuote] = useState(
+    motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentQuote(
+        motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]
+      );
+    }, 30000); // Change quote every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleActionPress = (action) => {
+    console.log(`Pressed: ${action}`);
+    // Add navigation logic here
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#111827' : '#f9fafb' }}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Top Section - Profile Greeting */}
+        <View style={{ padding: 20, paddingTop: 10 }}>
+          <LinearGradient
+            colors={isDark ? ['#1f2937', '#111827'] : ['#ffffff', '#f9fafb']}
+            style={{
+              borderRadius: 24,
+              padding: 24,
+              marginBottom: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 6,
+            }}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: 28,
+                    fontWeight: 'bold',
+                    color: isDark ? '#ffffff' : '#111827',
+                    marginBottom: 4,
+                  }}
+                >
+                  Hi {user.name} 👋
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: isDark ? '#9ca3af' : '#6b7280',
+                    marginBottom: 12,
+                  }}
+                >
+                  {currentQuote}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Flame size={20} color="#f59e0b" />
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '600',
+                      color: '#f59e0b',
+                      marginLeft: 6,
+                    }}
+                  >
+                    {stats.currentStreak}-day streak
+                  </Text>
+                </View>
+              </View>
+              <View style={{ alignItems: 'center' }}>
+                <CircularProgress progress={progressPercentage} color="#3b82f6" />
+              </View>
+            </View>
+          </LinearGradient>
         </View>
 
-        {/* Quick Stats Grid */}
-        <View style={styles.statsGrid}>
-          <View style={styles.statsRow}>
-            <StatCard
-              title="Current Streak"
-              value={user.currentStreak}
-              subtitle="days"
-              icon="🔥"
-              color="focus"
-              style={styles.statCard}
-            />
-            <StatCard
-              title="Total Points"
-              value={user.totalPoints}
-              subtitle="earned"
-              icon="⭐"
-              color="primary"
-              style={styles.statCard}
-            />
+        {/* Middle Section - Stats */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Star size={20} color="#f59e0b" />
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: '600',
+                  color: isDark ? '#ffffff' : '#111827',
+                  marginLeft: 8,
+                }}
+              >
+                {stats.xp} XP
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Coins size={20} color="#eab308" />
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: '600',
+                  color: isDark ? '#ffffff' : '#111827',
+                  marginLeft: 8,
+                }}
+              >
+                {stats.coins} Coins
+              </Text>
+            </View>
           </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 4 }}
+          >
+            <StatCard
+              icon={Target}
+              title="Defocus Sessions"
+              value={stats.totalDefocusSessions.toString()}
+              color="#ef4444"
+              delay={100}
+            />
+            <StatCard
+              icon={Clock}
+              title="Hours Focused"
+              value={stats.totalHoursFocused.toString()}
+              color="#3b82f6"
+              delay={200}
+            />
+            <StatCard
+              icon={BookMarked}
+              title="Journal Entries"
+              value={stats.journalEntries.toString()}
+              color="#10b981"
+              delay={300}
+            />
+          </ScrollView>
+        </View>
+
+        {/* Main Actions Grid */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: 'bold',
+              color: isDark ? '#ffffff' : '#111827',
+              marginBottom: 16,
+            }}
+          >
+            Quick Actions
+          </Text>
           
-          <View style={styles.statsRow}>
-            <StatCard
-              title="Today's Focus"
-              value={`${Math.round(stats.weeklyProgress / 60 * 10) / 10}h`}
-              subtitle="of 20h goal"
-              icon="⏱️"
-              color="defocus"
-              style={styles.statCard}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            <ActionButton
+              title="Start Defocus"
+              icon={Target}
+              color="#ef4444"
+              onPress={() => handleActionPress('Start Defocus')}
+              isLarge={true}
+              delay={400}
             />
-            <StatCard
-              title="Total Sessions"
-              value={stats.totalSessions}
-              subtitle="completed"
-              icon="📊"
-              color="accent"
-              style={styles.statCard}
+            <ActionButton
+              title="Journal"
+              icon={BookOpen}
+              color="#8b5cf6"
+              onPress={() => handleActionPress('Journal')}
+              delay={500}
+            />
+            <ActionButton
+              title="Mini Games"
+              icon={Gamepad2}
+              color="#f59e0b"
+              onPress={() => handleActionPress('Mini Games')}
+              delay={600}
+            />
+            <ActionButton
+              title="AI Therapist"
+              icon={Bot}
+              color="#06b6d4"
+              onPress={() => handleActionPress('AI Therapist')}
+              delay={700}
+            />
+            <ActionButton
+              title="Leaderboard"
+              icon={Trophy}
+              color="#eab308"
+              onPress={() => handleActionPress('Leaderboard')}
+              delay={800}
+            />
+            <ActionButton
+              title="History"
+              icon={BarChart3}
+              color="#10b981"
+              onPress={() => handleActionPress('History')}
+              delay={900}
             />
           </View>
         </View>
 
-        {/* Weekly Progress */}
-        <View style={styles.progressSection}>
-          <Text style={styles.sectionTitle}>Weekly Progress</Text>
-          <View style={styles.progressContainer}>
-            <ProgressRing
-              progress={weeklyProgressPercentage}
-              size={120}
-              color="primary"
-              showPercentage={false}
+        {/* Bottom Section */}
+        <View style={{ paddingHorizontal: 20 }}>
+          <LinearGradient
+            colors={isDark ? ['#1f2937', '#111827'] : ['#ffffff', '#f9fafb']}
+            style={{
+              borderRadius: 20,
+              padding: 20,
+              marginBottom: 16,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: isDark ? '#ffffff' : '#111827',
+                marginBottom: 12,
+              }}
             >
-              <View style={styles.progressContent}>
-                <Text style={styles.progressValue}>
-                  {Math.round(weeklyProgressPercentage)}%
-                </Text>
-                <Text style={styles.progressLabel}>Complete</Text>
+              Today's Focus Goal
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <View
+                style={{
+                  flex: 1,
+                  height: 8,
+                  backgroundColor: isDark ? '#374151' : '#e5e7eb',
+                  borderRadius: 4,
+                  marginRight: 12,
+                }}
+              >
+                <View
+                  style={{
+                    width: `${progressPercentage}%`,
+                    height: '100%',
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 4,
+                  }}
+                />
               </View>
-            </ProgressRing>
-            <View style={styles.progressDetails}>
-              <Text style={styles.progressText}>
-                {Math.round(stats.weeklyProgress / 60 * 10) / 10}h / 20h
-              </Text>
-              <Text style={styles.progressSubtext}>
-                Weekly focus goal
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: '600',
+                  color: '#3b82f6',
+                }}
+              >
+                {dailyProgress.focusSessionsCompleted}/{dailyProgress.focusSessionsGoal}
               </Text>
             </View>
-          </View>
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.actionsSection}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.focusButton]}
-              onPress={() => navigation.navigate('Focus')}
+            <Text
+              style={{
+                fontSize: 12,
+                color: isDark ? '#9ca3af' : '#6b7280',
+              }}
             >
-              <Text style={styles.actionButtonIcon}>🎯</Text>
-              <Text style={styles.actionButtonText}>Start Focus</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[styles.actionButton, styles.breakButton]}
-              onPress={() => navigation.navigate('Break')}
-            >
-              <Text style={styles.actionButtonIcon}>🌿</Text>
-              <Text style={styles.actionButtonText}>Take Break</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+              {dailyProgress.focusSessionsGoal - dailyProgress.focusSessionsCompleted} more sessions to complete today's goal
+            </Text>
+          </LinearGradient>
 
-        {/* Recent Activity */}
-        <View style={styles.activitySection}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          {recentSessions.length > 0 ? (
-            recentSessions.map((session, index) => (
-              <View key={index} style={styles.activityItem}>
-                <View style={styles.activityIcon}>
-                  <Text style={styles.activityEmoji}>
-                    {session.completed ? '✅' : '⏸️'}
-                  </Text>
-                </View>
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>
-                    {session.completed ? 'Focus Session' : 'Interrupted Session'}
-                  </Text>
-                  <Text style={styles.activitySubtitle}>
-                    {session.duration}h • {session.date}
-                  </Text>
-                </View>
-                <Text style={styles.activityPoints}>
-                  +{Math.floor(session.duration * 60 / 5) + (session.completed ? 10 : 0)}
-                </Text>
-              </View>
-            ))
-          ) : (
-            <View style={styles.emptyActivity}>
-              <Text style={styles.emptyActivityText}>
-                No sessions yet. Start your first focus session!
-              </Text>
-            </View>
-          )}
+          <TouchableOpacity
+            onPress={() => handleActionPress('Challenge Friend')}
+            style={{
+              backgroundColor: isDark ? '#1f2937' : '#ffffff',
+              borderRadius: 16,
+              padding: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 4,
+              borderWidth: 1,
+              borderColor: isDark ? '#374151' : '#f3f4f6',
+            }}
+          >
+            <Users size={20} color="#8b5cf6" />
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: isDark ? '#ffffff' : '#111827',
+                marginLeft: 8,
+              }}
+            >
+              Challenge a Friend
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  scrollView: {
-    flex: 1,
-    padding: 16,
-  },
-  welcomeSection: {
-    marginBottom: 24,
-  },
-  welcomeText: {
-    fontSize: 16,
-    color: '#64748b',
-  },
-  userName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#0f172a',
-    marginBottom: 8,
-  },
-  levelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  levelText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#0ea5e9',
-    marginRight: 12,
-  },
-  experienceText: {
-    fontSize: 14,
-    color: '#64748b',
-  },
-  statsGrid: {
-    marginBottom: 24,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  statCard: {
-    flex: 1,
-    marginHorizontal: 6,
-  },
-  progressSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#0f172a',
-    marginBottom: 16,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  progressContent: {
-    alignItems: 'center',
-  },
-  progressValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#0ea5e9',
-  },
-  progressLabel: {
-    fontSize: 12,
-    color: '#64748b',
-  },
-  progressDetails: {
-    flex: 1,
-    marginLeft: 20,
-  },
-  progressText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-  progressSubtext: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  actionsSection: {
-    marginBottom: 24,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  focusButton: {
-    backgroundColor: '#f3771e',
-  },
-  breakButton: {
-    backgroundColor: '#22c55e',
-  },
-  actionButtonIcon: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  actionButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
-  },
-  activitySection: {
-    marginBottom: 24,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  activityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f0f9ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  activityEmoji: {
-    fontSize: 16,
-  },
-  activityContent: {
-    flex: 1,
-  },
-  activityTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-  activitySubtitle: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 2,
-  },
-  activityPoints: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#22c55e',
-  },
-  emptyActivity: {
-    alignItems: 'center',
-    padding: 32,
-    backgroundColor: 'white',
-    borderRadius: 12,
-  },
-  emptyActivityText: {
-    fontSize: 16,
-    color: '#64748b',
-    textAlign: 'center',
-  },
-});
 
 export default DashboardScreen;
