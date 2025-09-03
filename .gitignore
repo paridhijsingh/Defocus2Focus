@@ -116,3 +116,5 @@ venv.bak/
 # Test files
 test-results/
 coverage/
+# Local Netlify folder
+.netlify
