@@ -1,32 +1,51 @@
-# Defocus2Focus 🎯
+# Defocus2Focus - Productivity App
 
-> **Where Procrastination Meets Play** - A gamified productivity app that transforms focus sessions into engaging, rewarding experiences.
+A React Native productivity app that helps you balance focused work sessions with mindful breaks through gamification and progress tracking.
 
-## 🌟 What is Defocus2Focus?
+## Features
 
-Defocus2Focus is a comprehensive productivity app that combines the proven Pomodoro Technique with gamification, music therapy, and smart break management. Instead of fighting procrastination, we make productivity fun and rewarding through:
+### 🎯 Core Workflow
 
-- **🎮 Gamified Focus Sessions** - Earn energy points and unlock badges for every interaction
-- **🎵 Therapeutic Audio** - 24+ curated sounds across Nature, Ambient, Focus, and Relax categories
-- **☕ Smart Break Management** - Guided activities and customizable break durations
-- **📝 Integrated Task Management** - Built-in to-do lists with progress tracking
-- **🔄 Session Cycle Logic** - Defocus → Focus → Unlock workflow for optimal productivity
+- **Onboarding & Login**: Welcome screen with carousel and simple authentication
+- **Dashboard**: Dynamic greeting, progress tracking, and quick actions
+- **Defocus Lock Mode**: Timer-based focus sessions with calming animations
+- **Journaling**: Text editor with word count and streak tracking
+- **Mini Games**: Memory Match and Tap Game for relaxation
+- **History**: Timeline view of all activities with filtering
+- **Profile**: Settings, achievements, and account management
 
-## 🚀 Quick Start
+### 🎮 Gamification
 
-### Prerequisites
+- **XP & Coins**: Earn rewards for completing sessions and activities
+- **Achievements**: Unlock badges for various milestones
+- **Streaks**: Track consecutive days of productivity
+- **Progress Tracking**: Visual progress bars and statistics
 
-- Node.js (v16 or higher)
-- npm or yarn
-- Expo CLI (`npm install -g @expo/cli`)
+### 🎨 Design Features
 
-### Installation
+- **Modern UI**: Clean design with TailwindCSS styling
+- **Animations**: Smooth transitions with Framer Motion and Reanimated
+- **Dark Mode**: Support for light, dark, and auto themes
+- **Responsive**: Optimized for different screen sizes
+
+## Tech Stack
+
+- **React Native** with Expo
+- **TailwindCSS** for styling
+- **React Navigation** for navigation
+- **React Native Reanimated** for animations
+- **Context API** for state management
+- **AsyncStorage** for data persistence
+- **Expo Haptics** for tactile feedback
+- **Expo AV** for audio features
+
+## Installation
 
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/Defocus2Focus.git
-   cd Defocus2Focus
+   git clone <repository-url>
+   cd defocus2focus
    ```
 
 2. **Install dependencies**
@@ -41,130 +60,218 @@ Defocus2Focus is a comprehensive productivity app that combines the proven Pomod
    npm start
    ```
 
-4. **Run on your preferred platform**
+4. **Run on device/simulator**
+
    ```bash
-   npm run ios      # iOS Simulator
-   npm run android  # Android Emulator
-   npm run web      # Web browser
+   # iOS
+   npm run ios
+
+   # Android
+   npm run android
+
+   # Web
+   npm run web
    ```
 
-### Web Version
-
-The app includes a fully functional web version at [`public/index.html`](public/README.md) that provides the same features as the mobile app.
-
-## 🏗️ Project Structure
+## Project Structure
 
 ```
-Defocus2Focus/
-├── 📱 src/                          # React Native source code
-│   ├── components/                  # Reusable UI components
-│   │   └── [README.md](src/components/README.md)
-│   ├── contexts/                    # React Context providers
-│   ├── screens/                     # App screens and features
-│   │   └── [README.md](src/screens/README.md)
-│   ├── services/                    # Business logic services
-│   ├── utils/                       # Utility functions
-│   └── App.js                       # Main app entry point
-├── 🌐 public/                       # Web app files
-│   └── [README.md](public/README.md)
-├── 🎵 assets/                       # Static assets
-│   ├── audio/                       # Audio system
-│   │   └── [README.md](assets/audio/README.md)
-│   └── images/                      # Images and icons
-├── 📚 docs/                         # Documentation
-├── 🔧 scripts/                      # Build and utility scripts
-├── 🧪 tests/                        # Test files
-└── 📱 ios/                          # iOS native code
+src/
+├── components/          # Reusable UI components
+│   ├── Card.js
+│   ├── StatCard.js
+│   ├── ProgressCircle.js
+│   └── ActionButton.js
+├── context/            # Global state management
+│   └── AppContext.js
+├── navigation/         # Navigation setup
+│   ├── AppNavigator.js
+│   └── MainTabNavigator.js
+└── screens/           # App screens
+    ├── OnboardingScreen.js
+    ├── LoginScreen.js
+    ├── DashboardScreen.js
+    ├── DefocusLockScreen.js
+    ├── JournalScreen.js
+    ├── GamesScreen.js
+    ├── HistoryScreen.js
+    └── ProfileScreen.js
 ```
 
-## ✨ Core Features
+## Key Components
 
-### 🎯 Focus & Productivity
+### AppContext
 
-- **Pomodoro Timer**: 25-minute focus sessions with customizable durations
-- **Session Cycle Management**: Smart defocus → focus → unlock workflow
-- **Progress Tracking**: Visual progress bars and session statistics
+Global state management with Context API including:
 
-### 🏆 Rewards & Gamification
+- User authentication state
+- App statistics (XP, coins, streaks)
+- History tracking
+- Settings management
+- Game statistics
 
-- **Energy Points System**: Earn points for every interaction (+1 to +2 points)
-- **Badge System**: 6 unlockable badges (Bronze to Legendary)
-- **Daily Goals**: Track daily energy point targets
-- **Real-time Notifications**: Instant feedback for achievements
+### Navigation
 
-### 🎵 Music & Relaxation
+- Stack navigator for main app flow
+- Bottom tab navigator for main screens
+- Conditional navigation based on app state
 
-- **4 Audio Categories**: Nature, Ambient, Focus, Relax
-- **Background Playback**: Music continues when switching between features
-- **Mini Player**: Floating controls for seamless music management
-- **Local Audio Files**: High-quality, offline-capable audio system
+### Reusable Components
 
-### ☕ Break Management
+- **Card**: Flexible container with gradient support
+- **StatCard**: Display statistics with icons and colors
+- **ProgressCircle**: Animated circular progress indicator
+- **ActionButton**: Customizable button with animations
 
-- **Smart Break Types**: Micro (2min), Short (5min), Long (15min) breaks
-- **Break Activities**: Guided breathing, stretching, walking, meditation
-- **Break Statistics**: Track completion rates and streaks
+## Features in Detail
 
-### 📝 Task Management
+### Onboarding
 
-- **To-Do Lists**: Create, edit, delete, and organize tasks
-- **Categories & Priorities**: Organize tasks by type and importance
-- **Progress Tracking**: Daily completion rates and statistics
+- 4-slide carousel explaining app features
+- Smooth animations and transitions
+- Skip option for returning users
 
-## 🛠️ Development
+### Dashboard
 
-### Tech Stack
+- Personalized greeting with username
+- Motivational quotes rotation
+- Progress tracking with circular indicators
+- Quick action cards for main features
+- Real-time statistics display
 
-- **React Native** with Expo for cross-platform development
-- **React Context API** for state management
-- **HTML5 Audio API** for web audio functionality
-- **Local Storage** for data persistence
-- **CSS3** with modern animations and responsive design
+### Defocus Lock Mode
 
-### Key Features
+- Timer-based focus sessions (5-30 minutes)
+- Calming breathing animations
+- Progress tracking with visual feedback
+- Prevention of early exit with warnings
+- Reward calculation and display
 
-- **Cross-platform**: iOS, Android, and Web support
-- **Offline-first**: Works without internet connection
-- **Responsive Design**: Adapts to different screen sizes
-- **Accessibility**: Screen reader support and keyboard navigation
+### Journaling
 
-## 📱 Deployment
+- Rich text editor with word count
+- Entry management (create, edit, delete)
+- Streak tracking
+- Local storage persistence
 
-### Web Deployment
+### Mini Games
 
-The web version is deployed on Netlify and automatically updates when changes are pushed to the main branch.
+- **Memory Match**: Find matching emoji pairs
+- **Tap Game**: Quick reflexes test
+- Score tracking and high scores
+- XP and coin rewards
 
-### Mobile Deployment
+### History
 
-- **iOS**: Build and deploy through Expo or Xcode
-- **Android**: Build and deploy through Expo or Android Studio
+- Timeline view of all activities
+- Filtering by activity type
+- Detailed session information
+- Progress visualization
 
-## 🤝 Contributing
+### Profile
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+- Achievement system with progress tracking
+- Theme selection (light/dark/auto)
+- Settings management
+- Account actions
+
+## State Management
+
+The app uses React Context API for global state management with the following structure:
+
+```javascript
+{
+  user: {
+    username: '',
+    isLoggedIn: false,
+    hasCompletedOnboarding: false,
+  },
+  stats: {
+    streak: 0,
+    totalSessions: 0,
+    totalHours: 0,
+    journalEntries: 0,
+    xp: 0,
+    coins: 0,
+    todaySessions: 0,
+    todayGoal: 5,
+  },
+  history: [],
+  journalEntries: [],
+  games: { ... },
+  settings: { ... }
+}
+```
+
+## Data Persistence
+
+- **AsyncStorage**: All user data is persisted locally
+- **Automatic saving**: State changes are automatically saved
+- **Data loading**: App state is restored on startup
+
+## Customization
+
+### Themes
+
+The app supports three theme modes:
+
+- **Light**: Clean white background
+- **Dark**: Dark gray background
+- **Auto**: Follows system preference
+
+### Defocus Duration
+
+Users can customize default session duration:
+
+- 5, 10, 15, 20, 25, or 30 minutes
+
+### Notifications
+
+Toggle for session reminders and achievements
+
+## Development
+
+### Adding New Features
+
+1. Create new screen in `src/screens/`
+2. Add navigation route in `AppNavigator.js`
+3. Update state management in `AppContext.js` if needed
+4. Add any new reusable components in `src/components/`
+
+### Styling
+
+- Use TailwindCSS classes for styling
+- Follow the existing color scheme
+- Maintain consistency with existing components
+
+### Animations
+
+- Use React Native Reanimated for complex animations
+- Keep animations smooth and purposeful
+- Test on both iOS and Android
+
+## Production Build
+
+1. **Configure app.json** with your app details
+2. **Build for production**
+   ```bash
+   expo build:android
+   expo build:ios
+   ```
+3. **Submit to app stores** following Expo's guidelines
+
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
-## 🙏 Acknowledgments
+## Support
 
-- Audio files sourced from royalty-free libraries
-- Icons from various open-source icon sets
-- Inspiration from Pomodoro Technique and productivity research
-
-## 📞 Support
-
-For support, email paridhijaysingh@gmail.com or create an issue in the repository.
-
----
-
-**Made with ❤️ for productivity and mental wellness**
-
-> _"The best way to get something done is to begin."_ - Defocus2Focus helps you begin with joy, not dread.
+For support and questions, please open an issue in the repository.

@@ -1,13 +1,15 @@
 {
   "expo": {
     "name": "Defocus2Focus",
-    "slug": "defocus2focus-native",
+    "slug": "defocus2focus",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0ea5e9"
+      "backgroundColor": "#3b82f6"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -17,13 +19,18 @@
       "bundleIdentifier": "com.defocus2focus.app"
     },
     "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#3b82f6"
+      },
       "package": "com.defocus2focus.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-haptics",
+      "expo-av"
     ]
   }
 }

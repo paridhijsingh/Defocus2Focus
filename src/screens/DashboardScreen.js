@@ -1,580 +1,278 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
+import { 
+  View, 
+  Text, 
+  ScrollView, 
   TouchableOpacity,
-  Dimensions,
-  StatusBar,
+  RefreshControl 
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  interpolate,
-} from 'react-native-reanimated';
-import { useTheme } from '../contexts/ThemeContext';
-import { useUser } from '../contexts/UserContext';
-import {
-  BookOpen,
-  Gamepad2,
-  Bot,
-  Trophy,
-  BarChart3,
-  Target,
-  Users,
-  Flame,
-  Star,
-  Coins,
-  Clock,
-  BookMarked,
-} from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
+import Card from '../components/Card';
+import StatCard from '../components/StatCard';
+import ProgressCircle from '../components/ProgressCircle';
+import ActionButton from '../components/ActionButton';
 
-const { width } = Dimensions.get('window');
+const motivationalQuotes = [
+  "The way to get started is to quit talking and begin doing. - Walt Disney",
+  "Don't be pushed around by the fears in your mind. Be led by the dreams in your heart. - Roy T. Bennett",
+  "Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill",
+  "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
+  "It is during our darkest moments that we must focus to see the light. - Aristotle",
+  "The only way to do great work is to love what you do. - Steve Jobs",
+];
 
-// Reusable components
-const StatCard = ({ icon: Icon, title, value, color, delay = 0 }) => {
-  const { isDark } = useTheme();
-  const scale = useSharedValue(0);
-  const opacity = useSharedValue(0);
+export default function DashboardScreen() {
+  const { state, actions } = useApp();
+  const [currentQuote, setCurrentQuote] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    scale.value = withSpring(1, { delay });
-    opacity.value = withTiming(1, { delay });
+    // Set a random motivational quote
+    const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+    setCurrentQuote(randomQuote);
   }, []);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  }));
+  const onRefresh = () => {
+    setRefreshing(true);
+    // Simulate refresh
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
+
+  const handleStartDefocus = () => {
+    actions.setDefocusLock(true);
+    actions.setCurrentScreen('DefocusLock');
+  };
+
+  const todayProgress = (state.stats.todaySessions / state.stats.todayGoal) * 100;
 
   return (
-    <Animated.View
-      style={[
-        animatedStyle,
-        {
-          backgroundColor: isDark ? '#1f2937' : '#ffffff',
-          borderRadius: 16,
-          padding: 16,
-          marginHorizontal: 4,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 4,
-          borderWidth: 1,
-          borderColor: isDark ? '#374151' : '#f3f4f6',
-        },
-      ]}
+    <ScrollView 
+      className="flex-1 bg-gray-50 dark:bg-gray-900"
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-        <View
-          style={{
-            backgroundColor: color + '20',
-            borderRadius: 8,
-            padding: 6,
-            marginRight: 8,
-          }}
-        >
-          <Icon size={20} color={color} />
-        </View>
-        <Text
-          style={{
-            fontSize: 12,
-            color: isDark ? '#9ca3af' : '#6b7280',
-            fontWeight: '500',
-          }}
-        >
-          {title}
-        </Text>
-      </View>
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: 'bold',
-          color: isDark ? '#ffffff' : '#111827',
-        }}
+      {/* Header */}
+      <LinearGradient
+        colors={['#3b82f6', '#1d4ed8']}
+        className="px-6 pt-12 pb-8"
       >
-        {value}
-      </Text>
-    </Animated.View>
-  );
-};
-
-const ActionButton = ({ 
-  title, 
-  icon: Icon, 
-  color, 
-  onPress, 
-  isLarge = false,
-  delay = 0 
-}) => {
-  const { isDark } = useTheme();
-  const scale = useSharedValue(0);
-  const opacity = useSharedValue(0);
-
-  useEffect(() => {
-    scale.value = withSpring(1, { delay });
-    opacity.value = withTiming(1, { delay });
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  }));
-
-  const handlePress = () => {
-    scale.value = withSpring(0.95, {}, () => {
-      scale.value = withSpring(1);
-    });
-    onPress();
-  };
-
-  return (
-    <Animated.View style={[animatedStyle, { flex: isLarge ? 2 : 1 }]}>
-      <TouchableOpacity
-        onPress={handlePress}
-        style={{
-          backgroundColor: isDark ? '#1f2937' : '#ffffff',
-          borderRadius: 20,
-          padding: isLarge ? 24 : 20,
-          margin: 6,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.15,
-          shadowRadius: 12,
-          elevation: 6,
-          borderWidth: 1,
-          borderColor: isDark ? '#374151' : '#f3f4f6',
-        }}
-      >
-        <LinearGradient
-          colors={[color + '20', color + '10']}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            borderRadius: 20,
-          }}
-        />
-        <View style={{ alignItems: 'center' }}>
-          <View
-            style={{
-              backgroundColor: color,
-              borderRadius: 16,
-              padding: 12,
-              marginBottom: 12,
-            }}
-          >
-            <Icon size={isLarge ? 32 : 24} color="#ffffff" />
+        <View className="flex-row justify-between items-center mb-6">
+          <View>
+            <Text className="text-white text-lg">
+              Hi {state.user.username} 👋
+            </Text>
+            <Text className="text-blue-100 text-sm">
+              Ready to focus?
+            </Text>
           </View>
-          <Text
-            style={{
-              fontSize: isLarge ? 16 : 14,
-              fontWeight: '600',
-              color: isDark ? '#ffffff' : '#111827',
-              textAlign: 'center',
-            }}
-          >
-            {title}
+          <TouchableOpacity className="bg-white/20 rounded-full p-2">
+            <Ionicons name="notifications-outline" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Streak Tracker */}
+        <View className="bg-white/20 rounded-xl p-4 mb-4">
+          <View className="flex-row items-center justify-between">
+            <View>
+              <Text className="text-white font-semibold text-lg">
+                🔥 {state.stats.streak} Day Streak
+              </Text>
+              <Text className="text-blue-100 text-sm">
+                Keep it going!
+              </Text>
+            </View>
+            <View className="items-end">
+              <Text className="text-white font-bold text-2xl">
+                {state.stats.xp}
+              </Text>
+              <Text className="text-blue-100 text-sm">XP</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Motivational Quote */}
+        <View className="bg-white/10 rounded-xl p-4">
+          <Text className="text-white text-sm italic text-center">
+            "{currentQuote}"
           </Text>
         </View>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-};
+      </LinearGradient>
 
-const CircularProgress = ({ progress, size = 120, strokeWidth = 8, color = '#3b82f6' }) => {
-  const { isDark } = useTheme();
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-  return (
-    <View style={{ alignItems: 'center' }}>
-      <View style={{ position: 'relative', width: size, height: size }}>
-        <View
-          style={{
-            position: 'absolute',
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-            borderWidth: strokeWidth,
-            borderColor: isDark ? '#374151' : '#e5e7eb',
-          }}
-        />
-        <View
-          style={{
-            position: 'absolute',
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-            borderWidth: strokeWidth,
-            borderColor: color,
-            borderTopColor: 'transparent',
-            borderRightColor: 'transparent',
-            transform: [{ rotate: '-90deg' }],
-          }}
-        />
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: 'bold',
-              color: isDark ? '#ffffff' : '#111827',
-            }}
-          >
-            {progress}%
-          </Text>
-          <Text
-            style={{
-              fontSize: 12,
-              color: isDark ? '#9ca3af' : '#6b7280',
-            }}
-          >
-            Complete
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-const DashboardScreen = () => {
-  const { isDark, theme } = useTheme();
-  const { user, stats, dailyProgress } = useUser();
-  
-  // Calculate progress percentage
-  const progressPercentage = Math.round(
-    (dailyProgress.focusSessionsCompleted / dailyProgress.focusSessionsGoal) * 100
-  );
-
-  const motivationalQuotes = [
-    "Every expert was once a beginner! 🌟",
-    "Progress, not perfection! 🚀",
-    "You're doing better than you think! 💪",
-    "Small steps lead to big changes! 🎯",
-    "Focus is a superpower! ⚡",
-  ];
-
-  const [currentQuote, setCurrentQuote] = useState(
-    motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]
-  );
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentQuote(
-        motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]
-      );
-    }, 30000); // Change quote every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleActionPress = (action) => {
-    console.log(`Pressed: ${action}`);
-    // Add navigation logic here
-  };
-
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#111827' : '#f9fafb' }}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Top Section - Profile Greeting */}
-        <View style={{ padding: 20, paddingTop: 10 }}>
-          <LinearGradient
-            colors={isDark ? ['#1f2937', '#111827'] : ['#ffffff', '#f9fafb']}
-            style={{
-              borderRadius: 24,
-              padding: 24,
-              marginBottom: 20,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.1,
-              shadowRadius: 12,
-              elevation: 6,
-            }}
-          >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 'bold',
-                    color: isDark ? '#ffffff' : '#111827',
-                    marginBottom: 4,
-                  }}
-                >
-                  Hi {user.name} 👋
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: isDark ? '#9ca3af' : '#6b7280',
-                    marginBottom: 12,
-                  }}
-                >
-                  {currentQuote}
-                </Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Flame size={20} color="#f59e0b" />
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      fontWeight: '600',
-                      color: '#f59e0b',
-                      marginLeft: 6,
-                    }}
-                  >
-                    {stats.currentStreak}-day streak
+      <View className="px-6 -mt-4">
+        {/* Progress Section */}
+        <Card className="mb-6">
+          <View className="p-6">
+            <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Today's Progress
+            </Text>
+            
+            <View className="flex-row items-center justify-between">
+              <ProgressCircle
+                progress={todayProgress}
+                size={100}
+                color="#3b82f6"
+                backgroundColor="#e5e7eb"
+              >
+                <View className="items-center">
+                  <Text className="text-lg font-bold text-gray-900 dark:text-white">
+                    {state.stats.todaySessions}
+                  </Text>
+                  <Text className="text-xs text-gray-600 dark:text-gray-400">
+                    / {state.stats.todayGoal}
                   </Text>
                 </View>
+              </ProgressCircle>
+              
+              <View className="flex-1 ml-6">
+                <View className="flex-row items-center justify-between mb-2">
+                  <Text className="text-gray-600 dark:text-gray-400">Sessions</Text>
+                  <Text className="font-semibold text-gray-900 dark:text-white">
+                    {state.stats.todaySessions}/{state.stats.todayGoal}
+                  </Text>
+                </View>
+                <View className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <View 
+                    className="bg-blue-500 h-2 rounded-full"
+                    style={{ width: `${todayProgress}%` }}
+                  />
+                </View>
               </View>
-              <View style={{ alignItems: 'center' }}>
-                <CircularProgress progress={progressPercentage} color="#3b82f6" />
-              </View>
-            </View>
-          </LinearGradient>
-        </View>
-
-        {/* Middle Section - Stats */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Star size={20} color="#f59e0b" />
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: '600',
-                  color: isDark ? '#ffffff' : '#111827',
-                  marginLeft: 8,
-                }}
-              >
-                {stats.xp} XP
-              </Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Coins size={20} color="#eab308" />
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: '600',
-                  color: isDark ? '#ffffff' : '#111827',
-                  marginLeft: 8,
-                }}
-              >
-                {stats.coins} Coins
-              </Text>
             </View>
           </View>
+        </Card>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 4 }}
-          >
+        {/* Stats Grid */}
+        <View className="flex-row justify-between mb-6">
+          <View className="flex-1 mr-2">
             <StatCard
-              icon={Target}
-              title="Defocus Sessions"
-              value={stats.totalDefocusSessions.toString()}
-              color="#ef4444"
-              delay={100}
+              title="Total Sessions"
+              value={state.stats.totalSessions}
+              icon="🎯"
+              gradient
+              gradientColors={['#10b981', '#059669']}
             />
+          </View>
+          <View className="flex-1 mx-1">
             <StatCard
-              icon={Clock}
               title="Hours Focused"
-              value={stats.totalHoursFocused.toString()}
-              color="#3b82f6"
-              delay={200}
+              value={`${state.stats.totalHours.toFixed(1)}h`}
+              icon="⏰"
+              gradient
+              gradientColors={['#f59e0b', '#d97706']}
             />
+          </View>
+          <View className="flex-1 ml-2">
             <StatCard
-              icon={BookMarked}
               title="Journal Entries"
-              value={stats.journalEntries.toString()}
-              color="#10b981"
-              delay={300}
+              value={state.stats.journalEntries}
+              icon="📝"
+              gradient
+              gradientColors={['#8b5cf6', '#7c3aed']}
             />
-          </ScrollView>
+          </View>
         </View>
 
-        {/* Main Actions Grid */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: 'bold',
-              color: isDark ? '#ffffff' : '#111827',
-              marginBottom: 16,
-            }}
-          >
+        {/* Main Actions */}
+        <View className="mb-6">
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
             Quick Actions
           </Text>
           
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {/* Start Defocus - Large Card */}
+          <View className="mb-4">
             <ActionButton
-              title="Start Defocus"
-              icon={Target}
-              color="#ef4444"
-              onPress={() => handleActionPress('Start Defocus')}
-              isLarge={true}
-              delay={400}
+              title="Start Defocus Session"
+              onPress={handleStartDefocus}
+              gradient
+              gradientColors={['#3b82f6', '#1d4ed8']}
+              size="lg"
+              icon="🎯"
+              className="w-full"
             />
-            <ActionButton
-              title="Journal"
-              icon={BookOpen}
-              color="#8b5cf6"
-              onPress={() => handleActionPress('Journal')}
-              delay={500}
-            />
-            <ActionButton
-              title="Mini Games"
-              icon={Gamepad2}
-              color="#f59e0b"
-              onPress={() => handleActionPress('Mini Games')}
-              delay={600}
-            />
-            <ActionButton
-              title="AI Therapist"
-              icon={Bot}
-              color="#06b6d4"
-              onPress={() => handleActionPress('AI Therapist')}
-              delay={700}
-            />
-            <ActionButton
-              title="Leaderboard"
-              icon={Trophy}
-              color="#eab308"
-              onPress={() => handleActionPress('Leaderboard')}
-              delay={800}
-            />
-            <ActionButton
-              title="History"
-              icon={BarChart3}
-              color="#10b981"
-              onPress={() => handleActionPress('History')}
-              delay={900}
-            />
+          </View>
+
+          {/* Feature Grid */}
+          <View className="flex-row flex-wrap justify-between">
+            <Card 
+              onPress={() => actions.setCurrentScreen('Journal')}
+              className="w-[48%] mb-3"
+            >
+              <View className="p-4 items-center">
+                <Text className="text-3xl mb-2">📓</Text>
+                <Text className="font-semibold text-gray-900 dark:text-white">
+                  Journal
+                </Text>
+              </View>
+            </Card>
+
+            <Card 
+              onPress={() => actions.setCurrentScreen('Games')}
+              className="w-[48%] mb-3"
+            >
+              <View className="p-4 items-center">
+                <Text className="text-3xl mb-2">🎮</Text>
+                <Text className="font-semibold text-gray-900 dark:text-white">
+                  Games
+                </Text>
+              </View>
+            </Card>
+
+            <Card 
+              onPress={() => actions.setCurrentScreen('History')}
+              className="w-[48%]"
+            >
+              <View className="p-4 items-center">
+                <Text className="text-3xl mb-2">📊</Text>
+                <Text className="font-semibold text-gray-900 dark:text-white">
+                  History
+                </Text>
+              </View>
+            </Card>
+
+            <Card 
+              onPress={() => actions.setCurrentScreen('Profile')}
+              className="w-[48%]"
+            >
+              <View className="p-4 items-center">
+                <Text className="text-3xl mb-2">👤</Text>
+                <Text className="font-semibold text-gray-900 dark:text-white">
+                  Profile
+                </Text>
+              </View>
+            </Card>
           </View>
         </View>
 
-        {/* Bottom Section */}
-        <View style={{ paddingHorizontal: 20 }}>
-          <LinearGradient
-            colors={isDark ? ['#1f2937', '#111827'] : ['#ffffff', '#f9fafb']}
-            style={{
-              borderRadius: 20,
-              padding: 20,
-              marginBottom: 16,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 8,
-              elevation: 4,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: isDark ? '#ffffff' : '#111827',
-                marginBottom: 12,
-              }}
-            >
-              Today's Focus Goal
-            </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-              <View
-                style={{
-                  flex: 1,
-                  height: 8,
-                  backgroundColor: isDark ? '#374151' : '#e5e7eb',
-                  borderRadius: 4,
-                  marginRight: 12,
-                }}
-              >
-                <View
-                  style={{
-                    width: `${progressPercentage}%`,
-                    height: '100%',
-                    backgroundColor: '#3b82f6',
-                    borderRadius: 4,
-                  }}
-                />
-              </View>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: '600',
-                  color: '#3b82f6',
-                }}
-              >
-                {dailyProgress.focusSessionsCompleted}/{dailyProgress.focusSessionsGoal}
+        {/* Bottom Section - Today's Goal */}
+        <Card className="mb-6">
+          <View className="p-6">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+                Today's Goal
+              </Text>
+              <Text className="text-sm text-gray-600 dark:text-gray-400">
+                {state.stats.todaySessions}/{state.stats.todayGoal} sessions
               </Text>
             </View>
-            <Text
-              style={{
-                fontSize: 12,
-                color: isDark ? '#9ca3af' : '#6b7280',
-              }}
-            >
-              {dailyProgress.focusSessionsGoal - dailyProgress.focusSessionsCompleted} more sessions to complete today's goal
+            
+            <View className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
+              <View 
+                className="bg-gradient-to-r from-green-400 to-green-500 h-3 rounded-full"
+                style={{ width: `${todayProgress}%` }}
+              />
+            </View>
+            
+            <Text className="text-sm text-gray-600 dark:text-gray-400 text-center">
+              {state.stats.todayGoal - state.stats.todaySessions} more sessions to reach your goal!
             </Text>
-          </LinearGradient>
-
-          <TouchableOpacity
-            onPress={() => handleActionPress('Challenge Friend')}
-            style={{
-              backgroundColor: isDark ? '#1f2937' : '#ffffff',
-              borderRadius: 16,
-              padding: 16,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 8,
-              elevation: 4,
-              borderWidth: 1,
-              borderColor: isDark ? '#374151' : '#f3f4f6',
-            }}
-          >
-            <Users size={20} color="#8b5cf6" />
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: isDark ? '#ffffff' : '#111827',
-                marginLeft: 8,
-              }}
-            >
-              Challenge a Friend
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          </View>
+        </Card>
+      </View>
+    </ScrollView>
   );
-};
-
-export default DashboardScreen;
+}
