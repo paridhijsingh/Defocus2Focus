@@ -4276,7 +4276,8 @@
           return React.createElement(
             "div",
             {
-              className: "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-900",
+              className:
+                "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-900",
             },
             [
               // Header
@@ -4284,7 +4285,8 @@
                 "header",
                 {
                   key: "header",
-                  className: "bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700",
+                  className:
+                    "bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700",
                 },
                 React.createElement(
                   "div",
@@ -4306,9 +4308,10 @@
                         React.createElement(
                           "h1",
                           {
-                            className: "text-xl font-bold text-gray-900 dark:text-white",
+                            className:
+                              "text-xl font-bold text-gray-900 dark:text-white",
                           },
-                          "Defocus2Focus"
+                          "🎯 Defocus2Focus"
                         )
                       ),
                       React.createElement(
@@ -4319,41 +4322,26 @@
                         },
                         [
                           React.createElement(
-                            "div",
-                            {
-                              key: "search",
-                              className: "relative",
-                            },
-                            React.createElement(
-                              "input",
-                              {
-                                type: "text",
-                                placeholder: "Search...",
-                                className: "w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500",
-                              }
-                            )
-                          ),
-                          React.createElement(
                             "button",
                             {
                               key: "notifications",
-                              className: "p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200",
+                              className:
+                                "p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200",
                             },
-                            React.createElement(
-                              "div",
-                              {
-                                className: "w-5 h-5",
-                              },
-                              "🔔"
-                            )
+                            "🔔"
                           ),
                           React.createElement(
                             "button",
                             {
-                              key: "new-goal",
-                              className: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors",
+                              key: "dark-mode",
+                              onClick: () =>
+                                document.documentElement.classList.toggle(
+                                  "dark"
+                                ),
+                              className:
+                                "p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200",
                             },
-                            "New Goal"
+                            "🌙"
                           ),
                         ]
                       ),
@@ -4361,316 +4349,597 @@
                   )
                 )
               ),
-              // Main Layout
+              // Main Content
               React.createElement(
-                "div",
+                "main",
                 {
-                  key: "main-layout",
-                  className: "flex",
+                  key: "main",
+                  className: "flex-1 p-6",
                 },
-                [
-                  // Sidebar
-                  React.createElement(
-                    "aside",
-                    {
-                      key: "sidebar",
-                      className: "w-64 bg-white dark:bg-gray-800 shadow-sm border-r border-gray-200 dark:border-gray-700 min-h-screen",
-                    },
+                React.createElement(
+                  "div",
+                  {
+                    className: "max-w-7xl mx-auto",
+                  },
+                  [
+                    // Top Section - Greeting and Streak
                     React.createElement(
                       "div",
                       {
-                        className: "p-4",
+                        key: "top-section",
+                        className: "mb-8",
                       },
                       [
                         React.createElement(
-                          "nav",
+                          "h1",
                           {
-                            key: "nav",
-                            className: "space-y-2",
+                            key: "greeting",
+                            className:
+                              "text-3xl font-bold text-gray-900 dark:text-white mb-2",
+                          },
+                          `Hi ${username} 👋`
+                        ),
+                        React.createElement(
+                          "div",
+                          {
+                            key: "streak",
+                            className: "flex items-center mb-4",
                           },
                           [
                             React.createElement(
-                              "button",
-                              {
-                                key: "home",
-                                className: "w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
-                              },
-                              [
-                                React.createElement("span", { className: "mr-3" }, "🏠"),
-                                "Home",
-                              ]
+                              "span",
+                              { key: "fire", className: "text-2xl mr-2" },
+                              "🔥"
                             ),
                             React.createElement(
-                              "button",
+                              "span",
                               {
-                                key: "journal",
-                                className: "w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
+                                key: "streak-text",
+                                className:
+                                  "text-lg text-gray-600 dark:text-gray-400",
                               },
-                              [
-                                React.createElement("span", { className: "mr-3" }, "📝"),
-                                "Journal",
-                              ]
-                            ),
-                            React.createElement(
-                              "button",
-                              {
-                                key: "games",
-                                className: "w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
-                              },
-                              [
-                                React.createElement("span", { className: "mr-3" }, "🎮"),
-                                "Games",
-                              ]
-                            ),
-                            React.createElement(
-                              "button",
-                              {
-                                key: "ai-therapist",
-                                className: "w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
-                              },
-                              [
-                                React.createElement("span", { className: "mr-3" }, "🤖"),
-                                "AI Therapist",
-                              ]
-                            ),
-                            React.createElement(
-                              "button",
-                              {
-                                key: "leaderboard",
-                                className: "w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
-                              },
-                              [
-                                React.createElement("span", { className: "mr-3" }, "🏆"),
-                                "Leaderboard",
-                              ]
-                            ),
-                            React.createElement(
-                              "button",
-                              {
-                                key: "settings",
-                                className: "w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
-                              },
-                              [
-                                React.createElement("span", { className: "mr-3" }, "⚙️"),
-                                "Settings",
-                              ]
+                              "7-day streak"
                             ),
                           ]
                         ),
                         React.createElement(
                           "div",
                           {
-                            key: "profile",
-                            className: "mt-8 pt-4 border-t border-gray-200 dark:border-gray-700",
+                            key: "quote",
+                            className:
+                              "bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm",
                           },
                           React.createElement(
-                            "div",
+                            "p",
                             {
-                              className: "flex items-center",
+                              className:
+                                "text-gray-700 dark:text-gray-300 italic text-center",
                             },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  className: "w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mr-3 flex items-center justify-center text-white text-sm font-bold",
-                                },
-                                username.charAt(0).toUpperCase()
-                              ),
-                              React.createElement(
-                                "div",
-                                {
-                                  className: "flex-1",
-                                },
-                                [
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      className: "text-sm font-medium text-gray-900 dark:text-white",
-                                    },
-                                    username
-                                  ),
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      className: "text-xs text-gray-500 dark:text-gray-400",
-                                    },
-                                    "View profile"
-                                  ),
-                                ]
-                              ),
-                            ]
+                            '"Every expert was once a beginner. Every pro was once an amateur."'
                           )
                         ),
                       ]
-                    )
-                  ),
-                  // Main Content
-                  React.createElement(
-                    "main",
-                    {
-                      key: "main",
-                      className: "flex-1 p-6 bg-gray-50 dark:bg-gray-900",
-                    },
+                    ),
+                    // Middle Section - Progress and Stats
                     React.createElement(
                       "div",
                       {
-                        className: "max-w-7xl mx-auto",
+                        key: "middle-section",
+                        className: "mb-8",
+                      },
+                      [
+                        // Today's Progress
+                        React.createElement(
+                          "div",
+                          {
+                            key: "progress-card",
+                            className:
+                              "bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6",
+                          },
+                          [
+                            React.createElement(
+                              "h3",
+                              {
+                                key: "progress-title",
+                                className:
+                                  "text-xl font-semibold text-gray-900 dark:text-white mb-4 text-center",
+                              },
+                              "Today's Focus Progress"
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "progress-circle",
+                                className: "flex justify-center mb-4",
+                              },
+                              React.createElement(
+                                "div",
+                                {
+                                  className: "relative w-24 h-24",
+                                },
+                                [
+                                  React.createElement("div", {
+                                    key: "circle-bg",
+                                    className:
+                                      "w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full",
+                                  }),
+                                  React.createElement("div", {
+                                    key: "circle-progress",
+                                    className:
+                                      "absolute inset-0 w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full",
+                                    style: {
+                                      clipPath:
+                                        "polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%)",
+                                    },
+                                  }),
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "circle-text",
+                                      className:
+                                        "absolute inset-0 flex items-center justify-center",
+                                    },
+                                    React.createElement(
+                                      "span",
+                                      {
+                                        className:
+                                          "text-xl font-bold text-gray-900 dark:text-white",
+                                      },
+                                      "60%"
+                                    )
+                                  ),
+                                ]
+                              )
+                            ),
+                            React.createElement(
+                              "p",
+                              {
+                                key: "progress-text",
+                                className:
+                                  "text-center text-gray-600 dark:text-gray-400",
+                              },
+                              "3 of 5 sessions completed"
+                            ),
+                          ]
+                        ),
+                        // Stats Cards
+                        React.createElement(
+                          "div",
+                          {
+                            key: "stats-grid",
+                            className: "grid grid-cols-3 gap-4",
+                          },
+                          [
+                            React.createElement(
+                              "div",
+                              {
+                                key: "sessions-stat",
+                                className:
+                                  "bg-blue-100 dark:bg-blue-900 rounded-xl p-4 text-center",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "sessions-icon",
+                                    className: "text-2xl mb-1",
+                                  },
+                                  "🎯"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "sessions-value",
+                                    className:
+                                      "text-2xl font-bold text-blue-600 dark:text-blue-400",
+                                  },
+                                  "47"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "sessions-label",
+                                    className:
+                                      "text-xs text-gray-600 dark:text-gray-400",
+                                  },
+                                  "Total Sessions"
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "hours-stat",
+                                className:
+                                  "bg-green-100 dark:bg-green-900 rounded-xl p-4 text-center",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "hours-icon",
+                                    className: "text-2xl mb-1",
+                                  },
+                                  "⏰"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "hours-value",
+                                    className:
+                                      "text-2xl font-bold text-green-600 dark:text-green-400",
+                                  },
+                                  "23.5"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "hours-label",
+                                    className:
+                                      "text-xs text-gray-600 dark:text-gray-400",
+                                  },
+                                  "Hours Focused"
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "journal-stat",
+                                className:
+                                  "bg-purple-100 dark:bg-purple-900 rounded-xl p-4 text-center",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "journal-icon",
+                                    className: "text-2xl mb-1",
+                                  },
+                                  "📝"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "journal-value",
+                                    className:
+                                      "text-2xl font-bold text-purple-600 dark:text-purple-400",
+                                  },
+                                  "12"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "journal-label",
+                                    className:
+                                      "text-xs text-gray-600 dark:text-gray-400",
+                                  },
+                                  "Journal Entries"
+                                ),
+                              ]
+                            ),
+                          ]
+                        ),
+                      ]
+                    ),
+                    // Main Actions Grid
+                    React.createElement(
+                      "div",
+                      {
+                        key: "actions-section",
+                        className: "mb-8",
                       },
                       [
                         React.createElement(
                           "h2",
                           {
-                            key: "greeting",
-                            className: "text-2xl font-semibold text-gray-900 dark:text-white mb-6",
+                            key: "actions-title",
+                            className:
+                              "text-2xl font-bold text-gray-900 dark:text-white mb-6",
                           },
-                          `Hi ${username} 👋, here's your focus report`
+                          "Quick Actions"
                         ),
+                        // Start Defocus - Large Card
                         React.createElement(
                           "div",
                           {
-                            key: "cards",
-                            className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+                            key: "start-defocus-large",
+                            className: "flex justify-center mb-6",
+                          },
+                          React.createElement(
+                            "button",
+                            {
+                              onClick: () => setCurrentScreen("defocus"),
+                              className:
+                                "bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow w-full max-w-md",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "defocus-icon",
+                                  className: "text-4xl mb-2",
+                                },
+                                "🚀"
+                              ),
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "defocus-title",
+                                  className: "text-xl font-bold mb-1",
+                                },
+                                "Start Defocus"
+                              ),
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "defocus-subtitle",
+                                  className: "text-blue-100 text-sm",
+                                },
+                                "Begin your focus session"
+                              ),
+                            ]
+                          )
+                        ),
+                        // Feature Cards Grid
+                        React.createElement(
+                          "div",
+                          {
+                            key: "feature-grid",
+                            className: "grid grid-cols-2 md:grid-cols-3 gap-4",
                           },
                           [
-                            // Focus Progress Card
                             React.createElement(
-                              "div",
+                              "button",
                               {
-                                key: "focus-progress",
-                                className: "bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow",
+                                key: "journal-card",
+                                onClick: () => setCurrentScreen("journal"),
+                                className:
+                                  "bg-gradient-to-r from-pink-400 to-red-400 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow",
                               },
-                  [
+                              [
                                 React.createElement(
-                                  "h3",
+                                  "div",
                                   {
-                                    className: "text-lg font-semibold text-gray-900 dark:text-white mb-4",
+                                    key: "journal-icon",
+                                    className: "text-3xl mb-2",
                                   },
-                                  "Focus Progress"
+                                  "📓"
                                 ),
                                 React.createElement(
                                   "div",
                                   {
-                                    className: "flex items-center justify-center mb-4",
+                                    key: "journal-title",
+                                    className: "font-semibold text-sm",
                                   },
-                                  React.createElement(
-                                    "div",
-                                    {
-                                      className: "w-24 h-24 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center",
-                                    },
-                                    React.createElement(
-                                      "span",
-                                      {
-                                        className: "text-2xl font-bold text-blue-600 dark:text-blue-400",
-                                      },
-                                      "75%"
-                                    )
-                                  )
+                                  "Journal"
                                 ),
-                                React.createElement(
-                                  "div",
-                                  {
-                                    className: "text-center",
-                                  },
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      className: "text-sm text-gray-600 dark:text-gray-400",
-                                    },
-                                    "3 of 4 sessions completed"
-                                  )
-                                )
                               ]
                             ),
-                            // Journals Written Card
+                            React.createElement(
+                              "button",
+                              {
+                                key: "games-card",
+                                onClick: () => setCurrentScreen("games"),
+                                className:
+                                  "bg-gradient-to-r from-cyan-400 to-blue-400 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "games-icon",
+                                    className: "text-3xl mb-2",
+                                  },
+                                  "🎮"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "games-title",
+                                    className: "font-semibold text-sm",
+                                  },
+                                  "Games"
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "ai-therapist-card",
+                                onClick: () => setCurrentScreen("aiTherapist"),
+                                className:
+                                  "bg-gradient-to-r from-green-400 to-teal-400 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "ai-icon",
+                                    className: "text-3xl mb-2",
+                                  },
+                                  "🤖"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "ai-title",
+                                    className: "font-semibold text-sm",
+                                  },
+                                  "AI Therapist"
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "leaderboard-card",
+                                onClick: () => setCurrentScreen("leaderboard"),
+                                className:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "leaderboard-icon",
+                                    className: "text-3xl mb-2",
+                                  },
+                                  "🏆"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "leaderboard-title",
+                                    className: "font-semibold text-sm",
+                                  },
+                                  "Leaderboard"
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "history-card",
+                                onClick: () => setCurrentScreen("history"),
+                                className:
+                                  "bg-gradient-to-r from-purple-400 to-pink-400 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "history-icon",
+                                    className: "text-3xl mb-2",
+                                  },
+                                  "📊"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "history-title",
+                                    className: "font-semibold text-sm",
+                                  },
+                                  "History"
+                                ),
+                              ]
+                            ),
+                          ]
+                        ),
+                      ]
+                    ),
+                    // Bottom Section
+                    React.createElement(
+                      "div",
+                      {
+                        key: "bottom-section",
+                      },
+                      [
+                        // Today's Focus Goal Progress
+                        React.createElement(
+                          "div",
+                          {
+                            key: "goal-progress",
+                            className:
+                              "bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-4",
+                          },
+                          [
+                            React.createElement(
+                              "h3",
+                              {
+                                key: "goal-title",
+                                className:
+                                  "text-lg font-semibold text-gray-900 dark:text-white mb-4",
+                              },
+                              "Today's Focus Goal"
+                            ),
                             React.createElement(
                               "div",
                               {
-                                key: "journals",
-                                className: "bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow",
+                                key: "goal-progress-bar",
+                                className:
+                                  "flex items-center justify-between mb-2",
                               },
-                  [
-                    React.createElement(
-                      "h3",
-                      {
-                        className: "text-lg font-semibold text-gray-900 mb-4",
-                      },
-                      "Journals Written"
-                    ),
-                    React.createElement(
-                      "div",
-                      {
-                        className: "flex items-center justify-center",
-                      },
-                      React.createElement(
-                        "div",
-                        {
-                          className:
-                            "w-24 h-24 bg-green-100 rounded-full flex items-center justify-center",
-                        },
-                        React.createElement(
-                          "span",
-                          {
-                            className: "text-2xl font-bold text-green-600",
-                          },
-                          "12"
-                        )
-                      )
-                    ),
-                  ]
-                ),
-                React.createElement(
-                  "div",
-                  {
-                    key: "quick-actions",
-                    className: "bg-white rounded-2xl shadow-sm p-6",
-                  },
-                  [
-                    React.createElement(
-                      "h3",
-                      {
-                        className: "text-lg font-semibold text-gray-900 mb-4",
-                      },
-                      "Quick Actions"
-                    ),
-                    React.createElement(
-                      "div",
-                      {
-                        className: "space-y-3",
-                      },
-                      [
-                        React.createElement(
-                          "button",
-                          {
-                            key: "start-defocus",
-                            className:
-                              "w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700",
-                          },
-                          "Start Defocus"
+                              [
+                                React.createElement(
+                                  "span",
+                                  {
+                                    key: "goal-label",
+                                    className:
+                                      "text-gray-600 dark:text-gray-400",
+                                  },
+                                  "Progress"
+                                ),
+                                React.createElement(
+                                  "span",
+                                  {
+                                    key: "goal-value",
+                                    className:
+                                      "text-gray-900 dark:text-white font-semibold",
+                                  },
+                                  "3/5 hours"
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "progress-bar-bg",
+                                className:
+                                  "w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3",
+                              },
+                              React.createElement("div", {
+                                key: "progress-bar-fill",
+                                className:
+                                  "bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full",
+                                style: { width: "60%" },
+                              })
+                            ),
+                          ]
                         ),
+                        // Challenge a Friend Button
                         React.createElement(
                           "button",
                           {
-                            key: "write-journal",
+                            key: "challenge-button",
+                            onClick: () => setCurrentScreen("challenge"),
                             className:
-                              "w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700",
+                              "w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow",
                           },
-                          "Write Journal"
-                        ),
-                        React.createElement(
-                          "button",
-                          {
-                            key: "play-game",
-                            className:
-                              "w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700",
-                          },
-                          "Play Game"
+                          [
+                            React.createElement(
+                              "div",
+                              {
+                                key: "challenge-content",
+                                className: "flex items-center justify-center",
+                              },
+                              [
+                                React.createElement(
+                                  "span",
+                                  {
+                                    key: "challenge-icon",
+                                    className: "text-2xl mr-2",
+                                  },
+                                  "⚔️"
+                                ),
+                                React.createElement(
+                                  "span",
+                                  {
+                                    key: "challenge-text",
+                                    className: "font-bold text-lg",
+                                  },
+                                  "Challenge a Friend"
+                                ),
+                              ]
+                            ),
+                          ]
                         ),
                       ]
                     ),
                   ]
-                ),
-              ]
-            )
+                )
+              ),
+            ]
           );
         };
 
