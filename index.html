@@ -516,6 +516,12 @@
         const [breathingCount, setBreathingCount] = useState(0);
         const [gameScore, setGameScore] = useState(0);
         const [gameTime, setGameTime] = useState(30);
+        const [journalText, setJournalText] = useState("");
+        const [scribbleLines, setScribbleLines] = useState([]);
+        const [currentLine, setCurrentLine] = useState([]);
+        const [isDrawing, setIsDrawing] = useState(false);
+        const [aiTherapistMessage, setAiTherapistMessage] = useState("");
+        const [conversationHistory, setConversationHistory] = useState([]);
 
         // Breathing Exercise
         const BreathingExercise = () => {
@@ -667,60 +673,467 @@
           ]);
         };
 
+        // Journaling Component
+        const Journaling = () => {
+          const saveJournalEntry = () => {
+            if (journalText.trim()) {
+              const entry = {
+                id: Date.now(),
+                text: journalText,
+                timestamp: new Date().toISOString(),
+              };
+              const savedEntries = JSON.parse(
+                localStorage.getItem("defocus2focus_journal") || "[]"
+              );
+              savedEntries.push(entry);
+              localStorage.setItem(
+                "defocus2focus_journal",
+                JSON.stringify(savedEntries)
+              );
+              setJournalText("");
+              alert("Journal entry saved! 📝");
+            }
+          };
+
+          return React.createElement("div", { className: "p-6" }, [
+            React.createElement(
+              "h3",
+              {
+                key: "title",
+                className: "text-2xl font-bold mb-6 text-center",
+              },
+              "📝 Journal Your Thoughts"
+            ),
+            React.createElement(
+              "div",
+              { key: "journal-container", className: "space-y-4" },
+              [
+                React.createElement("textarea", {
+                  key: "journal-input",
+                  value: journalText,
+                  onChange: (e) => setJournalText(e.target.value),
+                  placeholder:
+                    "Write whatever comes to mind...\n\nHow are you feeling?\nWhat's on your mind?\nWhat are you grateful for?",
+                  className:
+                    "w-full h-64 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent",
+                  rows: 10,
+                }),
+                React.createElement(
+                  "div",
+                  { key: "journal-actions", className: "flex space-x-3" },
+                  [
+                    React.createElement(
+                      "button",
+                      {
+                        key: "save-btn",
+                        onClick: saveJournalEntry,
+                        className:
+                          "flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-lg transition-colors duration-200",
+                      },
+                      "💾 Save Entry"
+                    ),
+                    React.createElement(
+                      "button",
+                      {
+                        key: "clear-btn",
+                        onClick: () => setJournalText(""),
+                        className:
+                          "flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors duration-200",
+                      },
+                      "🗑️ Clear"
+                    ),
+                  ]
+                ),
+              ]
+            ),
+          ]);
+        };
+
+        // Scribble/Drawing Component
+        const Scribble = () => {
+          const canvasRef = React.useRef(null);
+
+          const startDrawing = (e) => {
+            setIsDrawing(true);
+            const rect = canvasRef.current.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            setCurrentLine([{ x, y }]);
+          };
+
+          const draw = (e) => {
+            if (!isDrawing) return;
+            const rect = canvasRef.current.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            setCurrentLine((prev) => [...prev, { x, y }]);
+          };
+
+          const stopDrawing = () => {
+            if (isDrawing) {
+              setScribbleLines((prev) => [...prev, currentLine]);
+              setCurrentLine([]);
+              setIsDrawing(false);
+            }
+          };
+
+          const clearScribble = () => {
+            setScribbleLines([]);
+            setCurrentLine([]);
+          };
+
+          const saveScribble = () => {
+            const scribbleData = {
+              id: Date.now(),
+              lines: scribbleLines,
+              timestamp: new Date().toISOString(),
+            };
+            const savedScribbles = JSON.parse(
+              localStorage.getItem("defocus2focus_scribbles") || "[]"
+            );
+            savedScribbles.push(scribbleData);
+            localStorage.setItem(
+              "defocus2focus_scribbles",
+              JSON.stringify(savedScribbles)
+            );
+            alert("Scribble saved! 🎨");
+          };
+
+          return React.createElement("div", { className: "p-6" }, [
+            React.createElement(
+              "h3",
+              {
+                key: "title",
+                className: "text-2xl font-bold mb-6 text-center",
+              },
+              "🎨 Scribble & Draw"
+            ),
+            React.createElement(
+              "div",
+              { key: "scribble-container", className: "space-y-4" },
+              [
+                React.createElement(
+                  "div",
+                  {
+                    key: "canvas-container",
+                    className:
+                      "border-2 border-gray-300 rounded-lg overflow-hidden",
+                  },
+                  React.createElement("canvas", {
+                    ref: canvasRef,
+                    width: 400,
+                    height: 300,
+                    className: "w-full h-64 bg-white cursor-crosshair",
+                    onMouseDown: startDrawing,
+                    onMouseMove: draw,
+                    onMouseUp: stopDrawing,
+                    onMouseLeave: stopDrawing,
+                    style: { touchAction: "none" },
+                  })
+                ),
+                React.createElement(
+                  "div",
+                  { key: "scribble-actions", className: "flex space-x-3" },
+                  [
+                    React.createElement(
+                      "button",
+                      {
+                        key: "save-btn",
+                        onClick: saveScribble,
+                        className:
+                          "flex-1 bg-pink-500 hover:bg-pink-600 text-white py-3 px-4 rounded-lg transition-colors duration-200",
+                      },
+                      "💾 Save Drawing"
+                    ),
+                    React.createElement(
+                      "button",
+                      {
+                        key: "clear-btn",
+                        onClick: clearScribble,
+                        className:
+                          "flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors duration-200",
+                      },
+                      "🗑️ Clear Canvas"
+                    ),
+                  ]
+                ),
+                React.createElement(
+                  "p",
+                  {
+                    key: "instructions",
+                    className: "text-sm text-gray-600 text-center",
+                  },
+                  "Click and drag to draw. Express your creativity! 🎨"
+                ),
+              ]
+            ),
+          ]);
+        };
+
+        // AI Therapist Component
+        const AITherapist = () => {
+          const generateAIResponse = (message) => {
+            const responses = [
+              "That's a great insight! How does that make you feel?",
+              "I understand. Taking breaks is important for productivity.",
+              "It sounds like you're being mindful about your work-life balance.",
+              "Remember, it's okay to take time for yourself.",
+              "What would help you feel more refreshed right now?",
+              "That's a thoughtful perspective. Tell me more about that.",
+              "It sounds like you're processing a lot. How can I help?",
+              "Taking care of your mental health is so important. What's on your mind?",
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+          };
+
+          const sendMessage = () => {
+            if (aiTherapistMessage.trim()) {
+              const userMessage = {
+                id: Date.now(),
+                type: "user",
+                text: aiTherapistMessage,
+                timestamp: new Date().toISOString(),
+              };
+
+              const aiResponse = {
+                id: Date.now() + 1,
+                type: "ai",
+                text: generateAIResponse(aiTherapistMessage),
+                timestamp: new Date().toISOString(),
+              };
+
+              const newHistory = [
+                ...conversationHistory,
+                userMessage,
+                aiResponse,
+              ];
+              setConversationHistory(newHistory);
+              setAiTherapistMessage("");
+
+              // Save conversation
+              localStorage.setItem(
+                "defocus2focus_therapist",
+                JSON.stringify(newHistory)
+              );
+            }
+          };
+
+          const clearConversation = () => {
+            setConversationHistory([]);
+            localStorage.removeItem("defocus2focus_therapist");
+          };
+
+          return React.createElement("div", { className: "p-6" }, [
+            React.createElement(
+              "h3",
+              {
+                key: "title",
+                className: "text-2xl font-bold mb-6 text-center",
+              },
+              "🤖 AI Therapist"
+            ),
+            React.createElement(
+              "div",
+              { key: "therapist-container", className: "space-y-4" },
+              [
+                React.createElement(
+                  "div",
+                  {
+                    key: "conversation",
+                    className:
+                      "h-64 overflow-y-auto border border-gray-300 rounded-lg p-4 bg-gray-50",
+                  },
+                  conversationHistory.length === 0
+                    ? React.createElement(
+                        "p",
+                        {
+                          key: "welcome",
+                          className: "text-gray-500 text-center",
+                        },
+                        "Hi! I'm here to listen. What's on your mind today? 💭"
+                      )
+                    : conversationHistory.map((msg) =>
+                        React.createElement(
+                          "div",
+                          {
+                            key: msg.id,
+                            className: `mb-3 p-3 rounded-lg ${
+                              msg.type === "user"
+                                ? "bg-blue-500 text-white ml-8"
+                                : "bg-white text-gray-800 mr-8 border"
+                            }`,
+                          },
+                          [
+                            React.createElement(
+                              "p",
+                              { key: "text", className: "text-sm" },
+                              msg.text
+                            ),
+                            React.createElement(
+                              "span",
+                              { key: "time", className: "text-xs opacity-70" },
+                              new Date(msg.timestamp).toLocaleTimeString()
+                            ),
+                          ]
+                        )
+                      )
+                ),
+                React.createElement(
+                  "div",
+                  { key: "input-container", className: "flex space-x-2" },
+                  [
+                    React.createElement("input", {
+                      key: "message-input",
+                      type: "text",
+                      value: aiTherapistMessage,
+                      onChange: (e) => setAiTherapistMessage(e.target.value),
+                      placeholder: "Share what's on your mind...",
+                      className:
+                        "flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent",
+                      onKeyPress: (e) => e.key === "Enter" && sendMessage(),
+                    }),
+                    React.createElement(
+                      "button",
+                      {
+                        key: "send-btn",
+                        onClick: sendMessage,
+                        className:
+                          "bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors duration-200",
+                      },
+                      "Send"
+                    ),
+                  ]
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    key: "clear-btn",
+                    onClick: clearConversation,
+                    className:
+                      "w-full bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-200",
+                  },
+                  "🗑️ Clear Conversation"
+                ),
+              ]
+            ),
+          ]);
+        };
+
         const renderActivity = () => {
           switch (currentActivity) {
             case "breathing":
               return React.createElement(BreathingExercise);
             case "game":
               return React.createElement(ClickGame);
+            case "journal":
+              return React.createElement(Journaling);
+            case "scribble":
+              return React.createElement(Scribble);
+            case "therapist":
+              return React.createElement(AITherapist);
             default:
-              return React.createElement("div", { className: "text-center" }, [
-                React.createElement(
-                  "h3",
-                  { key: "title", className: "text-2xl font-bold mb-6" },
-                  "🌿 Defocus Activities"
-                ),
-                React.createElement(
-                  "div",
-                  { key: "activities", className: "space-y-4" },
-                  [
-                    React.createElement(
-                      "button",
-                      {
-                        key: "breathing",
-                        onClick: () => setCurrentActivity("breathing"),
-                        className:
-                          "w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                      },
-                      [
-                        React.createElement(
-                          "span",
-                          { key: "icon", className: "mr-3" },
-                          "🧘"
-                        ),
-                        "Breathing Exercise",
-                      ]
-                    ),
-                    React.createElement(
-                      "button",
-                      {
-                        key: "game",
-                        onClick: () => setCurrentActivity("game"),
-                        className:
-                          "w-full bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                      },
-                      [
-                        React.createElement(
-                          "span",
-                          { key: "icon", className: "mr-3" },
-                          "🎯"
-                        ),
-                        "Click Game",
-                      ]
-                    ),
-                  ]
-                ),
-              ]);
+              return React.createElement(
+                "div",
+                { className: "text-center p-6" },
+                [
+                  React.createElement(
+                    "h3",
+                    { key: "title", className: "text-2xl font-bold mb-6" },
+                    "🌿 Defocus Activities"
+                  ),
+                  React.createElement(
+                    "div",
+                    { key: "activities", className: "grid grid-cols-1 gap-4" },
+                    [
+                      React.createElement(
+                        "button",
+                        {
+                          key: "breathing",
+                          onClick: () => setCurrentActivity("breathing"),
+                          className:
+                            "w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center",
+                        },
+                        [
+                          React.createElement(
+                            "span",
+                            { key: "icon", className: "mr-3" },
+                            "🧘"
+                          ),
+                          "Breathing Exercise",
+                        ]
+                      ),
+                      React.createElement(
+                        "button",
+                        {
+                          key: "game",
+                          onClick: () => setCurrentActivity("game"),
+                          className:
+                            "w-full bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center",
+                        },
+                        [
+                          React.createElement(
+                            "span",
+                            { key: "icon", className: "mr-3" },
+                            "🎯"
+                          ),
+                          "Click Game",
+                        ]
+                      ),
+                      React.createElement(
+                        "button",
+                        {
+                          key: "journal",
+                          onClick: () => setCurrentActivity("journal"),
+                          className:
+                            "w-full bg-purple-500 hover:bg-purple-600 text-white py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center",
+                        },
+                        [
+                          React.createElement(
+                            "span",
+                            { key: "icon", className: "mr-3" },
+                            "📝"
+                          ),
+                          "Journaling",
+                        ]
+                      ),
+                      React.createElement(
+                        "button",
+                        {
+                          key: "scribble",
+                          onClick: () => setCurrentActivity("scribble"),
+                          className:
+                            "w-full bg-pink-500 hover:bg-pink-600 text-white py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center",
+                        },
+                        [
+                          React.createElement(
+                            "span",
+                            { key: "icon", className: "mr-3" },
+                            "🎨"
+                          ),
+                          "Scribble & Draw",
+                        ]
+                      ),
+                      React.createElement(
+                        "button",
+                        {
+                          key: "therapist",
+                          onClick: () => setCurrentActivity("therapist"),
+                          className:
+                            "w-full bg-orange-500 hover:bg-orange-600 text-white py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center",
+                        },
+                        [
+                          React.createElement(
+                            "span",
+                            { key: "icon", className: "mr-3" },
+                            "🤖"
+                          ),
+                          "AI Therapist",
+                        ]
+                      ),
+                    ]
+                  ),
+                ]
+              );
           }
         };
 
