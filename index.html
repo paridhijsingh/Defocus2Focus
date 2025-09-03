@@ -207,7 +207,8 @@
 
       /* Enhanced theme transitions */
       * {
-        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        transition: background-color 0.3s ease, color 0.3s ease,
+          border-color 0.3s ease;
       }
 
       /* Improved button hover effects */
@@ -226,13 +227,18 @@
       }
 
       .progress-dot::before {
-        content: '';
+        content: "";
         position: absolute;
         top: 0;
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.4),
+          transparent
+        );
         transition: left 0.5s;
       }
 
@@ -2367,11 +2373,17 @@
       };
 
       const WebApp = () => {
-        const [showWelcome, setShowWelcome] = useState(false);
+        // Initialize states based on localStorage to prevent flash
+        const [showWelcome, setShowWelcome] = useState(() => {
+          return !localStorage.getItem("defocus2focus_onboarding_completed");
+        });
         const [showOnboarding, setShowOnboarding] = useState(false);
         const [currentScreen, setCurrentScreen] = useState("dashboard");
-        const [hasCompletedOnboarding, setHasCompletedOnboarding] =
-          useState(false);
+        const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(
+          () => {
+            return !!localStorage.getItem("defocus2focus_onboarding_completed");
+          }
+        );
 
         // App state
         const [tasks, setTasks] = useState([]);
@@ -2578,16 +2590,6 @@
         }, []);
 
         useEffect(() => {
-          // Check if user has completed onboarding before
-          const completed = localStorage.getItem(
-            "defocus2focus_onboarding_completed"
-          );
-          if (!completed) {
-            setShowWelcome(true);
-          } else {
-            setHasCompletedOnboarding(true);
-          }
-
           // Load saved data
           const savedTasks = localStorage.getItem("defocus2focus_tasks");
           const savedEnergy = localStorage.getItem("defocus2focus_energy");
@@ -2628,6 +2630,12 @@
           setShowWelcome(true);
           setShowOnboarding(false);
           setHasCompletedOnboarding(false);
+        };
+
+        // Debug function to clear onboarding (can be called from console)
+        window.clearOnboarding = () => {
+          localStorage.removeItem("defocus2focus_onboarding_completed");
+          window.location.reload();
         };
 
         // Navigation functions
