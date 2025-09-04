@@ -19,7 +19,7 @@ const WelcomeScreen = ({ onGetStarted, onLearnMore }) => {
           className="h-24 w-auto sm:h-28 md:h-32 drop-shadow-[0_10px_25px_rgba(236,72,153,0.35)]"
           loading="eager"
           onError={(e) => {
-            e.currentTarget.src = '/assets/logo/defocus2focus-icon.png';
+            e.currentTarget.src = '/assets/logo/defocus2focus-icon.svg';
           }}
         />
       </div>
