@@ -190,14 +190,15 @@
             >
               <div className="text-center text-white max-w-3xl">
                 <motion.img
-                  src="/public/assets/logo/defocus2focus-hero.png"
+                  src="./public/assets/logo/defocus2focus-hero.png?v=2"
                   alt="Defocus2Focus"
                   className="mx-auto h-24 sm:h-28 md:h-32 mb-6 drop-shadow"
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8 }}
                   onError={(e) => {
-                    e.target.src = "/public/assets/logo/defocus2focus-icon.svg";
+                    e.target.src =
+                      "./public/assets/logo/defocus2focus-icon.svg?v=2";
                   }}
                 />
                 <h1 className="text-4xl sm:text-6xl font-bold mb-4">
