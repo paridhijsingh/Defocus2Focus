@@ -13,6 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap");
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -85,7 +86,7 @@
       const { useState, useEffect, useRef } = React;
       const { motion } = window.framerMotion || {};
 
-      // Welcome Screen Component (modernized)
+      // Welcome Screen Component (web inline version)
       const WelcomeScreen = ({ onStart }) => {
         const [theme, setTheme] = useState(
           localStorage.getItem("d2f_theme") || "auto"
@@ -114,162 +115,63 @@
         };
 
         return (
-          <div className="min-h-screen gradient-bg animated-soft-gradient flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 text-white">
-              <div
-                className="flex items-center gap-3"
-                aria-label="Defocus2Focus logo"
-              >
-                <svg
-                  width="36"
-                  height="36"
-                  viewBox="0 0 64 64"
-                  role="img"
-                  aria-label="Defocus2Focus icon"
-                  className="drop-shadow"
-                >
-                  <defs>
-                    <radialGradient id="blurToSharp" cx="0.3" cy="0.3" r="0.9">
-                      <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.9" />
-                      <stop
-                        offset="60%"
-                        stopColor="#8b5cf6"
-                        stopOpacity="0.8"
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="#6366f1"
-                        stopOpacity="0.8"
-                      />
-                    </radialGradient>
-                    <filter
-                      id="softBlur"
-                      x="-20%"
-                      y="-20%"
-                      width="140%"
-                      height="140%"
-                    >
-                      <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
-                    </filter>
-                  </defs>
-                  <circle
-                    cx="28"
-                    cy="28"
-                    r="20"
-                    fill="url(#blurToSharp)"
-                    filter="url(#softBlur)"
-                  />
-                  <circle cx="36" cy="28" r="8" fill="#ffffff" />
-                </svg>
-                <span className="text-xl font-semibold tracking-wide">
-                  Defocus2Focus
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <label htmlFor="theme-toggle" className="sr-only">
-                  Theme
-                </label>
-                <select
-                  id="theme-toggle"
-                  aria-label="Toggle theme"
-                  className="text-sm text-gray-900 rounded-xl px-3 py-1.5 bg-white/90 backdrop-blur shadow-sm"
-                  value={theme}
-                  onChange={(e) => setTheme(e.target.value)}
-                >
-                  <option value="auto">Auto</option>
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                </select>
-              </div>
-            </div>
-            <motion.div
-              className="flex-1 flex items-center justify-center p-6"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: isLeaving ? 0 : 1, y: isLeaving ? -10 : 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-            >
-              <div className="text-center text-white max-w-3xl">
+          <div className="min-h-screen w-full bg-[#0A1B3A] text-white flex flex-col items-center">
+            <div className="flex-1 flex items-center justify-center p-6 w-full">
+              <div className="text-center max-w-2xl">
                 <motion.img
-                  src="./public/assets/logo/defocus2focus-hero.png?v=2"
+                  src="./public/assets/logo/defocus2focus-hero.png"
                   alt="Defocus2Focus"
                   className="mx-auto h-24 sm:h-28 md:h-32 mb-6 drop-shadow"
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
+                  transition={{ duration: 0.7 }}
                   onError={(e) => {
                     e.target.src =
-                      "./public/assets/logo/defocus2focus-icon.svg?v=2";
+                      "./public/assets/logo/defocus2focus-icon.svg";
                   }}
                 />
-                <h1 className="text-4xl sm:text-6xl font-bold mb-4">
-                  Defocus2Focus
-                </h1>
-                <p className="text-lg sm:text-2xl mb-6 opacity-95">
-                  Where Procrastination Meets Play – Gamified Focus &
-                  Productivity
-                </p>
-                <motion.svg
-                  width="240"
-                  height="160"
-                  viewBox="0 0 240 160"
-                  role="img"
-                  aria-label="Abstract focus illustration"
-                  className="mx-auto mb-8 drop-shadow-md"
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 4,
-                    ease: "easeInOut",
-                  }}
+                <h1
+                  className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-3"
+                  style={{ fontFamily: "Montserrat, ui-sans-serif, system-ui" }}
                 >
-                  <defs>
-                    <linearGradient id="heroGrad" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.8" />
-                      <stop
-                        offset="100%"
-                        stopColor="#a78bfa"
-                        stopOpacity="0.8"
-                      />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M30 80 C 40 20, 120 20, 130 80 S 220 140, 210 90 C 190 30, 60 40, 30 80 Z"
-                    fill="url(#heroGrad)"
-                  />
-                </motion.svg>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  Welcome to{" "}
+                  <span className="bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">
+                    Defocus2Focus
+                  </span>
+                  !
+                </h1>
+                <p className="mt-2 sm:mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-indigo-100/90">
+                  Your journey from distraction to clarity begins here.
+                </p>
+                <div className="mt-8 sm:mt-10 md:mt-12 flex flex-col sm:flex-row gap-4 sm:gap-5 items-center justify-center">
                   <motion.button
-                    whileHover={{
-                      scale: 1.03,
-                      boxShadow: "0 10px 25px rgba(59,130,246,0.35)",
-                    }}
+                    whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleStart}
                     aria-label="Get Started"
-                    className="px-10 py-4 rounded-2xl text-lg font-semibold bg-white text-slate-900 shadow-md"
+                    className="px-8 py-3 sm:px-9 sm:py-3.5 rounded-full font-semibold text-white shadow-lg shadow-pink-500/20 transition-all duration-300 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500"
                   >
                     Get Started
                   </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    aria-label="Learn more about Defocus2Focus"
-                    className="px-10 py-4 rounded-2xl text-lg font-semibold border border-white/70 text-white/95 hover:bg-white/10 transition"
-                    onClick={() =>
-                      window.scrollTo({
-                        top: document.body.scrollHeight,
-                        behavior: "smooth",
-                      })
-                    }
-                  >
-                    Learn More
-                  </motion.button>
+                  <div className="p-[2px] rounded-full bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500">
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.98 }}
+                      aria-label="Learn More"
+                      className="inline-flex items-center justify-center px-8 py-3 sm:px-9 sm:py-3.5 rounded-full font-semibold text-white/90 bg-[#0A1B3A]"
+                      onClick={() =>
+                        window.scrollTo({
+                          top: document.body.scrollHeight,
+                          behavior: "smooth",
+                        })
+                      }
+                    >
+                      Learn More
+                    </motion.button>
+                  </div>
                 </div>
-                <p className="mt-10 text-sm text-white/80">
-                  Take control of your focus. One step at a time.
-                </p>
               </div>
-            </motion.div>
+            </div>
           </div>
         );
       };
