@@ -1384,10 +1384,9 @@
         ]);
       };
 
-      // Render the app
-      ReactDOM.render(
-        React.createElement(WebApp),
-        document.getElementById("root")
+      // Render the app (React 18)
+      ReactDOM.createRoot(document.getElementById("root")).render(
+        React.createElement(WebApp)
       );
     </script>
   </body>

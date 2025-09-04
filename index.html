@@ -1681,8 +1681,8 @@
         );
       };
 
-      // Render the app
-      ReactDOM.render(<App />, document.getElementById("root"));
+      // Render the app (React 18)
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
     </script>
   </body>
 </html>
