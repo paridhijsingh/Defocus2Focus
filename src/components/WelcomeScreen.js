@@ -26,7 +26,7 @@ const WelcomeScreen = ({ onGetStarted, onLearnMore, logoSrc = '/assets/logo/defo
 
       {/* Headings */}
       <div className="mt-6 sm:mt-8 md:mt-10 text-center max-w-2xl animate-fade-in-up [animation-delay:120ms]">
-        <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight font-sans">
+        <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight" style={{ fontFamily: 'Montserrat, ui-sans-serif, system-ui' }}>
           Welcome to <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 bg-clip-text text-transparent">Defocus2Focus</span>!
         </h1>
         <p className="mt-3 sm:mt-4 md:mt-5 text-sm sm:text-base md:text-lg text-indigo-100/90">
@@ -49,10 +49,10 @@ const WelcomeScreen = ({ onGetStarted, onLearnMore, logoSrc = '/assets/logo/defo
         </button>
 
         {/* Secondary: Learn More (transparent with gradient border) */}
-        <div className="p-[2px] rounded-full bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400">
+        <div className="p-[2px] rounded-full bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500">
           <button
             onClick={onLearnMore}
-            className="inline-flex items-center justify-center px-7 py-3 sm:px-8 sm:py-3.5 rounded-full font-semibold text-white/90 bg-[#0A1B3A] hover:bg-[#0A1B3A]/90 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/70"
+            className="inline-flex items-center justify-center px-7 py-3 sm:px-8 sm:py-3.5 rounded-full font-semibold text-white/90 bg-[#0A1B3A] hover:scale-[1.03] hover:bg-[#0A1B3A]/90 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/70"
             aria-label="Learn More"
           >
             Learn More
