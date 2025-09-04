@@ -744,18 +744,7 @@
         isPlaying,
         setIsPlaying,
       }) => {
-        const audioRef = useRef(null);
         const [selectedCategory, setSelectedCategory] = useState("All");
-
-        useEffect(() => {
-          if (audioRef.current) {
-            if (isPlaying) {
-              audioRef.current.play().catch(console.error);
-            } else {
-              audioRef.current.pause();
-            }
-          }
-        }, [isPlaying, currentTrack]);
 
         const playPause = () => {
           setIsPlaying(!isPlaying);
@@ -919,6 +908,7 @@
         const [coins, setCoins] = useState(150);
         const [streak, setStreak] = useState(7);
         const [xp, setXp] = useState(1250);
+        const audioRef = useRef(null);
 
         const audioFiles = [
           // Focus Music
@@ -1144,6 +1134,26 @@
           { id: "rewards", name: "Rewards", icon: "🏆", color: "green" },
         ];
 
+        // Persist audio across sections: keep a single audio element mounted
+        const currentFile = audioFiles.find(
+          (file) => file.name === currentTrack
+        );
+
+        useEffect(() => {
+          if (!audioRef.current || !currentFile) return;
+          // Update src if track changed
+          const absoluteSrc = new URL(currentFile.url, window.location.href)
+            .href;
+          if (audioRef.current.src !== absoluteSrc) {
+            audioRef.current.src = currentFile.url;
+          }
+          if (isPlaying) {
+            audioRef.current.play().catch(console.error);
+          } else {
+            audioRef.current.pause();
+          }
+        }, [isPlaying, currentTrack]);
+
         return (
           <div className="min-h-screen bg-gray-50">
             {/* Header */}
@@ -1216,6 +1226,20 @@
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              {/* Persistent, hidden audio element */}
+              <audio
+                ref={audioRef}
+                onEnded={() => {
+                  // Stop on end to avoid unexpected category jumps
+                  setIsPlaying(false);
+                }}
+                onError={(e) => {
+                  console.error("Audio error:", e);
+                  setIsPlaying(false);
+                }}
+                preload="metadata"
+                style={{ display: "none" }}
+              />
               {activeSection === "defocus" && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {isDefocusLocked && (
