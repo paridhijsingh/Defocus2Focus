@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingTutorial from './components/OnboardingTutorial';
 import WebAnalyticsDashboard from './components/WebAnalyticsDashboard';
+import WelcomeScreen from './components/WelcomeScreen';
+import '../global.css';
 
 const WebApp = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState('dashboard');
+  const [currentScreen, setCurrentScreen] = useState('welcome');
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
   useEffect(() => {
@@ -200,20 +202,34 @@ const WebApp = () => {
     </div>
   );
 
+  const handleGetStarted = () => {
+    setShowOnboarding(true);
+    setCurrentScreen('onboarding');
+  };
+
   return (
     <div>
+      {currentScreen === 'welcome' && (
+        <WelcomeScreen
+          onGetStarted={handleGetStarted}
+          onLearnMore={() => setCurrentScreen('analytics')}
+        />
+      )}
+
       {showOnboarding && (
         <OnboardingTutorial
           onComplete={handleOnboardingComplete}
           onSkip={handleOnboardingSkip}
         />
       )}
+
       {hasCompletedOnboarding && currentScreen === 'analytics' && (
-        <WebAnalyticsDashboard 
-          user={{ name: 'Paridhi', level: 12 }} 
+        <WebAnalyticsDashboard
+          user={{ name: 'Paridhi', level: 12 }}
           onBack={() => setCurrentScreen('dashboard')}
         />
       )}
+
       {hasCompletedOnboarding && currentScreen === 'dashboard' && renderDashboard()}
     </div>
   );
