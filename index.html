@@ -1,1198 +1,1059 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Defocus2Focus - Where Procrastination Meets Play</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* Custom animations */
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        to {
-          opacity: 1;
-          transform: translateY(0);
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
         }
-      }
-
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%);
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
-        to {
-          transform: translateX(0);
-        }
-      }
-
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out;
-      }
-
-      .animate-slide-in {
-        animation: slideIn 0.3s ease-out;
-      }
-
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-
-      ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 3px;
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 3px;
-      }
-
-      ::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-      }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        .animate-slide-in { animation: slideIn 0.3s ease-out; }
+        .animate-pulse { animation: pulse 2s infinite; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); }
     </style>
-  </head>
-  <body class="bg-gray-50">
+</head>
+<body class="bg-gray-50">
     <div id="root"></div>
 
     <script type="text/babel">
-      const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
-      const OnboardingTutorial = ({ onComplete, onSkip }) => {
-        const [currentStep, setCurrentStep] = useState(0);
-        const [isVisible, setIsVisible] = useState(true);
-
-        const steps = [
-          {
-            id: "welcome",
-            title: "Welcome to Defocus2Focus! 🎯",
-            subtitle: "Where Procrastination Meets Play",
-            description:
-              "Transform your productivity with our gamified approach to focus and breaks.",
-            icon: "🎯",
-            color: "blue",
-            illustration: "✨",
-          },
-          {
-            id: "focus-mode",
-            title: "Focus Mode 🎯",
-            subtitle: "Deep Work Made Fun",
-            description:
-              "Set timers, track progress, and complete tasks while earning energy points and unlocking achievements.",
-            icon: "🎯",
-            color: "blue",
-            illustration: "⏰",
-            features: [
-              "Pomodoro Timer",
-              "Task Management",
-              "Progress Tracking",
-              "Energy Points",
-            ],
-          },
-          {
-            id: "defocus-mode",
-            title: "Defocus Mode 🌿",
-            subtitle: "Mindful Breaks & Recovery",
-            description:
-              "Take purposeful breaks with guided activities, mini-games, and relaxation techniques.",
-            icon: "🌿",
-            color: "orange",
-            illustration: "🧘",
-            features: [
-              "Mini Games",
-              "Breathing Exercises",
-              "Journaling",
-              "AI Therapist",
-            ],
-          },
-          {
-            id: "switching-modes",
-            title: "Smart Mode Switching 🔄",
-            subtitle: "Seamless Transitions",
-            description:
-              "Easily switch between Focus and Defocus modes with our intuitive toggle system.",
-            icon: "🔄",
-            color: "purple",
-            illustration: "⚡",
-            features: [
-              "One-Click Toggle",
-              "Smart Suggestions",
-              "Context Awareness",
-              "Smooth Transitions",
-            ],
-          },
-          {
-            id: "rewards",
-            title: "Rewards & Motivation 🏆",
-            subtitle: "Stay Motivated",
-            description:
-              "Earn badges, track streaks, and unlock achievements as you build better productivity habits.",
-            icon: "🏆",
-            color: "green",
-            illustration: "⭐",
-            features: [
-              "Achievement Badges",
-              "Daily Streaks",
-              "Energy Points",
-              "Progress Analytics",
-            ],
-          },
-        ];
-
-        const nextStep = () => {
-          if (currentStep < steps.length - 1) {
-            setCurrentStep(currentStep + 1);
-          } else {
-            handleComplete();
-          }
-        };
-
-        const prevStep = () => {
-          if (currentStep > 0) {
-            setCurrentStep(currentStep - 1);
-          }
-        };
-
-        const handleComplete = () => {
-          setIsVisible(false);
-          setTimeout(() => {
-            onComplete();
-          }, 300);
-        };
-
-        const handleSkip = () => {
-          setIsVisible(false);
-          setTimeout(() => {
-            onSkip();
-          }, 300);
-        };
-
-        const currentStepData = steps[currentStep];
-        const isLastStep = currentStep === steps.length - 1;
-        const isFirstStep = currentStep === 0;
-
-        if (!isVisible) return null;
-
-        return React.createElement(
-          "div",
-          {
-            className:
-              "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4",
-          },
-          React.createElement(
-            "div",
-            {
-              className:
-                "bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all duration-300 ease-in-out animate-fade-in",
-            },
-            [
-              // Header
-              React.createElement(
-                "div",
-                { key: "header", className: "relative" },
-                [
-                  React.createElement("div", {
-                    key: "progress-bar",
-                    className: `h-2 bg-gradient-to-r ${
-                      currentStepData.color === "blue"
-                        ? "from-blue-400 to-blue-600"
-                        : currentStepData.color === "orange"
-                        ? "from-orange-400 to-orange-600"
-                        : currentStepData.color === "purple"
-                        ? "from-purple-400 to-purple-600"
-                        : "from-green-400 to-green-600"
-                    }`,
-                    style: {
-                      width: `${((currentStep + 1) / steps.length) * 100}%`,
-                    },
-                  }),
-                  React.createElement(
-                    "button",
-                    {
-                      key: "skip-button",
-                      onClick: handleSkip,
-                      className:
-                        "absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 text-sm font-medium",
-                    },
-                    "Skip Tutorial"
-                  ),
-                ]
-              ),
-
-              // Content
-              React.createElement(
-                "div",
-                { key: "content", className: "p-8 text-center" },
-                [
-                  // Illustration
-                  React.createElement(
-                    "div",
-                    { key: "illustration", className: "mb-6" },
-                    [
-                      React.createElement(
-                        "div",
-                        {
-                          key: "icon-container",
-                          className: `w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl mb-4 ${
-                            currentStepData.color === "blue"
-                              ? "bg-blue-100"
-                              : currentStepData.color === "orange"
-                              ? "bg-orange-100"
-                              : currentStepData.color === "purple"
-                              ? "bg-purple-100"
-                              : "bg-green-100"
-                          }`,
-                        },
-                        React.createElement(
-                          "span",
-                          { className: "text-4xl" },
-                          currentStepData.illustration
-                        )
-                      ),
-                      React.createElement(
-                        "div",
-                        { key: "main-icon", className: "text-6xl mb-2" },
-                        currentStepData.icon
-                      ),
-                    ]
-                  ),
-
-                  // Title
-                  React.createElement(
-                    "h2",
-                    {
-                      key: "title",
-                      className: "text-2xl font-bold text-gray-900 mb-2",
-                    },
-                    currentStepData.title
-                  ),
-
-                  // Subtitle
-                  React.createElement(
-                    "h3",
-                    {
-                      key: "subtitle",
-                      className: `text-lg font-semibold mb-4 ${
-                        currentStepData.color === "blue"
-                          ? "text-blue-600"
-                          : currentStepData.color === "orange"
-                          ? "text-orange-600"
-                          : currentStepData.color === "purple"
-                          ? "text-purple-600"
-                          : "text-green-600"
-                      }`,
-                    },
-                    currentStepData.subtitle
-                  ),
-
-                  // Description
-                  React.createElement(
-                    "p",
-                    {
-                      key: "description",
-                      className: "text-gray-600 mb-6 leading-relaxed",
-                    },
-                    currentStepData.description
-                  ),
-
-                  // Features List
-                  currentStepData.features &&
-                    React.createElement(
-                      "div",
-                      { key: "features", className: "mb-6" },
-                      [
-                        React.createElement(
-                          "div",
-                          {
-                            key: "features-grid",
-                            className: "grid grid-cols-2 gap-2",
-                          },
-                          currentStepData.features.map((feature, index) =>
-                            React.createElement(
-                              "div",
-                              {
-                                key: index,
-                                className:
-                                  "flex items-center justify-center p-2 bg-gray-50 rounded-lg",
-                              },
-                              React.createElement(
-                                "span",
-                                {
-                                  className:
-                                    "text-sm text-gray-700 font-medium",
-                                },
-                                feature
-                              )
-                            )
-                          )
-                        ),
-                      ]
-                    ),
-
-                  // Progress Dots
-                  React.createElement(
-                    "div",
-                    {
-                      key: "progress-dots",
-                      className: "flex justify-center space-x-2 mb-6",
-                    },
-                    steps.map((_, index) =>
-                      React.createElement("div", {
-                        key: index,
-                        className: `w-2 h-2 rounded-full transition-all duration-300 ${
-                          index === currentStep
-                            ? currentStepData.color === "blue"
-                              ? "bg-blue-500"
-                              : currentStepData.color === "orange"
-                              ? "bg-orange-500"
-                              : currentStepData.color === "purple"
-                              ? "bg-purple-500"
-                              : "bg-green-500"
-                            : "bg-gray-300"
-                        }`,
-                      })
-                    )
-                  ),
-                ]
-              ),
-
-              // Footer
-              React.createElement(
-                "div",
-                { key: "footer", className: "px-8 pb-8" },
-                [
-                  React.createElement(
-                    "div",
-                    {
-                      key: "footer-buttons",
-                      className: "flex justify-between items-center",
-                    },
-                    [
-                      // Back Button
-                      React.createElement(
-                        "button",
-                        {
-                          key: "back-button",
-                          onClick: prevStep,
-                          disabled: isFirstStep,
-                          className: `px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                            isFirstStep
-                              ? "text-gray-300 cursor-not-allowed"
-                              : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
-                          }`,
-                        },
-                        "Back"
-                      ),
-
-                      // Next/Complete Button
-                      React.createElement(
-                        "button",
-                        {
-                          key: "next-button",
-                          onClick: nextStep,
-                          className: `px-8 py-3 rounded-xl font-medium text-white transition-all duration-200 transform hover:scale-105 ${
-                            currentStepData.color === "blue"
-                              ? "bg-blue-500 hover:bg-blue-600"
-                              : currentStepData.color === "orange"
-                              ? "bg-orange-500 hover:bg-orange-600"
-                              : currentStepData.color === "purple"
-                              ? "bg-purple-500 hover:bg-purple-600"
-                              : "bg-green-500 hover:bg-green-600"
-                          }`,
-                        },
-                        isLastStep ? "Start My Journey" : "Next"
-                      ),
-                    ]
-                  ),
-                ]
-              ),
-            ]
-          )
+        // Welcome Screen Component
+        const WelcomeScreen = ({ onStart }) => (
+            <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+                <div className="text-center text-white animate-fade-in">
+                    <div className="text-8xl mb-6 animate-pulse">🎯</div>
+                    <h1 className="text-6xl font-bold mb-4">Defocus2Focus</h1>
+                    <p className="text-2xl mb-8 opacity-90">Where Procrastination Meets Play</p>
+                    <p className="text-lg mb-12 opacity-80 max-w-2xl mx-auto">
+                        Transform your productivity with our gamified approach to focus and breaks. 
+                        Master the art of Defocus → Focus → Rewards.
+                    </p>
+                    <button 
+                        onClick={onStart}
+                        className="bg-white text-purple-600 px-12 py-4 rounded-full text-xl font-bold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                    >
+                        Start Your Journey
+                    </button>
+                </div>
+            </div>
         );
-      };
 
-      const WebApp = () => {
-        const [showOnboarding, setShowOnboarding] = useState(false);
-        const [currentScreen, setCurrentScreen] = useState("dashboard");
-        const [hasCompletedOnboarding, setHasCompletedOnboarding] =
-          useState(false);
+        // Onboarding Carousel Component
+        const OnboardingCarousel = ({ onComplete, onSkip }) => {
+            const [currentStep, setCurrentStep] = useState(0);
+            const [isVisible, setIsVisible] = useState(true);
 
-        useEffect(() => {
-          // Check if user has completed onboarding before
-          const completed = localStorage.getItem(
-            "defocus2focus_onboarding_completed"
-          );
-          if (!completed) {
-            setShowOnboarding(true);
-          } else {
-            setHasCompletedOnboarding(true);
-          }
-        }, []);
-
-        const handleOnboardingComplete = () => {
-          localStorage.setItem("defocus2focus_onboarding_completed", "true");
-          setShowOnboarding(false);
-          setHasCompletedOnboarding(true);
-          setCurrentScreen("dashboard");
-        };
-
-        const handleOnboardingSkip = () => {
-          localStorage.setItem("defocus2focus_onboarding_completed", "true");
-          setShowOnboarding(false);
-          setHasCompletedOnboarding(true);
-          setCurrentScreen("dashboard");
-        };
-
-        const resetOnboarding = () => {
-          localStorage.removeItem("defocus2focus_onboarding_completed");
-          setShowOnboarding(true);
-          setHasCompletedOnboarding(false);
-        };
-
-        const renderDashboard = () =>
-          React.createElement(
-            "div",
-            {
-              className:
-                "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
-            },
-            [
-              // Header
-              React.createElement(
-                "header",
+            const steps = [
                 {
-                  key: "header",
-                  className: "bg-white shadow-sm border-b border-gray-200",
+                    id: 'welcome',
+                    title: 'Welcome to Defocus2Focus! 🎯',
+                    subtitle: 'Where Procrastination Meets Play',
+                    description: 'Transform your productivity with our gamified approach to focus and breaks.',
+                    icon: '🎯',
+                    color: 'blue',
+                    illustration: '✨'
                 },
-                React.createElement(
-                  "div",
-                  {
-                    className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
-                  },
-                  React.createElement(
-                    "div",
-                    {
-                      className: "flex justify-between items-center py-6",
-                    },
-                    [
-                      React.createElement(
-                        "div",
-                        {
-                          key: "title",
-                          className: "flex items-center",
-                        },
-                        [
-                          React.createElement(
-                            "h1",
-                            {
-                              key: "main-title",
-                              className: "text-3xl font-bold text-gray-900",
-                            },
-                            "🎯 Defocus2Focus"
-                          ),
-                          React.createElement(
-                            "span",
-                            {
-                              key: "subtitle",
-                              className: "ml-3 text-sm text-gray-500",
-                            },
-                            "Where Procrastination Meets Play"
-                          ),
-                        ]
-                      ),
-                      React.createElement(
-                        "button",
-                        {
-                          key: "reset-button",
-                          onClick: resetOnboarding,
-                          className:
-                            "px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200",
-                        },
-                        "🔄 Reset Tutorial"
-                      ),
-                    ]
-                  )
-                )
-              ),
-
-              // Main Content
-              React.createElement(
-                "main",
                 {
-                  key: "main",
-                  className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+                    id: 'defocus-mode',
+                    title: 'Defocus Mode 🌿',
+                    subtitle: 'Mindful Breaks & Recovery',
+                    description: 'Take purposeful breaks with journaling, scribbling, and mini-games to reset your mind.',
+                    icon: '🌿',
+                    color: 'orange',
+                    illustration: '🧘',
+                    features: ['Journaling', 'Scribble', 'Mini Games', 'Mindful Breaks']
                 },
-                [
-                  React.createElement(
-                    "div",
-                    {
-                      key: "cards-grid",
-                      className:
-                        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-                    },
-                    [
-                      // Focus Mode Card
-                      React.createElement(
-                        "div",
-                        {
-                          key: "focus-card",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 cursor-pointer border-l-4 border-blue-500",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "focus-header",
-                              className: "flex items-center mb-4",
-                            },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "focus-icon",
-                                  className:
-                                    "w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4",
-                                },
-                                React.createElement(
-                                  "span",
-                                  { className: "text-2xl" },
-                                  "🎯"
-                                )
-                              ),
-                              React.createElement(
-                                "div",
-                                { key: "focus-text" },
-                                [
-                                  React.createElement(
-                                    "h3",
-                                    {
-                                      key: "focus-title",
-                                      className:
-                                        "text-lg font-semibold text-gray-900",
-                                    },
-                                    "Focus Mode"
-                                  ),
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      key: "focus-subtitle",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Deep work sessions"
-                                  ),
-                                ]
-                              ),
-                            ]
-                          ),
-                          React.createElement(
-                            "p",
-                            {
-                              key: "focus-description",
-                              className: "text-gray-600 mb-4",
-                            },
-                            "Set timers, track progress, and complete tasks while earning energy points."
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "focus-tags",
-                              className: "flex flex-wrap gap-2",
-                            },
-                            [
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag1",
-                                  className:
-                                    "px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full",
-                                },
-                                "Pomodoro Timer"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag2",
-                                  className:
-                                    "px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full",
-                                },
-                                "Task Management"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag3",
-                                  className:
-                                    "px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full",
-                                },
-                                "Progress Tracking"
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
+                {
+                    id: 'tasks-mode',
+                    title: 'My Tasks 📝',
+                    subtitle: 'Smart Task Management',
+                    description: 'Organize your tasks with priorities, status tracking, and smart scheduling.',
+                    icon: '📝',
+                    color: 'green',
+                    illustration: '✅',
+                    features: ['Priority Levels', 'Status Tracking', 'Daily Planning', 'Progress Monitoring']
+                },
+                {
+                    id: 'focus-mode',
+                    title: 'Focus Mode 🎯',
+                    subtitle: 'Deep Work with Pomodoro',
+                    description: 'Lock into deep work sessions using the Pomodoro technique with distraction blocking.',
+                    icon: '🎯',
+                    color: 'blue',
+                    illustration: '⏰',
+                    features: ['Pomodoro Timer', 'Distraction Blocking', 'Deep Work', 'Session Tracking']
+                },
+                {
+                    id: 'music-relax',
+                    title: 'Music & Relax 🎵',
+                    subtitle: 'Ambient Soundscapes',
+                    description: 'Enhance your focus and relaxation with curated audio experiences.',
+                    icon: '🎵',
+                    color: 'purple',
+                    illustration: '🎧',
+                    features: ['Focus Music', 'Nature Sounds', 'Ambient Tracks', 'Audio Controls']
+                },
+                {
+                    id: 'break-time',
+                    title: 'Break Time ☕',
+                    subtitle: 'Smart Break Management',
+                    description: 'Take structured breaks with customizable timers and activity suggestions.',
+                    icon: '☕',
+                    color: 'yellow',
+                    illustration: '🕐',
+                    features: ['Custom Timers', 'Break Suggestions', 'Activity Tracking', 'Recovery Monitoring']
+                },
+                {
+                    id: 'rewards',
+                    title: 'Rewards & Progress 🏆',
+                    subtitle: 'Stay Motivated',
+                    description: 'Earn coins, build streaks, and unlock achievements as you build better habits.',
+                    icon: '🏆',
+                    color: 'green',
+                    illustration: '⭐',
+                    features: ['Achievement Badges', 'Daily Streaks', 'Coins & XP', 'Progress History']
+                }
+            ];
 
-                      // Defocus Mode Card
-                      React.createElement(
-                        "div",
-                        {
-                          key: "defocus-card",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 cursor-pointer border-l-4 border-orange-500",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "defocus-header",
-                              className: "flex items-center mb-4",
-                            },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "defocus-icon",
-                                  className:
-                                    "w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4",
-                                },
-                                React.createElement(
-                                  "span",
-                                  { className: "text-2xl" },
-                                  "🌿"
-                                )
-                              ),
-                              React.createElement(
-                                "div",
-                                { key: "defocus-text" },
-                                [
-                                  React.createElement(
-                                    "h3",
-                                    {
-                                      key: "defocus-title",
-                                      className:
-                                        "text-lg font-semibold text-gray-900",
-                                    },
-                                    "Defocus Mode"
-                                  ),
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      key: "defocus-subtitle",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Mindful breaks"
-                                  ),
-                                ]
-                              ),
-                            ]
-                          ),
-                          React.createElement(
-                            "p",
-                            {
-                              key: "defocus-description",
-                              className: "text-gray-600 mb-4",
-                            },
-                            "Take purposeful breaks with guided activities and relaxation techniques."
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "defocus-tags",
-                              className: "flex flex-wrap gap-2",
-                            },
-                            [
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag1",
-                                  className:
-                                    "px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full",
-                                },
-                                "Mini Games"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag2",
-                                  className:
-                                    "px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full",
-                                },
-                                "Breathing"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag3",
-                                  className:
-                                    "px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full",
-                                },
-                                "Journaling"
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
+            const nextStep = () => {
+                if (currentStep < steps.length - 1) {
+                    setCurrentStep(currentStep + 1);
+                } else {
+                    handleComplete();
+                }
+            };
 
-                      // Mode Switching Card
-                      React.createElement(
-                        "div",
-                        {
-                          key: "switching-card",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 cursor-pointer border-l-4 border-purple-500",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "switching-header",
-                              className: "flex items-center mb-4",
-                            },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "switching-icon",
-                                  className:
-                                    "w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4",
-                                },
-                                React.createElement(
-                                  "span",
-                                  { className: "text-2xl" },
-                                  "🔄"
-                                )
-                              ),
-                              React.createElement(
-                                "div",
-                                { key: "switching-text" },
-                                [
-                                  React.createElement(
-                                    "h3",
-                                    {
-                                      key: "switching-title",
-                                      className:
-                                        "text-lg font-semibold text-gray-900",
-                                    },
-                                    "Smart Switching"
-                                  ),
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      key: "switching-subtitle",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Seamless transitions"
-                                  ),
-                                ]
-                              ),
-                            ]
-                          ),
-                          React.createElement(
-                            "p",
-                            {
-                              key: "switching-description",
-                              className: "text-gray-600 mb-4",
-                            },
-                            "Easily switch between Focus and Defocus modes with our intuitive toggle system."
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "switching-tags",
-                              className: "flex flex-wrap gap-2",
-                            },
-                            [
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag1",
-                                  className:
-                                    "px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full",
-                                },
-                                "One-Click Toggle"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag2",
-                                  className:
-                                    "px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full",
-                                },
-                                "Smart Suggestions"
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
+            const prevStep = () => {
+                if (currentStep > 0) {
+                    setCurrentStep(currentStep - 1);
+                }
+            };
 
-                      // Rewards Card
-                      React.createElement(
-                        "div",
-                        {
-                          key: "rewards-card",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 cursor-pointer border-l-4 border-green-500",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "rewards-header",
-                              className: "flex items-center mb-4",
-                            },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "rewards-icon",
-                                  className:
-                                    "w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4",
-                                },
-                                React.createElement(
-                                  "span",
-                                  { className: "text-2xl" },
-                                  "🏆"
-                                )
-                              ),
-                              React.createElement(
-                                "div",
-                                { key: "rewards-text" },
-                                [
-                                  React.createElement(
-                                    "h3",
-                                    {
-                                      key: "rewards-title",
-                                      className:
-                                        "text-lg font-semibold text-gray-900",
-                                    },
-                                    "Rewards & Motivation"
-                                  ),
-                                  React.createElement(
-                                    "p",
-                                    {
-                                      key: "rewards-subtitle",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Stay motivated"
-                                  ),
-                                ]
-                              ),
-                            ]
-                          ),
-                          React.createElement(
-                            "p",
-                            {
-                              key: "rewards-description",
-                              className: "text-gray-600 mb-4",
-                            },
-                            "Earn badges, track streaks, and unlock achievements as you build better habits."
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "rewards-tags",
-                              className: "flex flex-wrap gap-2",
-                            },
-                            [
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag1",
-                                  className:
-                                    "px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full",
-                                },
-                                "Achievement Badges"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag2",
-                                  className:
-                                    "px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full",
-                                },
-                                "Daily Streaks"
-                              ),
-                              React.createElement(
-                                "span",
-                                {
-                                  key: "tag3",
-                                  className:
-                                    "px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full",
-                                },
-                                "Energy Points"
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
+            const handleComplete = () => {
+                setIsVisible(false);
+                setTimeout(() => {
+                    onComplete();
+                }, 300);
+            };
 
-                      // Quick Actions
-                      React.createElement(
-                        "div",
-                        {
-                          key: "quick-actions",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 border-l-4 border-indigo-500",
-                        },
-                        [
-                          React.createElement(
-                            "h3",
-                            {
-                              key: "actions-title",
-                              className:
-                                "text-lg font-semibold text-gray-900 mb-4",
-                            },
-                            "Quick Actions"
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "actions-buttons",
-                              className: "space-y-3",
-                            },
-                            [
-                              React.createElement(
-                                "button",
-                                {
-                                  key: "focus-btn",
-                                  className:
-                                    "w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    { key: "icon", className: "mr-2" },
-                                    "🎯"
-                                  ),
-                                  "Start Focus Session",
-                                ]
-                              ),
-                              React.createElement(
-                                "button",
-                                {
-                                  key: "defocus-btn",
-                                  className:
-                                    "w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    { key: "icon", className: "mr-2" },
-                                    "🌿"
-                                  ),
-                                  "Take Defocus Break",
-                                ]
-                              ),
-                              React.createElement(
-                                "button",
-                                {
-                                  key: "tasks-btn",
-                                  className:
-                                    "w-full bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    { key: "icon", className: "mr-2" },
-                                    "📝"
-                                  ),
-                                  "Manage Tasks",
-                                ]
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
+            const handleSkip = () => {
+                setIsVisible(false);
+                setTimeout(() => {
+                    onSkip();
+                }, 300);
+            };
 
-                      // Stats Preview
-                      React.createElement(
-                        "div",
-                        {
-                          key: "stats-preview",
-                          className:
-                            "bg-white rounded-xl shadow-lg p-6 border-l-4 border-teal-500",
-                        },
-                        [
-                          React.createElement(
-                            "h3",
-                            {
-                              key: "stats-title",
-                              className:
-                                "text-lg font-semibold text-gray-900 mb-4",
-                            },
-                            "Today's Progress"
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "stats-content",
-                              className: "space-y-4",
-                            },
-                            [
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "stat1",
-                                  className:
-                                    "flex justify-between items-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "label1",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Focus Sessions"
-                                  ),
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "value1",
-                                      className:
-                                        "text-sm font-semibold text-blue-600",
-                                    },
-                                    "0"
-                                  ),
-                                ]
-                              ),
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "stat2",
-                                  className:
-                                    "flex justify-between items-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "label2",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Energy Points"
-                                  ),
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "value2",
-                                      className:
-                                        "text-sm font-semibold text-green-600",
-                                    },
-                                    "0"
-                                  ),
-                                ]
-                              ),
-                              React.createElement(
-                                "div",
-                                {
-                                  key: "stat3",
-                                  className:
-                                    "flex justify-between items-center",
-                                },
-                                [
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "label3",
-                                      className: "text-sm text-gray-600",
-                                    },
-                                    "Current Streak"
-                                  ),
-                                  React.createElement(
-                                    "span",
-                                    {
-                                      key: "value3",
-                                      className:
-                                        "text-sm font-semibold text-orange-600",
-                                    },
-                                    "0 days"
-                                  ),
-                                ]
-                              ),
-                            ]
-                          ),
-                        ]
-                      ),
-                    ]
-                  ),
+            const currentStepData = steps[currentStep];
+            const isLastStep = currentStep === steps.length - 1;
+            const isFirstStep = currentStep === 0;
 
-                  // Welcome Message
-                  hasCompletedOnboarding &&
-                    React.createElement(
-                      "div",
-                      {
-                        key: "welcome-message",
-                        className:
-                          "mt-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white",
-                      },
-                      React.createElement(
-                        "div",
-                        {
-                          className: "flex items-center",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "welcome-icon",
-                              className:
-                                "w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-4",
-                            },
-                            React.createElement(
-                              "span",
-                              { className: "text-2xl" },
-                              "🎉"
-                            )
-                          ),
-                          React.createElement("div", { key: "welcome-text" }, [
-                            React.createElement(
-                              "h3",
-                              {
-                                key: "welcome-title",
-                                className: "text-xl font-semibold",
-                              },
-                              "Welcome to Defocus2Focus!"
-                            ),
-                            React.createElement(
-                              "p",
-                              {
-                                key: "welcome-description",
-                                className: "text-blue-100",
-                              },
-                              "You're all set to start your productivity journey. Ready to transform procrastination into play?"
-                            ),
-                          ]),
-                        ]
-                      )
-                    ),
-                ]
-              ),
-            ]
-          );
+            if (!isVisible) return null;
 
-        return React.createElement("div", null, [
-          showOnboarding &&
-            React.createElement(OnboardingTutorial, {
-              key: "onboarding",
-              onComplete: handleOnboardingComplete,
-              onSkip: handleOnboardingSkip,
-            }),
-          hasCompletedOnboarding && renderDashboard(),
-        ]);
-      };
+            return (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all duration-300 ease-in-out">
+                        {/* Header */}
+                        <div className="relative bg-gray-50 px-4 py-3">
+                            <div className={`h-2 bg-gradient-to-r ${
+                                currentStepData.color === 'blue' ? 'from-blue-400 to-blue-600' :
+                                currentStepData.color === 'orange' ? 'from-orange-400 to-orange-600' :
+                                currentStepData.color === 'green' ? 'from-green-400 to-green-600' :
+                                currentStepData.color === 'purple' ? 'from-purple-400 to-purple-600' :
+                                'from-yellow-400 to-yellow-600'
+                            }`} style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}></div>
+                            
+                            {/* Skip Button */}
+                            <button
+                                onClick={handleSkip}
+                                className="absolute top-2 right-4 px-3 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 transition-all duration-200 text-sm font-medium rounded-lg border border-gray-300 bg-white shadow-sm"
+                            >
+                                Skip
+                            </button>
+                        </div>
 
-      // Render the app
-      ReactDOM.render(
-        React.createElement(WebApp),
-        document.getElementById("root")
-      );
+                        {/* Content */}
+                        <div className="p-8 text-center">
+                            {/* Illustration */}
+                            <div className="mb-6">
+                                <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl mb-4 ${
+                                    currentStepData.color === 'blue' ? 'bg-blue-100' :
+                                    currentStepData.color === 'orange' ? 'bg-orange-100' :
+                                    currentStepData.color === 'green' ? 'bg-green-100' :
+                                    currentStepData.color === 'purple' ? 'bg-purple-100' :
+                                    'bg-yellow-100'
+                                }`}>
+                                    <span className="text-4xl">{currentStepData.illustration}</span>
+                                </div>
+                                <div className="text-6xl mb-2">{currentStepData.icon}</div>
+                            </div>
+
+                            {/* Title */}
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                {currentStepData.title}
+                            </h2>
+                            
+                            {/* Subtitle */}
+                            <h3 className={`text-lg font-semibold mb-4 ${
+                                currentStepData.color === 'blue' ? 'text-blue-600' :
+                                currentStepData.color === 'orange' ? 'text-orange-600' :
+                                currentStepData.color === 'green' ? 'text-green-600' :
+                                currentStepData.color === 'purple' ? 'text-purple-600' :
+                                'text-yellow-600'
+                            }`}>
+                                {currentStepData.subtitle}
+                            </h3>
+
+                            {/* Description */}
+                            <p className="text-gray-600 mb-6 leading-relaxed">
+                                {currentStepData.description}
+                            </p>
+
+                            {/* Features List */}
+                            {currentStepData.features && (
+                                <div className="mb-6">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {currentStepData.features.map((feature, index) => (
+                                            <div key={index} className="flex items-center justify-center p-2 bg-gray-50 rounded-lg">
+                                                <span className="text-sm text-gray-700 font-medium">{feature}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Progress Dots */}
+                            <div className="flex justify-center space-x-2 mb-6">
+                                {steps.map((_, index) => (
+                                    <div
+                                        key={index}
+                                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                            index === currentStep
+                                                ? currentStepData.color === 'blue' ? 'bg-blue-500' :
+                                                  currentStepData.color === 'orange' ? 'bg-orange-500' :
+                                                  currentStepData.color === 'green' ? 'bg-green-500' :
+                                                  currentStepData.color === 'purple' ? 'bg-purple-500' :
+                                                  'bg-yellow-500'
+                                                : 'bg-gray-300'
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-8 pb-8">
+                            <div className="flex justify-between items-center">
+                                {/* Back Button */}
+                                <button
+                                    onClick={prevStep}
+                                    disabled={isFirstStep}
+                                    className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                                        isFirstStep
+                                            ? 'text-gray-300 cursor-not-allowed'
+                                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    Back
+                                </button>
+
+                                {/* Skip Button (Center) */}
+                                <button
+                                    onClick={handleSkip}
+                                    className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium"
+                                >
+                                    Skip Tutorial
+                                </button>
+
+                                {/* Next/Complete Button */}
+                                <button
+                                    onClick={nextStep}
+                                    className={`px-8 py-3 rounded-xl font-medium text-white transition-all duration-200 transform hover:scale-105 ${
+                                        currentStepData.color === 'blue' ? 'bg-blue-500 hover:bg-blue-600' :
+                                        currentStepData.color === 'orange' ? 'bg-orange-500 hover:bg-orange-600' :
+                                        currentStepData.color === 'green' ? 'bg-green-500 hover:bg-green-600' :
+                                        currentStepData.color === 'purple' ? 'bg-purple-500 hover:bg-purple-600' :
+                                        'bg-yellow-500 hover:bg-yellow-600'
+                                    }`}
+                                >
+                                    {isLastStep ? 'Start My Journey' : 'Next'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Task Management Component
+        const TaskManager = ({ tasks, setTasks, isLocked }) => {
+            const [newTask, setNewTask] = useState('');
+            const [priority, setPriority] = useState('medium');
+            const [filter, setFilter] = useState('all');
+
+            const addTask = () => {
+                if (newTask.trim() && !isLocked) {
+                    const task = {
+                        id: Date.now(),
+                        text: newTask,
+                        priority,
+                        status: 'pending',
+                        createdAt: new Date().toISOString(),
+                        completedAt: null
+                    };
+                    setTasks([...tasks, task]);
+                    setNewTask('');
+                }
+            };
+
+            const updateTaskStatus = (id, status) => {
+                if (!isLocked) {
+                    setTasks(tasks.map(task => 
+                        task.id === id 
+                            ? { ...task, status, completedAt: status === 'completed' ? new Date().toISOString() : null }
+                            : task
+                    ));
+                }
+            };
+
+            const moveToNextDay = (id) => {
+                if (!isLocked) {
+                    setTasks(tasks.map(task => 
+                        task.id === id 
+                            ? { ...task, status: 'pending', movedToNextDay: true }
+                            : task
+                    ));
+                }
+            };
+
+            const deleteTask = (id) => {
+                if (!isLocked) {
+                    setTasks(tasks.filter(task => task.id !== id));
+                }
+            };
+
+            const filteredTasks = tasks.filter(task => {
+                if (filter === 'all') return true;
+                return task.status === filter;
+            });
+
+            const getPriorityColor = (priority) => {
+                switch (priority) {
+                    case 'high': return 'bg-red-100 text-red-800 border-red-200';
+                    case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                    case 'low': return 'bg-green-100 text-green-800 border-green-200';
+                    default: return 'bg-gray-100 text-gray-800 border-gray-200';
+                }
+            };
+
+            const getStatusColor = (status) => {
+                switch (status) {
+                    case 'completed': return 'bg-green-100 text-green-800';
+                    case 'in-progress': return 'bg-blue-100 text-blue-800';
+                    case 'pending': return 'bg-gray-100 text-gray-800';
+                    default: return 'bg-gray-100 text-gray-800';
+                }
+            };
+
+            return (
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold text-gray-900">📝 My Tasks</h3>
+                        {isLocked && (
+                            <span className="text-sm text-red-600 bg-red-100 px-3 py-1 rounded-full">
+                                🔒 Locked during Focus
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Add Task Form */}
+                    {!isLocked && (
+                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div className="flex gap-3 mb-3">
+                                <input
+                                    type="text"
+                                    value={newTask}
+                                    onChange={(e) => setNewTask(e.target.value)}
+                                    placeholder="Add a new task..."
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onKeyPress={(e) => e.key === 'Enter' && addTask()}
+                                />
+                                <select
+                                    value={priority}
+                                    onChange={(e) => setPriority(e.target.value)}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                                <button
+                                    onClick={addTask}
+                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Filter Tabs */}
+                    <div className="flex gap-2 mb-4">
+                        {['all', 'pending', 'in-progress', 'completed'].map((filterType) => (
+                            <button
+                                key={filterType}
+                                onClick={() => setFilter(filterType)}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                    filter === filterType
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                {filterType.charAt(0).toUpperCase() + filterType.slice(1).replace('-', ' ')}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Tasks List */}
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {filteredTasks.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                                <div className="text-4xl mb-2">📝</div>
+                                <p>No tasks found</p>
+                            </div>
+                        ) : (
+                            filteredTasks.map((task) => (
+                                <div key={task.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                    <input
+                                        type="checkbox"
+                                        checked={task.status === 'completed'}
+                                        onChange={(e) => updateTaskStatus(task.id, e.target.checked ? 'completed' : 'pending')}
+                                        disabled={isLocked}
+                                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                                    />
+                                    <div className="flex-1">
+                                        <p className={`font-medium ${task.status === 'completed' ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                                            {task.text}
+                                        </p>
+                                        <div className="flex gap-2 mt-1">
+                                            <span className={`px-2 py-1 text-xs rounded-full border ${getPriorityColor(task.priority)}`}>
+                                                {task.priority}
+                                            </span>
+                                            <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(task.status)}`}>
+                                                {task.status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {!isLocked && (
+                                        <div className="flex gap-2">
+                                            {task.status === 'pending' && (
+                                                <button
+                                                    onClick={() => updateTaskStatus(task.id, 'in-progress')}
+                                                    className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                                                >
+                                                    Start
+                                                </button>
+                                            )}
+                                            {task.status === 'in-progress' && (
+                                                <button
+                                                    onClick={() => updateTaskStatus(task.id, 'completed')}
+                                                    className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                                                >
+                                                    Complete
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => moveToNextDay(task.id)}
+                                                className="px-3 py-1 text-xs bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                                            >
+                                                Next Day
+                                            </button>
+                                            <button
+                                                onClick={() => deleteTask(task.id)}
+                                                className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Pomodoro Timer Component
+        const PomodoroTimer = ({ onStart, onStop, isActive, timeLeft, sessionType }) => {
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            const getProgress = () => {
+                const total = sessionType === 'focus' ? 25 * 60 : 5 * 60;
+                return ((total - timeLeft) / total) * 100;
+            };
+
+            return (
+                <div className="bg-white rounded-xl shadow-lg p-6 text-center">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">
+                        {sessionType === 'focus' ? '🎯 Focus Session' : '☕ Break Time'}
+                    </h3>
+                    
+                    <div className="relative w-48 h-48 mx-auto mb-6">
+                        <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 100 100">
+                            <circle
+                                cx="50"
+                                cy="50"
+                                r="45"
+                                stroke="#e5e7eb"
+                                strokeWidth="8"
+                                fill="none"
+                            />
+                            <circle
+                                cx="50"
+                                cy="50"
+                                r="45"
+                                stroke={sessionType === 'focus' ? '#3b82f6' : '#10b981'}
+                                strokeWidth="8"
+                                fill="none"
+                                strokeDasharray={`${2 * Math.PI * 45}`}
+                                strokeDashoffset={`${2 * Math.PI * 45 * (1 - getProgress() / 100)}`}
+                                className="transition-all duration-1000 ease-out"
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center">
+                                <div className="text-4xl font-bold text-gray-900">
+                                    {formatTime(timeLeft)}
+                                </div>
+                                <div className="text-sm text-gray-600 mt-1">
+                                    {sessionType === 'focus' ? 'Focus Time' : 'Break Time'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 justify-center">
+                        {!isActive ? (
+                            <button
+                                onClick={onStart}
+                                className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                            >
+                                Start {sessionType === 'focus' ? 'Focus' : 'Break'}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={onStop}
+                                className="px-8 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                            >
+                                Stop
+                            </button>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Audio Player Component
+        const AudioPlayer = ({ audioFiles, currentTrack, setCurrentTrack, isPlaying, setIsPlaying }) => {
+            const audioRef = useRef(null);
+
+            useEffect(() => {
+                if (audioRef.current) {
+                    if (isPlaying) {
+                        audioRef.current.play();
+                    } else {
+                        audioRef.current.pause();
+                    }
+                }
+            }, [isPlaying, currentTrack]);
+
+            const playPause = () => {
+                setIsPlaying(!isPlaying);
+            };
+
+            const nextTrack = () => {
+                const currentIndex = audioFiles.findIndex(file => file.name === currentTrack);
+                const nextIndex = (currentIndex + 1) % audioFiles.length;
+                setCurrentTrack(audioFiles[nextIndex].name);
+            };
+
+            const prevTrack = () => {
+                const currentIndex = audioFiles.findIndex(file => file.name === currentTrack);
+                const prevIndex = currentIndex === 0 ? audioFiles.length - 1 : currentIndex - 1;
+                setCurrentTrack(audioFiles[prevIndex].name);
+            };
+
+            const currentFile = audioFiles.find(file => file.name === currentTrack);
+
+            return (
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">🎵 Music & Relax</h3>
+                    
+                    <div className="text-center mb-6">
+                        <div className="text-4xl mb-2">🎧</div>
+                        <h4 className="text-lg font-semibold text-gray-900">{currentFile?.name || 'No track selected'}</h4>
+                        <p className="text-sm text-gray-600">{currentFile?.category || ''}</p>
+                    </div>
+
+                    <div className="flex justify-center gap-4 mb-6">
+                        <button
+                            onClick={prevTrack}
+                            className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                        >
+                            ⏮️
+                        </button>
+                        <button
+                            onClick={playPause}
+                            className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
+                        >
+                            {isPlaying ? '⏸️' : '▶️'}
+                        </button>
+                        <button
+                            onClick={nextTrack}
+                            className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                        >
+                            ⏭️
+                        </button>
+                    </div>
+
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {audioFiles.map((file, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentTrack(file.name)}
+                                className={`w-full text-left p-3 rounded-lg transition-colors ${
+                                    currentTrack === file.name
+                                        ? 'bg-blue-100 text-blue-900'
+                                        : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                                }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="text-lg">{file.icon}</span>
+                                    <div>
+                                        <div className="font-medium">{file.name}</div>
+                                        <div className="text-sm opacity-75">{file.category}</div>
+                                    </div>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+
+                    {currentFile && (
+                        <audio
+                            ref={audioRef}
+                            src={currentFile.url}
+                            onEnded={nextTrack}
+                            preload="metadata"
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        // Main Dashboard Component
+        const Dashboard = ({ user, onLogout }) => {
+            const [activeSection, setActiveSection] = useState('defocus');
+            const [tasks, setTasks] = useState([]);
+            const [isFocusMode, setIsFocusMode] = useState(false);
+            const [isBreakMode, setIsBreakMode] = useState(false);
+            const [focusTimeLeft, setFocusTimeLeft] = useState(25 * 60);
+            const [breakTimeLeft, setBreakTimeLeft] = useState(5 * 60);
+            const [isFocusActive, setIsFocusActive] = useState(false);
+            const [isBreakActive, setIsBreakActive] = useState(false);
+            const [currentTrack, setCurrentTrack] = useState('Lofi Hip Hop');
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [coins, setCoins] = useState(150);
+            const [streak, setStreak] = useState(7);
+            const [xp, setXp] = useState(1250);
+
+            const audioFiles = [
+                { name: 'Lofi Hip Hop', category: 'Focus', icon: '🎵', url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' },
+                { name: 'Classical', category: 'Focus', icon: '🎼', url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' },
+                { name: 'White Noise', category: 'Focus', icon: '🌊', url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' },
+                { name: 'Rain', category: 'Nature', icon: '🌧️', url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' },
+                { name: 'Ocean', category: 'Nature', icon: '🌊', url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' },
+                { name: 'Forest', category: 'Nature', icon: '🌲', url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' },
+                { name: 'Cafe', category: 'Ambient', icon: '☕', url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' },
+                { name: 'Fireplace', category: 'Ambient', icon: '🔥', url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' }
+            ];
+
+            // Timer effects
+            useEffect(() => {
+                let interval;
+                if (isFocusActive && focusTimeLeft > 0) {
+                    interval = setInterval(() => {
+                        setFocusTimeLeft(time => {
+                            if (time <= 1) {
+                                setIsFocusActive(false);
+                                setIsFocusMode(false);
+                                setIsBreakMode(true);
+                                setBreakTimeLeft(5 * 60);
+                                setCoins(prev => prev + 25);
+                                setXp(prev => prev + 50);
+                                return 25 * 60;
+                            }
+                            return time - 1;
+                        });
+                    }, 1000);
+                }
+                return () => clearInterval(interval);
+            }, [isFocusActive, focusTimeLeft]);
+
+            useEffect(() => {
+                let interval;
+                if (isBreakActive && breakTimeLeft > 0) {
+                    interval = setInterval(() => {
+                        setBreakTimeLeft(time => {
+                            if (time <= 1) {
+                                setIsBreakActive(false);
+                                setIsBreakMode(false);
+                                setCoins(prev => prev + 10);
+                                return 5 * 60;
+                            }
+                            return time - 1;
+                        });
+                    }, 1000);
+                }
+                return () => clearInterval(interval);
+            }, [isBreakActive, breakTimeLeft]);
+
+            const startFocus = () => {
+                setIsFocusMode(true);
+                setIsFocusActive(true);
+                setActiveSection('focus');
+            };
+
+            const stopFocus = () => {
+                setIsFocusActive(false);
+                setIsFocusMode(false);
+            };
+
+            const startBreak = () => {
+                setIsBreakMode(true);
+                setIsBreakActive(true);
+                setActiveSection('break');
+            };
+
+            const stopBreak = () => {
+                setIsBreakActive(false);
+                setIsBreakMode(false);
+            };
+
+            const isLocked = isFocusMode || isBreakMode;
+
+            const sections = [
+                { id: 'defocus', name: 'Defocus', icon: '🌿', color: 'orange' },
+                { id: 'tasks', name: 'My Tasks', icon: '📝', color: 'green' },
+                { id: 'focus', name: 'Focus', icon: '🎯', color: 'blue' },
+                { id: 'music', name: 'Music & Relax', icon: '🎵', color: 'purple' },
+                { id: 'break', name: 'Break Time', icon: '☕', color: 'yellow' },
+                { id: 'rewards', name: 'Rewards', icon: '🏆', color: 'green' }
+            ];
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    {/* Header */}
+                    <header className="bg-white shadow-sm border-b border-gray-200">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between items-center py-4">
+                                <div className="flex items-center">
+                                    <h1 className="text-2xl font-bold text-gray-900">🎯 Defocus2Focus</h1>
+                                    <span className="ml-3 text-sm text-gray-500">Welcome back, {user.name}!</span>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-4 text-sm">
+                                        <div className="flex items-center gap-1">
+                                            <span>🪙</span>
+                                            <span className="font-semibold">{coins}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <span>🔥</span>
+                                            <span className="font-semibold">{streak} days</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <span>⭐</span>
+                                            <span className="font-semibold">{xp} XP</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={onLogout}
+                                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Navigation */}
+                    <nav className="bg-white border-b border-gray-200">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex space-x-8">
+                                {sections.map((section) => (
+                                    <button
+                                        key={section.id}
+                                        onClick={() => setActiveSection(section.id)}
+                                        disabled={isLocked && section.id !== 'focus' && section.id !== 'break'}
+                                        className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                            activeSection === section.id
+                                                ? `border-${section.color}-500 text-${section.color}-600`
+                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        } ${isLocked && section.id !== 'focus' && section.id !== 'break' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        <span className="mr-2">{section.icon}</span>
+                                        {section.name}
+                                        {isLocked && section.id !== 'focus' && section.id !== 'break' && (
+                                            <span className="ml-1">🔒</span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </nav>
+
+                    {/* Main Content */}
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        {activeSection === 'defocus' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="bg-white rounded-xl shadow-lg p-6">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-4">📝 Journaling</h3>
+                                    <textarea
+                                        className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                        placeholder="Write your thoughts, reflections, or ideas here..."
+                                    />
+                                    <button className="mt-3 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                                        Save Entry
+                                    </button>
+                                </div>
+                                <div className="bg-white rounded-xl shadow-lg p-6">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-4">✏️ Scribble</h3>
+                                    <div className="h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                                        <p className="text-gray-500">Scribble area - Coming soon!</p>
+                                    </div>
+                                </div>
+                                <div className="bg-white rounded-xl shadow-lg p-6 lg:col-span-2">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-4">🎮 Mini Games</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <button className="p-4 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors">
+                                            <div className="text-2xl mb-2">🧩</div>
+                                            <div className="font-medium">Puzzle</div>
+                                        </button>
+                                        <button className="p-4 bg-green-100 hover:bg-green-200 rounded-lg transition-colors">
+                                            <div className="text-2xl mb-2">🎯</div>
+                                            <div className="font-medium">Memory</div>
+                                        </button>
+                                        <button className="p-4 bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors">
+                                            <div className="text-2xl mb-2">🎲</div>
+                                            <div className="font-medium">Quick Game</div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeSection === 'tasks' && (
+                            <TaskManager tasks={tasks} setTasks={setTasks} isLocked={isLocked} />
+                        )}
+
+                        {activeSection === 'focus' && (
+                            <div className="max-w-md mx-auto">
+                                <PomodoroTimer
+                                    onStart={startFocus}
+                                    onStop={stopFocus}
+                                    isActive={isFocusActive}
+                                    timeLeft={focusTimeLeft}
+                                    sessionType="focus"
+                                />
+                            </div>
+                        )}
+
+                        {activeSection === 'music' && (
+                            <div className="max-w-2xl mx-auto">
+                                <AudioPlayer
+                                    audioFiles={audioFiles}
+                                    currentTrack={currentTrack}
+                                    setCurrentTrack={setCurrentTrack}
+                                    isPlaying={isPlaying}
+                                    setIsPlaying={setIsPlaying}
+                                />
+                            </div>
+                        )}
+
+                        {activeSection === 'break' && (
+                            <div className="max-w-md mx-auto">
+                                <PomodoroTimer
+                                    onStart={startBreak}
+                                    onStop={stopBreak}
+                                    isActive={isBreakActive}
+                                    timeLeft={breakTimeLeft}
+                                    sessionType="break"
+                                />
+                                <div className="mt-6 bg-white rounded-xl shadow-lg p-6">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4">Break Suggestions</h3>
+                                    <div className="space-y-3">
+                                        <div className="p-3 bg-blue-50 rounded-lg">
+                                            <div className="font-medium">🧘 Deep Breathing</div>
+                                            <div className="text-sm text-gray-600">Take 5 deep breaths to reset</div>
+                                        </div>
+                                        <div className="p-3 bg-green-50 rounded-lg">
+                                            <div className="font-medium">🚶 Quick Walk</div>
+                                            <div className="text-sm text-gray-600">Stretch your legs for 2 minutes</div>
+                                        </div>
+                                        <div className="p-3 bg-yellow-50 rounded-lg">
+                                            <div className="font-medium">💧 Hydrate</div>
+                                            <div className="text-sm text-gray-600">Drink some water to stay refreshed</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeSection === 'rewards' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="bg-white rounded-xl shadow-lg p-6">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-4">🏆 Achievements</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
+                                            <span className="text-2xl">🥇</span>
+                                            <div>
+                                                <div className="font-medium">Focus Master</div>
+                                                <div className="text-sm text-gray-600">Complete 10 focus sessions</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                                            <span className="text-2xl">🔥</span>
+                                            <div>
+                                                <div className="font-medium">Streak Keeper</div>
+                                                <div className="text-sm text-gray-600">7 day streak</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white rounded-xl shadow-lg p-6">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-4">📊 Progress</h3>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span>Focus Sessions</span>
+                                                <span>15/20</span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-blue-600 h-2 rounded-full" style={{width: '75%'}}></div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span>Tasks Completed</span>
+                                                <span>42/50</span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="bg-green-600 h-2 rounded-full" style={{width: '84%'}}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white rounded-xl shadow-lg p-6">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-4">📈 History</h3>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span>Today</span>
+                                            <span>3 sessions</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>This Week</span>
+                                            <span>18 sessions</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>This Month</span>
+                                            <span>67 sessions</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Total XP</span>
+                                            <span>{xp}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [currentScreen, setCurrentScreen] = useState('welcome');
+            const [user, setUser] = useState({ name: 'Paridhi', level: 12 });
+            const [showOnboarding, setShowOnboarding] = useState(false);
+
+            useEffect(() => {
+                const completed = localStorage.getItem('defocus2focus_onboarding_completed');
+                if (!completed) {
+                    setShowOnboarding(true);
+                }
+            }, []);
+
+            const handleStart = () => {
+                setCurrentScreen('onboarding');
+                setShowOnboarding(true);
+            };
+
+            const handleOnboardingComplete = () => {
+                localStorage.setItem('defocus2focus_onboarding_completed', 'true');
+                setShowOnboarding(false);
+                setCurrentScreen('dashboard');
+            };
+
+            const handleOnboardingSkip = () => {
+                localStorage.setItem('defocus2focus_onboarding_completed', 'true');
+                setShowOnboarding(false);
+                setCurrentScreen('dashboard');
+            };
+
+            const handleLogout = () => {
+                setCurrentScreen('welcome');
+            };
+
+            return (
+                <div>
+                    {currentScreen === 'welcome' && <WelcomeScreen onStart={handleStart} />}
+                    {currentScreen === 'onboarding' && showOnboarding && (
+                        <OnboardingCarousel
+                            onComplete={handleOnboardingComplete}
+                            onSkip={handleOnboardingSkip}
+                        />
+                    )}
+                    {currentScreen === 'dashboard' && (
+                        <Dashboard user={user} onLogout={handleLogout} />
+                    )}
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
     </script>
-  </body>
+</body>
 </html>
