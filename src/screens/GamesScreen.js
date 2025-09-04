@@ -3,457 +3,417 @@ import {
   View, 
   Text, 
   TouchableOpacity, 
+  ScrollView,
   Alert,
   Dimensions 
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring,
-  withSequence,
-  withTiming 
-} from 'react-native-reanimated';
 import { useApp } from '../context/AppContext';
 import Card from '../components/Card';
 import ActionButton from '../components/ActionButton';
 
 const { width } = Dimensions.get('window');
-const cardSize = (width - 60) / 4; // 4 cards per row with padding
 
 // Memory Match Game
-const MemoryMatchGame = ({ onComplete }) => {
+const MemoryMatchGame = ({ onGameComplete }) => {
   const { actions } = useApp();
   const [cards, setCards] = useState([]);
   const [flippedCards, setFlippedCards] = useState([]);
   const [matchedCards, setMatchedCards] = useState([]);
   const [moves, setMoves] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
 
-  const emojis = ['🎯', '🎮', '📝', '🏆', '⚡', '🌟', '🎨', '🎵'];
-
-  useEffect(() => {
-    initializeGame();
-  }, []);
-
-  useEffect(() => {
-    if (gameStarted && timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0) {
-      handleGameOver();
-    }
-  }, [gameStarted, timeLeft]);
+  const symbols = ['🎯', '🎮', '📝', '🏆', '⭐', '💎', '🌟', '🎨'];
 
   const initializeGame = () => {
-    const gameCards = [...emojis, ...emojis]
+    const gameCards = [...symbols, ...symbols]
       .sort(() => Math.random() - 0.5)
-      .map((emoji, index) => ({
+      .map((symbol, index) => ({
         id: index,
-        emoji,
+        symbol,
         isFlipped: false,
         isMatched: false,
       }));
+    
     setCards(gameCards);
     setFlippedCards([]);
     setMatchedCards([]);
     setMoves(0);
-    setTimeLeft(60);
-    setGameStarted(false);
+    setGameStarted(true);
+    setGameCompleted(false);
   };
 
-  const handleCardPress = (card) => {
-    if (flippedCards.length >= 2 || card.isFlipped || card.isMatched) return;
+  const handleCardPress = (cardId) => {
+    if (flippedCards.length >= 2 || matchedCards.includes(cardId)) return;
 
-    const newFlippedCards = [...flippedCards, card];
+    const newFlippedCards = [...flippedCards, cardId];
     setFlippedCards(newFlippedCards);
-
-    const updatedCards = cards.map(c => 
-      c.id === card.id ? { ...c, isFlipped: true } : c
-    );
-    setCards(updatedCards);
 
     if (newFlippedCards.length === 2) {
       setMoves(moves + 1);
-      setTimeout(() => {
-        checkMatch(newFlippedCards);
-      }, 1000);
-    }
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
-
-  const checkMatch = (flipped) => {
-    const [card1, card2] = flipped;
-    
-    if (card1.emoji === card2.emoji) {
-      // Match found
-      setMatchedCards([...matchedCards, card1.id, card2.id]);
-      const updatedCards = cards.map(c => 
-        c.id === card1.id || c.id === card2.id 
-          ? { ...c, isMatched: true, isFlipped: true }
-          : c
+      const [firstCard, secondCard] = newFlippedCards.map(id => 
+        cards.find(card => card.id === id)
       );
-      setCards(updatedCards);
-      
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
-      // Check if game is complete
-      if (matchedCards.length + 2 === cards.length) {
-        handleGameComplete();
+
+      if (firstCard.symbol === secondCard.symbol) {
+        setMatchedCards([...matchedCards, ...newFlippedCards]);
+        setFlippedCards([]);
+        
+        if (matchedCards.length + 2 === cards.length) {
+          setGameCompleted(true);
+          const score = Math.max(0, 1000 - (moves * 10));
+          actions.completeGame('memoryMatch', score);
+          onGameComplete(score);
+        }
+      } else {
+        setTimeout(() => {
+          setFlippedCards([]);
+        }, 1000);
       }
-    } else {
-      // No match
-      const updatedCards = cards.map(c => 
-        c.id === card1.id || c.id === card2.id 
-          ? { ...c, isFlipped: false }
-          : c
-      );
-      setCards(updatedCards);
-      
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
-    
-    setFlippedCards([]);
-  };
-
-  const handleGameComplete = () => {
-    const score = Math.max(0, 1000 - (moves * 10) - ((60 - timeLeft) * 5));
-    actions.completeGame('memoryMatch', score);
-    
-    Alert.alert(
-      '🎉 Game Complete!',
-      `Congratulations! You completed the game in ${moves} moves with ${timeLeft} seconds left.\n\nScore: ${score}`,
-      [{ text: 'Play Again', onPress: initializeGame }]
-    );
-    
-    onComplete(score);
-  };
-
-  const handleGameOver = () => {
-    Alert.alert(
-      '⏰ Time\'s Up!',
-      'Better luck next time!',
-      [{ text: 'Try Again', onPress: initializeGame }]
-    );
-  };
-
-  const startGame = () => {
-    setGameStarted(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
-      <LinearGradient
-        colors={['#10b981', '#059669']}
-        className="px-6 pt-12 pb-8"
-      >
-        <View className="flex-row justify-between items-center mb-6">
-          <Text className="text-white text-2xl font-bold">
-            Memory Match 🧠
-          </Text>
-          <TouchableOpacity onPress={initializeGame}>
-            <Ionicons name="refresh" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-
-        <View className="flex-row justify-between items-center">
-          <View className="items-center">
-            <Text className="text-white font-bold text-xl">{moves}</Text>
-            <Text className="text-green-100 text-sm">Moves</Text>
-          </View>
-          <View className="items-center">
-            <Text className="text-white font-bold text-xl">{timeLeft}</Text>
-            <Text className="text-green-100 text-sm">Seconds</Text>
-          </View>
-          <View className="items-center">
-            <Text className="text-white font-bold text-xl">
-              {matchedCards.length / 2}
-            </Text>
-            <Text className="text-green-100 text-sm">Matches</Text>
-          </View>
-        </View>
-      </LinearGradient>
-
-      <View className="flex-1 px-6 py-6">
-        {!gameStarted ? (
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-6xl mb-6">🧠</Text>
-            <Text className="text-2xl font-bold text-gray-900 dark:text-white mb-4 text-center">
-              Memory Match
-            </Text>
-            <Text className="text-gray-600 dark:text-gray-400 text-center mb-8">
-              Find matching pairs of emojis. Complete the game in as few moves as possible!
-            </Text>
-            <ActionButton
-              title="Start Game"
-              onPress={startGame}
-              gradient
-              gradientColors={['#10b981', '#059669']}
-              size="lg"
-            />
-          </View>
-        ) : (
-          <View className="flex-1">
-            <View className="flex-row flex-wrap justify-between">
-              {cards.map((card) => (
-                <TouchableOpacity
-                  key={card.id}
-                  onPress={() => handleCardPress(card)}
-                  className="mb-3"
-                  style={{ width: cardSize, height: cardSize }}
-                >
-                  <View className={`w-full h-full rounded-xl items-center justify-center ${
-                    card.isFlipped || card.isMatched
-                      ? 'bg-white shadow-lg'
-                      : 'bg-green-500'
-                  }`}>
-                    {(card.isFlipped || card.isMatched) && (
-                      <Text className="text-2xl">{card.emoji}</Text>
-                    )}
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
+    <View className="flex-1">
+      <View className="flex-row justify-between items-center mb-4">
+        <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+          Memory Match
+        </Text>
+        <Text className="text-gray-600 dark:text-gray-400">
+          Moves: {moves}
+        </Text>
       </View>
+
+      {!gameStarted ? (
+        <View className="items-center py-8">
+          <Text className="text-6xl mb-4">🧠</Text>
+          <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            Test Your Memory
+          </Text>
+          <Text className="text-gray-600 dark:text-gray-400 text-center mb-6">
+            Match pairs of symbols to win! Fewer moves = higher score.
+          </Text>
+          <ActionButton
+            title="Start Game"
+            onPress={initializeGame}
+            gradient
+            gradientColors={['#3b82f6', '#1d4ed8']}
+          />
+        </View>
+      ) : gameCompleted ? (
+        <View className="items-center py-8">
+          <Text className="text-6xl mb-4">🎉</Text>
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            Congratulations!
+          </Text>
+          <Text className="text-gray-600 dark:text-gray-400 mb-4">
+            You completed the game in {moves} moves!
+          </Text>
+          <ActionButton
+            title="Play Again"
+            onPress={initializeGame}
+            gradient
+            gradientColors={['#10b981', '#059669']}
+          />
+        </View>
+      ) : (
+        <View className="flex-row flex-wrap justify-between">
+          {cards.map((card) => (
+            <TouchableOpacity
+              key={card.id}
+              onPress={() => handleCardPress(card.id)}
+              className={`w-[22%] aspect-square mb-2 rounded-xl items-center justify-center ${
+                flippedCards.includes(card.id) || matchedCards.includes(card.id)
+                  ? 'bg-blue-500'
+                  : 'bg-gray-200 dark:bg-gray-700'
+              }`}
+            >
+              <Text className="text-2xl">
+                {flippedCards.includes(card.id) || matchedCards.includes(card.id)
+                  ? card.symbol
+                  : '?'
+                }
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </View>
   );
 };
 
 // Tap Game
-const TapGame = ({ onComplete }) => {
+const TapGame = ({ onGameComplete }) => {
   const { actions } = useApp();
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
   const [targetPosition, setTargetPosition] = useState({ x: 50, y: 50 });
 
   useEffect(() => {
+    let interval;
     if (gameStarted && timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0) {
-      handleGameOver();
+      interval = setInterval(() => {
+        setTimeLeft(timeLeft - 1);
+        // Move target randomly
+        setTargetPosition({
+          x: Math.random() * 80 + 10,
+          y: Math.random() * 60 + 20,
+        });
+      }, 1000);
+    } else if (timeLeft === 0 && gameStarted) {
+      setGameCompleted(true);
+      actions.completeGame('tapGame', score);
+      onGameComplete(score);
     }
+    return () => clearInterval(interval);
   }, [gameStarted, timeLeft]);
 
-  const handleTap = () => {
-    setScore(score + 1);
-    setTargetPosition({
-      x: Math.random() * 80 + 10,
-      y: Math.random() * 80 + 10,
-    });
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  const handleTargetPress = () => {
+    if (gameStarted && !gameCompleted) {
+      setScore(score + 1);
+      setTargetPosition({
+        x: Math.random() * 80 + 10,
+        y: Math.random() * 60 + 20,
+      });
+    }
   };
 
   const startGame = () => {
-    setGameStarted(true);
     setScore(0);
     setTimeLeft(30);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setGameStarted(true);
+    setGameCompleted(false);
   };
 
-  const handleGameOver = () => {
-    actions.completeGame('tapGame', score);
+  return (
+    <View className="flex-1">
+      <View className="flex-row justify-between items-center mb-4">
+        <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+          Speed Tap
+        </Text>
+        <View className="flex-row items-center">
+          <Text className="text-gray-600 dark:text-gray-400 mr-4">
+            Score: {score}
+          </Text>
+          <Text className="text-gray-600 dark:text-gray-400">
+            Time: {timeLeft}s
+          </Text>
+        </View>
+      </View>
+
+      {!gameStarted ? (
+        <View className="items-center py-8">
+          <Text className="text-6xl mb-4">👆</Text>
+          <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            Tap as Fast as You Can!
+          </Text>
+          <Text className="text-gray-600 dark:text-gray-400 text-center mb-6">
+            Tap the target as many times as possible in 30 seconds.
+          </Text>
+          <ActionButton
+            title="Start Game"
+            onPress={startGame}
+            gradient
+            gradientColors={['#f59e0b', '#d97706']}
+          />
+        </View>
+      ) : gameCompleted ? (
+        <View className="items-center py-8">
+          <Text className="text-6xl mb-4">🏆</Text>
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            Great Job!
+          </Text>
+          <Text className="text-gray-600 dark:text-gray-400 mb-4">
+            Final Score: {score} taps
+          </Text>
+          <ActionButton
+            title="Play Again"
+            onPress={startGame}
+            gradient
+            gradientColors={['#10b981', '#059669']}
+          />
+        </View>
+      ) : (
+        <View className="flex-1 relative">
+          <TouchableOpacity
+            onPress={handleTargetPress}
+            style={{
+              position: 'absolute',
+              left: `${targetPosition.x}%`,
+              top: `${targetPosition.y}%`,
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              backgroundColor: '#ef4444',
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          >
+            <Text className="text-white text-xl font-bold">TAP</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+};
+
+export default function GamesScreen() {
+  const { state } = useApp();
+  const [activeGame, setActiveGame] = useState('memory');
+  const [gameScore, setGameScore] = useState(0);
+
+  const handleGameComplete = (score) => {
+    setGameScore(score);
     Alert.alert(
-      '🎯 Game Over!',
-      `Final Score: ${score}\nTap as many targets as you can in 30 seconds!`,
-      [{ text: 'Play Again', onPress: () => {
-        setGameStarted(false);
-        setScore(0);
-        setTimeLeft(30);
-      }}]
+      'Game Complete!',
+      `You scored ${score} points!`,
+      [{ text: 'OK' }]
     );
-    onComplete(score);
   };
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
       <LinearGradient
         colors={['#f59e0b', '#d97706']}
         className="px-6 pt-12 pb-8"
       >
         <View className="flex-row justify-between items-center mb-6">
-          <Text className="text-white text-2xl font-bold">
-            Tap Game 🎯
-          </Text>
-          <TouchableOpacity onPress={() => {
-            setGameStarted(false);
-            setScore(0);
-            setTimeLeft(30);
-          }}>
-            <Ionicons name="refresh" size={24} color="white" />
+          <View>
+            <Text className="text-white text-2xl font-bold">
+              🎮 Games
+            </Text>
+            <Text className="text-orange-100 text-sm">
+              Fun & mindful activities
+            </Text>
+          </View>
+          <TouchableOpacity className="bg-white/20 rounded-full p-2">
+            <Ionicons name="trophy-outline" size={24} color="white" />
           </TouchableOpacity>
         </View>
-
-        <View className="flex-row justify-between items-center">
-          <View className="items-center">
-            <Text className="text-white font-bold text-xl">{score}</Text>
-            <Text className="text-orange-100 text-sm">Score</Text>
-          </View>
-          <View className="items-center">
-            <Text className="text-white font-bold text-xl">{timeLeft}</Text>
-            <Text className="text-orange-100 text-sm">Seconds</Text>
-          </View>
-        </View>
       </LinearGradient>
 
-      <View className="flex-1 px-6 py-6">
-        {!gameStarted ? (
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-6xl mb-6">🎯</Text>
-            <Text className="text-2xl font-bold text-gray-900 dark:text-white mb-4 text-center">
-              Tap Game
-            </Text>
-            <Text className="text-gray-600 dark:text-gray-400 text-center mb-8">
-              Tap the target as many times as you can in 30 seconds!
-            </Text>
-            <ActionButton
-              title="Start Game"
-              onPress={startGame}
-              gradient
-              gradientColors={['#f59e0b', '#d97706']}
-              size="lg"
-            />
-          </View>
-        ) : (
-          <View className="flex-1 justify-center items-center">
-            <TouchableOpacity
-              onPress={handleTap}
-              className="w-20 h-20 bg-orange-500 rounded-full items-center justify-center shadow-lg"
-              style={{
-                position: 'absolute',
-                left: `${targetPosition.x}%`,
-                top: `${targetPosition.y}%`,
-              }}
-            >
-              <Text className="text-2xl">🎯</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    </View>
-  );
-};
-
-// Main Games Screen
-export default function GamesScreen() {
-  const { state } = useApp();
-  const [selectedGame, setSelectedGame] = useState(null);
-
-  const games = [
-    {
-      id: 'memoryMatch',
-      title: 'Memory Match',
-      description: 'Find matching pairs',
-      icon: '🧠',
-      color: ['#10b981', '#059669'],
-      highScore: state.games.memoryMatch?.highScore || 0,
-      gamesPlayed: state.games.memoryMatch?.gamesPlayed || 0,
-    },
-    {
-      id: 'tapGame',
-      title: 'Tap Game',
-      description: 'Quick reflexes test',
-      icon: '🎯',
-      color: ['#f59e0b', '#d97706'],
-      highScore: state.games.tapGame?.highScore || 0,
-      gamesPlayed: state.games.tapGame?.gamesPlayed || 0,
-    },
-  ];
-
-  const handleGameComplete = (score) => {
-    setSelectedGame(null);
-  };
-
-  if (selectedGame) {
-    if (selectedGame === 'memoryMatch') {
-      return <MemoryMatchGame onComplete={handleGameComplete} />;
-    } else if (selectedGame === 'tapGame') {
-      return <TapGame onComplete={handleGameComplete} />;
-    }
-  }
-
-  return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
-      <LinearGradient
-        colors={['#8b5cf6', '#7c3aed']}
-        className="px-6 pt-12 pb-8"
-      >
-        <Text className="text-white text-2xl font-bold mb-2">
-          Mini Games 🎮
-        </Text>
-        <Text className="text-purple-100 text-sm">
-          Take a break and play some games to relax your mind
-        </Text>
-      </LinearGradient>
-
-      <View className="flex-1 px-6 py-6">
-        <View className="flex-row flex-wrap justify-between">
-          {games.map((game) => (
-            <Card
-              key={game.id}
-              onPress={() => setSelectedGame(game.id)}
-              gradient
-              gradientColors={game.color}
-              className="w-[48%] mb-4"
-            >
-              <View className="p-6 items-center">
-                <Text className="text-4xl mb-3">{game.icon}</Text>
-                <Text className="text-white font-bold text-lg mb-1">
-                  {game.title}
-                </Text>
-                <Text className="text-white/80 text-sm text-center mb-3">
-                  {game.description}
-                </Text>
-                <View className="items-center">
-                  <Text className="text-white font-semibold">
-                    High Score: {game.highScore}
-                  </Text>
-                  <Text className="text-white/60 text-xs">
-                    {game.gamesPlayed} games played
-                  </Text>
-                </View>
-              </View>
-            </Card>
-          ))}
-        </View>
-
-        <Card className="mt-4">
+      <ScrollView className="flex-1 px-6 -mt-4">
+        {/* Game Stats */}
+        <Card className="mb-6">
           <View className="p-6">
-            <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              🎮 Game Stats
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              🏆 Your Game Stats
             </Text>
-            <View className="flex-row justify-between">
+            <View className="flex-row justify-around">
               <View className="items-center">
-                <Text className="text-2xl font-bold text-purple-600">
-                  {state.games.memoryMatch?.gamesPlayed + state.games.tapGame?.gamesPlayed || 0}
+                <Text className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {state.games.memoryMatch.gamesPlayed}
                 </Text>
-                <Text className="text-gray-600 dark:text-gray-400 text-sm">
-                  Total Games
+                <Text className="text-sm text-gray-600 dark:text-gray-400">
+                  Memory Games
                 </Text>
               </View>
               <View className="items-center">
-                <Text className="text-2xl font-bold text-purple-600">
-                  {Math.max(
-                    state.games.memoryMatch?.highScore || 0,
-                    state.games.tapGame?.highScore || 0
-                  )}
+                <Text className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {state.games.tapGame.gamesPlayed}
                 </Text>
-                <Text className="text-gray-600 dark:text-gray-400 text-sm">
+                <Text className="text-sm text-gray-600 dark:text-gray-400">
+                  Tap Games
+                </Text>
+              </View>
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {Math.max(state.games.memoryMatch.highScore, state.games.tapGame.highScore)}
+                </Text>
+                <Text className="text-sm text-gray-600 dark:text-gray-400">
                   Best Score
                 </Text>
               </View>
             </View>
           </View>
         </Card>
-      </View>
+
+        {/* Game Selection */}
+        <View className="flex-row mb-6">
+          <TouchableOpacity
+            onPress={() => setActiveGame('memory')}
+            className={`flex-1 py-3 px-4 rounded-l-xl ${
+              activeGame === 'memory'
+                ? 'bg-orange-500'
+                : 'bg-gray-200 dark:bg-gray-700'
+            }`}
+          >
+            <Text className={`text-center font-semibold ${
+              activeGame === 'memory'
+                ? 'text-white'
+                : 'text-gray-700 dark:text-gray-300'
+            }`}>
+              🧠 Memory
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setActiveGame('tap')}
+            className={`flex-1 py-3 px-4 rounded-r-xl ${
+              activeGame === 'tap'
+                ? 'bg-orange-500'
+                : 'bg-gray-200 dark:bg-gray-700'
+            }`}
+          >
+            <Text className={`text-center font-semibold ${
+              activeGame === 'tap'
+                ? 'text-white'
+                : 'text-gray-700 dark:text-gray-300'
+            }`}>
+              👆 Speed Tap
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Game Area */}
+        <Card className="mb-6">
+          <View className="p-6">
+            {activeGame === 'memory' ? (
+              <MemoryMatchGame onGameComplete={handleGameComplete} />
+            ) : (
+              <TapGame onGameComplete={handleGameComplete} />
+            )}
+          </View>
+        </Card>
+
+        {/* Game Benefits */}
+        <Card className="mb-6">
+          <View className="p-6">
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              🎯 Why Play Games?
+            </Text>
+            <View className="space-y-3">
+              <View className="flex-row items-start">
+                <Text className="text-orange-500 mr-3">•</Text>
+                <Text className="text-gray-700 dark:text-gray-300 flex-1">
+                  <Text className="font-semibold">Memory Games:</Text> Improve focus and cognitive function
+                </Text>
+              </View>
+              <View className="flex-row items-start">
+                <Text className="text-orange-500 mr-3">•</Text>
+                <Text className="text-gray-700 dark:text-gray-300 flex-1">
+                  <Text className="font-semibold">Speed Games:</Text> Enhance reaction time and coordination
+                </Text>
+              </View>
+              <View className="flex-row items-start">
+                <Text className="text-orange-500 mr-3">•</Text>
+                <Text className="text-gray-700 dark:text-gray-300 flex-1">
+                  <Text className="font-semibold">Mindful Play:</Text> Reduce stress and improve mood
+                </Text>
+              </View>
+            </View>
+          </View>
+        </Card>
+      </ScrollView>
     </View>
   );
 }

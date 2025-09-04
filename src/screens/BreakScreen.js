@@ -1,539 +1,335 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Animated,
-  Dimensions,
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  ScrollView, 
+  TouchableOpacity 
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useUserData } from '../contexts/UserDataContext';
+import { useApp } from '../context/AppContext';
+import Card from '../components/Card';
+import ActionButton from '../components/ActionButton';
 
-const { width, height } = Dimensions.get('window');
+const breakActivities = [
+  {
+    id: 'breathing',
+    title: 'Breathing Exercise',
+    icon: '🫁',
+    color: ['#10b981', '#059669'],
+    description: 'Calm your mind with guided breathing',
+    duration: '5 min',
+    steps: [
+      'Find a comfortable position',
+      'Close your eyes gently',
+      'Breathe in for 4 counts',
+      'Hold for 4 counts',
+      'Breathe out for 6 counts',
+      'Repeat for 5 minutes'
+    ]
+  },
+  {
+    id: 'stretching',
+    title: 'Quick Stretch',
+    icon: '🤸',
+    color: ['#f59e0b', '#d97706'],
+    description: 'Relieve tension with simple stretches',
+    duration: '3 min',
+    steps: [
+      'Neck rolls - 30 seconds',
+      'Shoulder shrugs - 30 seconds',
+      'Arm circles - 30 seconds',
+      'Wrist stretches - 30 seconds',
+      'Back twists - 30 seconds',
+      'Leg stretches - 30 seconds'
+    ]
+  },
+  {
+    id: 'meditation',
+    title: 'Mindful Meditation',
+    icon: '🧘',
+    color: ['#8b5cf6', '#7c3aed'],
+    description: 'Practice mindfulness and awareness',
+    duration: '10 min',
+    steps: [
+      'Sit comfortably with eyes closed',
+      'Focus on your breathing',
+      'Notice thoughts without judgment',
+      'Return focus to breath when distracted',
+      'Practice gratitude',
+      'Slowly open your eyes'
+    ]
+  },
+  {
+    id: 'walking',
+    title: 'Walking Break',
+    icon: '🚶',
+    color: ['#3b82f6', '#1d4ed8'],
+    description: 'Get moving and refresh your mind',
+    duration: '5 min',
+    steps: [
+      'Stand up from your desk',
+      'Walk around your space',
+      'Go outside if possible',
+      'Focus on your surroundings',
+      'Take deep breaths',
+      'Return refreshed'
+    ]
+  },
+  {
+    id: 'hydration',
+    title: 'Hydration Break',
+    icon: '💧',
+    color: ['#06b6d4', '#0891b2'],
+    description: 'Rehydrate and refresh your body',
+    duration: '2 min',
+    steps: [
+      'Get a glass of water',
+      'Drink slowly and mindfully',
+      'Notice the temperature and taste',
+      'Feel the water nourishing your body',
+      'Take a moment to appreciate',
+      'Return to your work refreshed'
+    ]
+  },
+  {
+    id: 'gratitude',
+    title: 'Gratitude Practice',
+    icon: '🙏',
+    color: ['#ef4444', '#dc2626'],
+    description: 'Reflect on positive moments',
+    duration: '3 min',
+    steps: [
+      'Think of 3 things you\'re grateful for',
+      'Write them down or say them aloud',
+      'Feel the positive emotions',
+      'Notice how gratitude feels in your body',
+      'Carry this feeling forward',
+      'Return with a positive mindset'
+    ]
+  }
+];
 
-const BreakScreen = ({ navigation }) => {
-  const { userData, addCoins } = useUserData();
+export default function BreakScreen() {
+  const { state } = useApp();
   const [selectedActivity, setSelectedActivity] = useState(null);
-  const [completedActivities, setCompletedActivities] = useState([]);
-  const [fadeAnim] = useState(new Animated.Value(0));
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isActive, setIsActive] = useState(false);
 
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  }, []);
+  const startActivity = (activity) => {
+    setSelectedActivity(activity);
+    setCurrentStep(0);
+    setIsActive(true);
+  };
 
-  const motivationalMessages = [
-    "You're doing great! Every break makes you stronger.",
-    "Rest is not a waste of time, it's an investment in your productivity.",
-    "Small breaks lead to big breakthroughs.",
-    "You've earned this moment to recharge.",
-    "Your mind is like a muscle - it needs rest to grow stronger.",
-    "Taking breaks is a sign of wisdom, not weakness.",
-    "Every focused session brings you closer to your goals.",
-    "You're building healthy habits that will last a lifetime.",
-  ];
+  const nextStep = () => {
+    if (selectedActivity && currentStep < selectedActivity.steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      finishActivity();
+    }
+  };
 
-  const breakActivities = [
-    {
-      id: 'walk',
-      title: 'Take a Walk',
-      subtitle: '5-10 minute stroll',
-      description: 'Get some fresh air and gentle movement',
-      icon: 'walk',
-      color: '#10b981',
-      duration: '5-10 min',
-      benefits: ['Improves circulation', 'Reduces stress', 'Boosts creativity'],
-    },
-    {
-      id: 'stretch',
-      title: 'Quick Stretch',
-      subtitle: 'Simple exercises',
-      description: 'Loosen up those muscles',
-      icon: 'body',
-      color: '#3b82f6',
-      duration: '3-5 min',
-      benefits: ['Relieves tension', 'Improves posture', 'Increases energy'],
-    },
-    {
-      id: 'meditation',
-      title: 'Mindful Moment',
-      subtitle: 'Quick meditation',
-      description: 'Center yourself and breathe',
-      icon: 'leaf',
-      color: '#8b5cf6',
-      duration: '2-5 min',
-      benefits: ['Reduces anxiety', 'Improves focus', 'Calms mind'],
-    },
-    {
-      id: 'water',
-      title: 'Hydrate',
-      subtitle: 'Drink water',
-      description: 'Stay hydrated and refreshed',
-      icon: 'water',
-      color: '#06b6d4',
-      duration: '1 min',
-      benefits: ['Boosts energy', 'Improves concentration', 'Supports health'],
-    },
-    {
-      id: 'eye_rest',
-      title: 'Eye Rest',
-      subtitle: '20-20-20 rule',
-      description: 'Look 20 feet away for 20 seconds',
-      icon: 'eye',
-      color: '#f59e0b',
-      duration: '20 sec',
-      benefits: ['Reduces eye strain', 'Prevents headaches', 'Maintains vision'],
-    },
-    {
-      id: 'music',
-      title: 'Listen to Music',
-      subtitle: 'Your favorite tunes',
-      description: 'Enjoy some relaxing music',
-      icon: 'musical-notes',
-      color: '#ef4444',
-      duration: '3-5 min',
-      benefits: ['Lifts mood', 'Reduces stress', 'Increases motivation'],
-    },
-  ];
-
-  const handleActivityComplete = (activity) => {
-    setCompletedActivities(prev => [...prev, activity.id]);
-    addCoins(5); // Reward for completing break activity
+  const finishActivity = () => {
+    setIsActive(false);
+    setSelectedActivity(null);
+    setCurrentStep(0);
     
-    // Show completion message
-    setTimeout(() => {
-      setSelectedActivity(null);
-    }, 2000);
+    // Award small XP for completing break activity
+    actions.updateStats({
+      xp: state.stats.xp + 5,
+      coins: state.stats.coins + 2,
+    });
   };
 
-  const getRandomMessage = () => {
-    return motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
-  };
-
-  const renderActivity = (activity) => {
-    const isCompleted = completedActivities.includes(activity.id);
-    const isSelected = selectedActivity?.id === activity.id;
-
-    return (
-      <TouchableOpacity
-        key={activity.id}
-        style={[
-          styles.activityCard,
-          isSelected && styles.selectedActivityCard,
-          isCompleted && styles.completedActivityCard,
-        ]}
-        onPress={() => setSelectedActivity(activity)}
-        disabled={isCompleted}
-      >
-        <LinearGradient
-          colors={[activity.color, `${activity.color}dd`]}
-          style={styles.activityGradient}
-        >
-          <View style={styles.activityHeader}>
-            <View style={styles.activityIconContainer}>
-              <Ionicons name={activity.icon} size={24} color="#ffffff" />
+  const renderActivityCard = (activity) => (
+    <Card key={activity.id} className="mb-4">
+      <TouchableOpacity onPress={() => startActivity(activity)}>
+        <View className="p-6">
+          <View className="flex-row items-center mb-4">
+            <Text className="text-4xl mr-4">{activity.icon}</Text>
+            <View className="flex-1">
+              <Text className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                {activity.title}
+              </Text>
+              <Text className="text-gray-600 dark:text-gray-400 mb-2">
+                {activity.description}
+              </Text>
+              <Text className="text-sm text-gray-500 dark:text-gray-500">
+                Duration: {activity.duration}
+              </Text>
             </View>
-            <View style={styles.activityInfo}>
-              <Text style={styles.activityTitle}>{activity.title}</Text>
-              <Text style={styles.activitySubtitle}>{activity.subtitle}</Text>
-            </View>
-            {isCompleted && (
-              <View style={styles.completedBadge}>
-                <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-              </View>
-            )}
           </View>
-          
-          <Text style={styles.activityDescription}>{activity.description}</Text>
-          
-          <View style={styles.activityMeta}>
-            <View style={styles.durationBadge}>
-              <Text style={styles.durationText}>{activity.duration}</Text>
+        </View>
+      </TouchableOpacity>
+    </Card>
+  );
+
+  if (isActive && selectedActivity) {
+    return (
+      <View className="flex-1 bg-gray-50 dark:bg-gray-900">
+        <LinearGradient
+          colors={selectedActivity.color}
+          className="px-6 pt-12 pb-8"
+        >
+          <View className="flex-row justify-between items-center mb-6">
+            <View>
+              <Text className="text-white text-2xl font-bold">
+                {selectedActivity.icon} {selectedActivity.title}
+              </Text>
+              <Text className="text-white/80 text-sm">
+                Step {currentStep + 1} of {selectedActivity.steps.length}
+              </Text>
             </View>
+            <TouchableOpacity
+              onPress={finishActivity}
+              className="bg-white/20 rounded-full p-2"
+            >
+              <Ionicons name="close" size={24} color="white" />
+            </TouchableOpacity>
           </View>
         </LinearGradient>
-      </TouchableOpacity>
-    );
-  };
 
-  const renderActivityDetail = () => {
-    if (!selectedActivity) return null;
-
-    return (
-      <View style={styles.detailSection}>
-        <View style={styles.detailCard}>
-          <View style={styles.detailHeader}>
-            <Ionicons 
-              name={selectedActivity.icon} 
-              size={32} 
-              color={selectedActivity.color} 
-            />
-            <Text style={styles.detailTitle}>{selectedActivity.title}</Text>
-          </View>
-          
-          <Text style={styles.detailDescription}>
-            {selectedActivity.description}
-          </Text>
-          
-          <View style={styles.benefitsSection}>
-            <Text style={styles.benefitsTitle}>Benefits:</Text>
-            {selectedActivity.benefits.map((benefit, index) => (
-              <View key={index} style={styles.benefitItem}>
-                <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-                <Text style={styles.benefitText}>{benefit}</Text>
+        <View className="flex-1 px-6 -mt-4">
+          <Card className="mb-6">
+            <View className="p-8">
+              <View className="items-center mb-8">
+                <Text className="text-6xl mb-4">{selectedActivity.icon}</Text>
+                <Text className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-2">
+                  {selectedActivity.steps[currentStep]}
+                </Text>
+                <Text className="text-gray-600 dark:text-gray-400 text-center">
+                  {selectedActivity.duration} • Step {currentStep + 1}/{selectedActivity.steps.length}
+                </Text>
               </View>
-            ))}
-          </View>
-          
-          <TouchableOpacity
-            style={[styles.completeButton, { backgroundColor: selectedActivity.color }]}
-            onPress={() => handleActivityComplete(selectedActivity)}
-          >
-            <Text style={styles.completeButtonText}>Complete Activity</Text>
-            <Ionicons name="checkmark" size={20} color="#ffffff" />
-          </TouchableOpacity>
+
+              {/* Progress Bar */}
+              <View className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-8">
+                <View 
+                  className="h-2 rounded-full"
+                  style={{ 
+                    width: `${((currentStep + 1) / selectedActivity.steps.length) * 100}%`,
+                    backgroundColor: selectedActivity.color[0]
+                  }}
+                />
+              </View>
+
+              <ActionButton
+                title={currentStep === selectedActivity.steps.length - 1 ? "Complete" : "Next Step"}
+                onPress={nextStep}
+                gradient
+                gradientColors={selectedActivity.color}
+                size="lg"
+                className="w-full"
+              />
+            </View>
+          </Card>
         </View>
       </View>
     );
-  };
+  }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Break Activities</Text>
-          <Text style={styles.subtitle}>
-            Take a mindful break and recharge
-          </Text>
-        </View>
-
-        {/* Motivational Message */}
-        <View style={styles.messageSection}>
-          <LinearGradient
-            colors={['#6366f1', '#8b5cf6']}
-            style={styles.messageCard}
-          >
-            <Ionicons name="heart" size={24} color="#ffffff" />
-            <Text style={styles.messageText}>{getRandomMessage()}</Text>
-          </LinearGradient>
-        </View>
-
-        {/* Break Activities */}
-        <View style={styles.activitiesSection}>
-          <Text style={styles.sectionTitle}>Suggested Activities</Text>
-          <View style={styles.activitiesGrid}>
-            {breakActivities.map(renderActivity)}
+    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <LinearGradient
+        colors={['#f59e0b', '#d97706']}
+        className="px-6 pt-12 pb-8"
+      >
+        <View className="flex-row justify-between items-center mb-6">
+          <View>
+            <Text className="text-white text-2xl font-bold">
+              ☕ Break Time
+            </Text>
+            <Text className="text-orange-100 text-sm">
+              Recharge and refresh your mind
+            </Text>
           </View>
-        </View>
-
-        {/* Activity Detail */}
-        {renderActivityDetail()}
-
-        {/* Progress */}
-        <View style={styles.progressSection}>
-          <Text style={styles.sectionTitle}>Break Progress</Text>
-          <View style={styles.progressCard}>
-            <View style={styles.progressInfo}>
-              <Text style={styles.progressText}>
-                {completedActivities.length} of {breakActivities.length} activities completed
-              </Text>
-              <View style={styles.progressBar}>
-                <View 
-                  style={[
-                    styles.progressFill, 
-                    { width: `${(completedActivities.length / breakActivities.length) * 100}%` }
-                  ]} 
-                />
-              </View>
-            </View>
-            <View style={styles.progressReward}>
-              <Text style={styles.rewardText}>
-                +{completedActivities.length * 5} coins earned
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Navigation */}
-        <View style={styles.navigationSection}>
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => navigation.navigate('Pomodoro')}
-          >
-            <Text style={styles.navButtonText}>Back to Focus</Text>
-            <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+          <TouchableOpacity className="bg-white/20 rounded-full p-2">
+            <Ionicons name="pause-circle-outline" size={24} color="white" />
           </TouchableOpacity>
         </View>
-      </Animated.View>
-    </ScrollView>
+      </LinearGradient>
+
+      <ScrollView className="flex-1 px-6 -mt-4">
+        {/* Quick Stats */}
+        <Card className="mb-6">
+          <View className="p-6">
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              📊 Today's Breaks
+            </Text>
+            <View className="flex-row justify-around">
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {state.stats.todaySessions}
+                </Text>
+                <Text className="text-sm text-gray-600 dark:text-gray-400">
+                  Focus Sessions
+                </Text>
+              </View>
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {Math.floor(state.stats.todaySessions * 0.8)}
+                </Text>
+                <Text className="text-sm text-gray-600 dark:text-gray-400">
+                  Breaks Taken
+                </Text>
+              </View>
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {state.stats.streak}
+                </Text>
+                <Text className="text-sm text-gray-600 dark:text-gray-400">
+                  Day Streak
+                </Text>
+              </View>
+            </View>
+          </View>
+        </Card>
+
+        {/* Break Activities */}
+        <View className="mb-6">
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            🎯 Break Activities
+          </Text>
+          {breakActivities.map(renderActivityCard)}
+        </View>
+
+        {/* Break Benefits */}
+        <Card className="mb-6">
+          <View className="p-6">
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              💡 Why Breaks Matter
+            </Text>
+            <View className="space-y-3">
+              <View className="flex-row items-start">
+                <Text className="text-orange-500 mr-3">•</Text>
+                <Text className="text-gray-700 dark:text-gray-300 flex-1">
+                  <Text className="font-semibold">Mental Refresh:</Text> Clear your mind and return with fresh perspective
+                </Text>
+              </View>
+              <View className="flex-row items-start">
+                <Text className="text-orange-500 mr-3">•</Text>
+                <Text className="text-gray-700 dark:text-gray-300 flex-1">
+                  <Text className="font-semibold">Physical Health:</Text> Reduce eye strain and muscle tension
+                </Text>
+              </View>
+              <View className="flex-row items-start">
+                <Text className="text-orange-500 mr-3">•</Text>
+                <Text className="text-gray-700 dark:text-gray-300 flex-1">
+                  <Text className="font-semibold">Better Focus:</Text> Improve concentration and productivity
+                </Text>
+              </View>
+              <View className="flex-row items-start">
+                <Text className="text-orange-500 mr-3">•</Text>
+                <Text className="text-gray-700 dark:text-gray-300 flex-1">
+                  <Text className="font-semibold">Stress Relief:</Text> Lower cortisol levels and anxiety
+                </Text>
+              </View>
+            </View>
+          </View>
+        </Card>
+      </ScrollView>
+    </View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  content: {
-    padding: 20,
-  },
-  header: {
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  messageSection: {
-    marginBottom: 30,
-  },
-  messageCard: {
-    borderRadius: 12,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  messageText: {
-    flex: 1,
-    fontSize: 16,
-    color: '#ffffff',
-    fontStyle: 'italic',
-  },
-  activitiesSection: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 16,
-  },
-  activitiesGrid: {
-    gap: 12,
-  },
-  activityCard: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  selectedActivityCard: {
-    transform: [{ scale: 1.02 }],
-  },
-  completedActivityCard: {
-    opacity: 0.7,
-  },
-  activityGradient: {
-    padding: 16,
-  },
-  activityHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  activityIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  activityInfo: {
-    flex: 1,
-  },
-  activityTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 2,
-  },
-  activitySubtitle: {
-    fontSize: 14,
-    color: '#ffffff',
-    opacity: 0.9,
-  },
-  completedBadge: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 4,
-  },
-  activityDescription: {
-    fontSize: 14,
-    color: '#ffffff',
-    opacity: 0.9,
-    marginBottom: 12,
-  },
-  activityMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  durationBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  durationText: {
-    fontSize: 12,
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  detailSection: {
-    marginBottom: 30,
-  },
-  detailCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  detailHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
-  },
-  detailTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
-  },
-  detailDescription: {
-    fontSize: 16,
-    color: '#374151',
-    marginBottom: 20,
-    lineHeight: 24,
-  },
-  benefitsSection: {
-    marginBottom: 24,
-  },
-  benefitsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 12,
-  },
-  benefitItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    gap: 8,
-  },
-  benefitText: {
-    fontSize: 14,
-    color: '#374151',
-  },
-  completeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    borderRadius: 12,
-    gap: 8,
-  },
-  completeButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  progressSection: {
-    marginBottom: 30,
-  },
-  progressCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  progressInfo: {
-    marginBottom: 12,
-  },
-  progressText: {
-    fontSize: 16,
-    color: '#374151',
-    marginBottom: 8,
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: '#e5e7eb',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#10b981',
-    borderRadius: 4,
-  },
-  progressReward: {
-    alignItems: 'center',
-  },
-  rewardText: {
-    fontSize: 14,
-    color: '#f59e0b',
-    fontWeight: '600',
-  },
-  navigationSection: {
-    alignItems: 'center',
-  },
-  navButton: {
-    backgroundColor: '#6366f1',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 25,
-    gap: 10,
-  },
-  navButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
-
-export default BreakScreen;
+}

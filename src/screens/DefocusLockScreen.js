@@ -9,7 +9,20 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
+import { Platform } from 'react-native';
+
+// Handle Haptics for web compatibility
+let Haptics;
+if (Platform.OS === 'web') {
+  Haptics = {
+    impactAsync: () => Promise.resolve(),
+    notificationAsync: () => Promise.resolve(),
+    ImpactFeedbackStyle: { Medium: 'medium', Light: 'light' },
+    NotificationFeedbackType: { Success: 'success' }
+  };
+} else {
+  Haptics = require('expo-haptics');
+}
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -31,6 +44,7 @@ export default function DefocusLockScreen() {
   const [timeLeft, setTimeLeft] = useState(selectedDuration * 60); // seconds
   const [isRunning, setIsRunning] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [currentActivity, setCurrentActivity] = useState('breathing'); // 'breathing', 'journaling', 'games'
   const intervalRef = useRef(null);
 
   // Animation values
@@ -285,6 +299,53 @@ export default function DefocusLockScreen() {
               : 'Select duration and start your defocus session'
             }
           </Text>
+
+          {/* Activity Options (only when running) */}
+          {isRunning && (
+            <View className="w-full mb-8">
+              <Text className="text-white font-semibold mb-4 text-center">
+                Defocus Activities
+              </Text>
+              <View className="flex-row justify-around">
+                <TouchableOpacity
+                  onPress={() => setCurrentActivity('breathing')}
+                  className={`px-4 py-2 rounded-full ${
+                    currentActivity === 'breathing' ? 'bg-white' : 'bg-white/20'
+                  }`}
+                >
+                  <Text className={`font-semibold ${
+                    currentActivity === 'breathing' ? 'text-blue-600' : 'text-white'
+                  }`}>
+                    🫁 Breathing
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setCurrentActivity('journaling')}
+                  className={`px-4 py-2 rounded-full ${
+                    currentActivity === 'journaling' ? 'bg-white' : 'bg-white/20'
+                  }`}
+                >
+                  <Text className={`font-semibold ${
+                    currentActivity === 'journaling' ? 'text-blue-600' : 'text-white'
+                  }`}>
+                    📝 Journal
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setCurrentActivity('games')}
+                  className={`px-4 py-2 rounded-full ${
+                    currentActivity === 'games' ? 'bg-white' : 'bg-white/20'
+                  }`}
+                >
+                  <Text className={`font-semibold ${
+                    currentActivity === 'games' ? 'text-blue-600' : 'text-white'
+                  }`}>
+                    🎮 Games
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
 
           {/* Duration Selection (only when not running) */}
           {!isRunning && (

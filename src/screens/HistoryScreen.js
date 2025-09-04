@@ -1,281 +1,370 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   View, 
   Text, 
   ScrollView, 
   TouchableOpacity,
-  RefreshControl 
+  FlatList 
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import Card from '../components/Card';
+import StatCard from '../components/StatCard';
 
 export default function HistoryScreen() {
   const { state } = useApp();
-  const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState('all'); // 'all', 'defocus', 'journal', 'game'
+  const [selectedFilter, setSelectedFilter] = useState('all'); // 'all', 'defocus', 'games', 'journal'
+  const [selectedPeriod, setSelectedPeriod] = useState('week'); // 'week', 'month', 'all'
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    // Simulate refresh
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  };
+  const filters = [
+    { id: 'all', label: 'All', icon: '📊' },
+    { id: 'defocus', label: 'Defocus', icon: '🎯' },
+    { id: 'games', label: 'Games', icon: '🎮' },
+    { id: 'journal', label: 'Journal', icon: '📝' },
+  ];
 
-  const getActivityIcon = (type) => {
-    switch (type) {
-      case 'defocus':
-        return '🎯';
-      case 'journal':
-        return '📝';
-      case 'game':
-        return '🎮';
-      default:
-        return '📊';
+  const periods = [
+    { id: 'week', label: 'This Week' },
+    { id: 'month', label: 'This Month' },
+    { id: 'all', label: 'All Time' },
+  ];
+
+  const filteredHistory = useMemo(() => {
+    let filtered = state.history;
+
+    // Filter by type
+    if (selectedFilter !== 'all') {
+      filtered = filtered.filter(entry => entry.type === selectedFilter);
     }
-  };
 
-  const getActivityColor = (type) => {
-    switch (type) {
-      case 'defocus':
-        return '#3b82f6';
-      case 'journal':
-        return '#8b5cf6';
-      case 'game':
-        return '#10b981';
-      default:
-        return '#6b7280';
+    // Filter by period
+    const now = new Date();
+    if (selectedPeriod === 'week') {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      filtered = filtered.filter(entry => new Date(entry.timestamp) >= weekAgo);
+    } else if (selectedPeriod === 'month') {
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      filtered = filtered.filter(entry => new Date(entry.timestamp) >= monthAgo);
     }
-  };
+
+    return filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  }, [state.history, selectedFilter, selectedPeriod]);
+
+  const analytics = useMemo(() => {
+    const totalSessions = state.history.filter(h => h.type === 'defocus').length;
+    const totalGames = state.history.filter(h => h.type === 'game').length;
+    const totalJournalEntries = state.journalEntries.length;
+    const totalXP = state.history.reduce((sum, h) => sum + (h.xpEarned || 0), 0);
+    const totalCoins = state.history.reduce((sum, h) => sum + (h.coinsEarned || 0), 0);
+    const totalHours = state.history
+      .filter(h => h.type === 'defocus')
+      .reduce((sum, h) => sum + (h.duration || 0), 0) / 60;
+
+    return {
+      totalSessions,
+      totalGames,
+      totalJournalEntries,
+      totalXP,
+      totalCoins,
+      totalHours,
+    };
+  }, [state.history, state.journalEntries]);
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 1) {
-      return 'Today';
-    } else if (diffDays === 2) {
-      return 'Yesterday';
-    } else if (diffDays <= 7) {
-      return `${diffDays - 1} days ago`;
-    } else {
-      return date.toLocaleDateString();
-    }
-  };
-
-  const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
-  const filteredHistory = state.history.filter(entry => {
-    if (filter === 'all') return true;
-    return entry.type === filter;
-  });
+  const formatDuration = (minutes) => {
+    if (minutes < 60) {
+      return `${minutes}m`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+  };
 
-  const groupHistoryByDate = (history) => {
-    const grouped = {};
-    history.forEach(entry => {
-      const date = new Date(entry.timestamp).toDateString();
-      if (!grouped[date]) {
-        grouped[date] = [];
+  const renderHistoryItem = ({ item }) => {
+    const getItemIcon = () => {
+      switch (item.type) {
+        case 'defocus':
+          return '🎯';
+        case 'game':
+          return '🎮';
+        case 'journal':
+          return '📝';
+        default:
+          return '📊';
       }
-      grouped[date].push(entry);
-    });
-    return grouped;
-  };
+    };
 
-  const groupedHistory = groupHistoryByDate(filteredHistory);
+    const getItemTitle = () => {
+      switch (item.type) {
+        case 'defocus':
+          return `Defocus Session - ${formatDuration(item.duration)}`;
+        case 'game':
+          return `${item.gameType === 'memoryMatch' ? 'Memory Match' : 'Speed Tap'} - ${item.score} points`;
+        case 'journal':
+          return item.title || 'Journal Entry';
+        default:
+          return 'Activity';
+      }
+    };
 
-  const getActivityDescription = (entry) => {
-    switch (entry.type) {
-      case 'defocus':
-        return `${entry.duration} minute defocus session`;
-      case 'journal':
-        return `Journal entry: ${entry.title || 'Untitled'}`;
-      case 'game':
-        return `${entry.gameType} game - Score: ${entry.score}`;
-      default:
-        return 'Activity';
-    }
-  };
+    const getItemSubtitle = () => {
+      switch (item.type) {
+        case 'defocus':
+          return `+${item.xpEarned} XP • +${item.coinsEarned} coins`;
+        case 'game':
+          return `+${item.xpEarned} XP • +${item.coinsEarned} coins`;
+        case 'journal':
+          return `${item.content?.substring(0, 50)}...`;
+        default:
+          return '';
+      }
+    };
 
-  const getRewardsText = (entry) => {
-    const rewards = [];
-    if (entry.xpEarned) rewards.push(`+${entry.xpEarned} XP`);
-    if (entry.coinsEarned) rewards.push(`+${entry.coinsEarned} coins`);
-    return rewards.join(' • ');
+    return (
+      <Card className="mb-3">
+        <View className="p-4">
+          <View className="flex-row items-start">
+            <Text className="text-2xl mr-3">{getItemIcon()}</Text>
+            <View className="flex-1">
+              <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                {getItemTitle()}
+              </Text>
+              <Text className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                {getItemSubtitle()}
+              </Text>
+              <Text className="text-xs text-gray-500 dark:text-gray-500">
+                {formatDate(item.timestamp)}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Card>
+    );
   };
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
       <LinearGradient
-        colors={['#6b7280', '#4b5563']}
+        colors={['#10b981', '#059669']}
         className="px-6 pt-12 pb-8"
       >
-        <Text className="text-white text-2xl font-bold mb-2">
-          Activity History 📊
-        </Text>
-        <Text className="text-gray-200 text-sm">
-          Track your productivity journey
-        </Text>
+        <View className="flex-row justify-between items-center mb-6">
+          <View>
+            <Text className="text-white text-2xl font-bold">
+              📊 History
+            </Text>
+            <Text className="text-green-100 text-sm">
+              Track your progress & achievements
+            </Text>
+          </View>
+          <TouchableOpacity className="bg-white/20 rounded-full p-2">
+            <Ionicons name="analytics-outline" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
 
-      <ScrollView 
-        className="flex-1 px-6"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* Filter Buttons */}
-        <View className="flex-row justify-between mb-6 mt-4">
-          {[
-            { key: 'all', label: 'All', icon: '📊' },
-            { key: 'defocus', label: 'Focus', icon: '🎯' },
-            { key: 'journal', label: 'Journal', icon: '📝' },
-            { key: 'game', label: 'Games', icon: '🎮' },
-          ].map((filterOption) => (
-            <TouchableOpacity
-              key={filterOption.key}
-              onPress={() => setFilter(filterOption.key)}
-              className={`px-3 py-2 rounded-lg ${
-                filter === filterOption.key
-                  ? 'bg-blue-500'
-                  : 'bg-gray-200 dark:bg-gray-700'
-              }`}
-            >
-              <Text className={`text-sm font-medium ${
-                filter === filterOption.key
-                  ? 'text-white'
-                  : 'text-gray-700 dark:text-gray-300'
-              }`}>
-                {filterOption.icon} {filterOption.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      <ScrollView className="flex-1 px-6 -mt-4">
+        {/* Analytics Overview */}
+        <View className="flex-row justify-between mb-4">
+          <View className="flex-1 mr-2">
+            <StatCard
+              title="Total Sessions"
+              value={analytics.totalSessions}
+              icon="🎯"
+              gradient
+              gradientColors={['#3b82f6', '#1d4ed8']}
+            />
+          </View>
+          <View className="flex-1 mx-1">
+            <StatCard
+              title="Hours Focused"
+              value={`${analytics.totalHours.toFixed(1)}h`}
+              icon="⏰"
+              gradient
+              gradientColors={['#f59e0b', '#d97706']}
+            />
+          </View>
+          <View className="flex-1 ml-2">
+            <StatCard
+              title="Games Played"
+              value={analytics.totalGames}
+              icon="🎮"
+              gradient
+              gradientColors={['#8b5cf6', '#7c3aed']}
+            />
+          </View>
         </View>
 
-        {/* Stats Summary */}
+        <View className="flex-row justify-between mb-6">
+          <View className="flex-1 mr-2">
+            <StatCard
+              title="Total XP"
+              value={analytics.totalXP}
+              icon="⭐"
+              gradient
+              gradientColors={['#f59e0b', '#d97706']}
+            />
+          </View>
+          <View className="flex-1 mx-1">
+            <StatCard
+              title="Coins Earned"
+              value={analytics.totalCoins}
+              icon="🪙"
+              gradient
+              gradientColors={['#10b981', '#059669']}
+            />
+          </View>
+          <View className="flex-1 ml-2">
+            <StatCard
+              title="Journal Entries"
+              value={analytics.totalJournalEntries}
+              icon="📝"
+              gradient
+              gradientColors={['#ef4444', '#dc2626']}
+            />
+          </View>
+        </View>
+
+        {/* Filters */}
+        <Card className="mb-6">
+          <View className="p-4">
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Filter by Type
+            </Text>
+            <View className="flex-row flex-wrap">
+              {filters.map((filter) => (
+                <TouchableOpacity
+                  key={filter.id}
+                  onPress={() => setSelectedFilter(filter.id)}
+                  className={`mr-2 mb-2 px-4 py-2 rounded-full ${
+                    selectedFilter === filter.id
+                      ? 'bg-green-500'
+                      : 'bg-gray-200 dark:bg-gray-700'
+                  }`}
+                >
+                  <Text className={`font-medium ${
+                    selectedFilter === filter.id
+                      ? 'text-white'
+                      : 'text-gray-700 dark:text-gray-300'
+                  }`}>
+                    {filter.icon} {filter.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </Card>
+
+        {/* Period Filter */}
+        <Card className="mb-6">
+          <View className="p-4">
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Time Period
+            </Text>
+            <View className="flex-row">
+              {periods.map((period) => (
+                <TouchableOpacity
+                  key={period.id}
+                  onPress={() => setSelectedPeriod(period.id)}
+                  className={`flex-1 py-2 px-4 rounded-xl mr-2 ${
+                    selectedPeriod === period.id
+                      ? 'bg-green-500'
+                      : 'bg-gray-200 dark:bg-gray-700'
+                  }`}
+                >
+                  <Text className={`text-center font-medium ${
+                    selectedPeriod === period.id
+                      ? 'text-white'
+                      : 'text-gray-700 dark:text-gray-300'
+                  }`}>
+                    {period.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </Card>
+
+        {/* History List */}
+        <View className="mb-6">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+              Recent Activity
+            </Text>
+            <Text className="text-sm text-gray-600 dark:text-gray-400">
+              {filteredHistory.length} items
+            </Text>
+          </View>
+
+          {filteredHistory.length === 0 ? (
+            <Card>
+              <View className="p-8 items-center">
+                <Text className="text-6xl mb-4">📊</Text>
+                <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  No activity yet
+                </Text>
+                <Text className="text-gray-600 dark:text-gray-400 text-center">
+                  Start using the app to see your activity history here.
+                </Text>
+              </View>
+            </Card>
+          ) : (
+            <FlatList
+              data={filteredHistory}
+              renderItem={renderHistoryItem}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
+            />
+          )}
+        </View>
+
+        {/* Progress Insights */}
         <Card className="mb-6">
           <View className="p-6">
             <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              📈 This Week
+              📈 Progress Insights
             </Text>
-            <View className="flex-row justify-between">
-              <View className="items-center">
-                <Text className="text-2xl font-bold text-blue-600">
-                  {state.history.filter(h => h.type === 'defocus').length}
+            <View className="space-y-3">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-gray-700 dark:text-gray-300">
+                  Current Streak
                 </Text>
-                <Text className="text-gray-600 dark:text-gray-400 text-sm">
-                  Focus Sessions
-                </Text>
-              </View>
-              <View className="items-center">
-                <Text className="text-2xl font-bold text-purple-600">
-                  {state.history.filter(h => h.type === 'journal').length}
-                </Text>
-                <Text className="text-gray-600 dark:text-gray-400 text-sm">
-                  Journal Entries
+                <Text className="font-semibold text-gray-900 dark:text-white">
+                  {state.stats.streak} days
                 </Text>
               </View>
-              <View className="items-center">
-                <Text className="text-2xl font-bold text-green-600">
-                  {state.history.filter(h => h.type === 'game').length}
+              <View className="flex-row items-center justify-between">
+                <Text className="text-gray-700 dark:text-gray-300">
+                  Level Progress
                 </Text>
-                <Text className="text-gray-600 dark:text-gray-400 text-sm">
-                  Games Played
+                <Text className="font-semibold text-gray-900 dark:text-white">
+                  {state.stats.xp} / {Math.ceil(state.stats.xp / 100) * 100} XP
+                </Text>
+              </View>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-gray-700 dark:text-gray-300">
+                  Badges Earned
+                </Text>
+                <Text className="font-semibold text-gray-900 dark:text-white">
+                  {state.stats.badges.length} badges
                 </Text>
               </View>
             </View>
           </View>
         </Card>
-
-        {/* History Timeline */}
-        {Object.keys(groupedHistory).length === 0 ? (
-          <Card>
-            <View className="p-8 items-center">
-              <Text className="text-4xl mb-4">📊</Text>
-              <Text className="text-gray-600 dark:text-gray-400 text-center text-lg mb-2">
-                No activity yet
-              </Text>
-              <Text className="text-gray-500 dark:text-gray-500 text-center">
-                Start using the app to build your activity history!
-              </Text>
-            </View>
-          </Card>
-        ) : (
-          Object.entries(groupedHistory)
-            .sort(([a], [b]) => new Date(b) - new Date(a))
-            .map(([date, entries]) => (
-              <View key={date} className="mb-6">
-                <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                  {formatDate(entries[0].timestamp)}
-                </Text>
-                
-                {entries
-                  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                  .map((entry, index) => (
-                    <Card key={`${entry.id}-${index}`} className="mb-3">
-                      <View className="p-4">
-                        <View className="flex-row items-start">
-                          <View 
-                            className="w-12 h-12 rounded-full items-center justify-center mr-4"
-                            style={{ backgroundColor: getActivityColor(entry.type) + '20' }}
-                          >
-                            <Text className="text-2xl">
-                              {getActivityIcon(entry.type)}
-                            </Text>
-                          </View>
-                          
-                          <View className="flex-1">
-                            <Text className="font-semibold text-gray-900 dark:text-white mb-1">
-                              {getActivityDescription(entry)}
-                            </Text>
-                            
-                            <View className="flex-row items-center justify-between">
-                              <Text className="text-sm text-gray-600 dark:text-gray-400">
-                                {formatTime(entry.timestamp)}
-                              </Text>
-                              
-                              {getRewardsText(entry) && (
-                                <Text className="text-sm text-green-600 font-medium">
-                                  {getRewardsText(entry)}
-                                </Text>
-                              )}
-                            </View>
-                            
-                            {entry.type === 'defocus' && (
-                              <View className="mt-2">
-                                <View className="flex-row items-center">
-                                  <View className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                    <View 
-                                      className="bg-blue-500 h-2 rounded-full"
-                                      style={{ width: '100%' }}
-                                    />
-                                  </View>
-                                  <Text className="ml-2 text-xs text-gray-600 dark:text-gray-400">
-                                    {entry.duration}min
-                                  </Text>
-                                </View>
-                              </View>
-                            )}
-                          </View>
-                        </View>
-                      </View>
-                    </Card>
-                  ))}
-              </View>
-            ))
-        )}
-
-        {/* Bottom spacing */}
-        <View className="h-20" />
       </ScrollView>
     </View>
   );

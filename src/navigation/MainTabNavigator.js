@@ -6,8 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 import DashboardScreen from '../screens/DashboardScreen';
 import JournalScreen from '../screens/JournalScreen';
 import GamesScreen from '../screens/GamesScreen';
-import MusicScreen from '../screens/MusicScreen';
 import HistoryScreen from '../screens/HistoryScreen';
+import MusicScreen from '../screens/MusicScreen';
+import FocusScreen from '../screens/FocusScreen';
+import BreakScreen from '../screens/BreakScreen';
+import RewardsScreen from '../screens/RewardsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
@@ -25,10 +28,16 @@ export default function MainTabNavigator() {
             iconName = focused ? 'book' : 'book-outline';
           } else if (route.name === 'Games') {
             iconName = focused ? 'game-controller' : 'game-controller-outline';
-          } else if (route.name === 'Music') {
-            iconName = focused ? 'musical-notes' : 'musical-notes-outline';
           } else if (route.name === 'History') {
             iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+          } else if (route.name === 'Music') {
+            iconName = focused ? 'musical-notes' : 'musical-notes-outline';
+          } else if (route.name === 'Focus') {
+            iconName = focused ? 'target' : 'target-outline';
+          } else if (route.name === 'Break') {
+            iconName = focused ? 'pause-circle' : 'pause-circle-outline';
+          } else if (route.name === 'Rewards') {
+            iconName = focused ? 'gift' : 'gift-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -64,14 +73,29 @@ export default function MainTabNavigator() {
         options={{ title: 'Games' }}
       />
       <Tab.Screen 
+        name="History" 
+        component={HistoryScreen}
+        options={{ title: 'History' }}
+      />
+      <Tab.Screen 
         name="Music" 
         component={MusicScreen}
         options={{ title: 'Music' }}
       />
       <Tab.Screen 
-        name="History" 
-        component={HistoryScreen}
-        options={{ title: 'History' }}
+        name="Focus" 
+        component={FocusScreen}
+        options={{ title: 'Focus' }}
+      />
+      <Tab.Screen 
+        name="Break" 
+        component={BreakScreen}
+        options={{ title: 'Break' }}
+      />
+      <Tab.Screen 
+        name="Rewards" 
+        component={RewardsScreen}
+        options={{ title: 'Rewards' }}
       />
       <Tab.Screen 
         name="Profile" 

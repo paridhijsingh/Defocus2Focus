@@ -22,6 +22,8 @@ const motivationalQuotes = [
   "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
   "It is during our darkest moments that we must focus to see the light. - Aristotle",
   "The only way to do great work is to love what you do. - Steve Jobs",
+  "Focus on being productive instead of busy. - Tim Ferriss",
+  "The secret of getting ahead is getting started. - Mark Twain",
 ];
 
 export default function DashboardScreen() {
@@ -51,6 +53,17 @@ export default function DashboardScreen() {
 
   const todayProgress = (state.stats.todaySessions / state.stats.todayGoal) * 100;
 
+  const getLevel = (xp) => {
+    return Math.floor(xp / 100) + 1;
+  };
+
+  const getNextLevelXP = (xp) => {
+    const currentLevel = getLevel(xp);
+    return currentLevel * 100;
+  };
+
+  const levelProgress = (state.stats.xp % 100) / 100 * 100;
+
   return (
     <ScrollView 
       className="flex-1 bg-gray-50 dark:bg-gray-900"
@@ -69,12 +82,30 @@ export default function DashboardScreen() {
               Hi {state.user.username} 👋
             </Text>
             <Text className="text-blue-100 text-sm">
-              Ready to focus?
+              Level {getLevel(state.stats.xp)} • Ready to focus?
             </Text>
           </View>
           <TouchableOpacity className="bg-white/20 rounded-full p-2">
             <Ionicons name="notifications-outline" size={24} color="white" />
           </TouchableOpacity>
+        </View>
+
+        {/* Level Progress */}
+        <View className="bg-white/20 rounded-xl p-4 mb-4">
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-white font-semibold">
+              Level {getLevel(state.stats.xp)}
+            </Text>
+            <Text className="text-blue-100 text-sm">
+              {state.stats.xp} / {getNextLevelXP(state.stats.xp)} XP
+            </Text>
+          </View>
+          <View className="w-full bg-white/20 rounded-full h-2">
+            <View 
+              className="bg-white h-2 rounded-full"
+              style={{ width: `${levelProgress}%` }}
+            />
+          </View>
         </View>
 
         {/* Streak Tracker */}
@@ -90,9 +121,9 @@ export default function DashboardScreen() {
             </View>
             <View className="items-end">
               <Text className="text-white font-bold text-2xl">
-                {state.stats.xp}
+                {state.stats.coins}
               </Text>
-              <Text className="text-blue-100 text-sm">XP</Text>
+              <Text className="text-blue-100 text-sm">Coins</Text>
             </View>
           </View>
         </View>
@@ -225,20 +256,8 @@ export default function DashboardScreen() {
             </Card>
 
             <Card 
-              onPress={() => navigation.navigate('Music')}
-              className="w-[48%] mb-3"
-            >
-              <View className="p-4 items-center">
-                <Text className="text-3xl mb-2">🎵</Text>
-                <Text className="font-semibold text-gray-900 dark:text-white">
-                  Music
-                </Text>
-              </View>
-            </Card>
-
-            <Card 
               onPress={() => navigation.navigate('History')}
-              className="w-[48%]"
+              className="w-[48%] mb-3"
             >
               <View className="p-4 items-center">
                 <Text className="text-3xl mb-2">📊</Text>
@@ -249,18 +268,39 @@ export default function DashboardScreen() {
             </Card>
 
             <Card 
-              onPress={() => navigation.navigate('Profile')}
-              className="w-[48%]"
+              onPress={() => navigation.navigate('Leaderboard')}
+              className="w-[48%] mb-3"
             >
               <View className="p-4 items-center">
-                <Text className="text-3xl mb-2">👤</Text>
+                <Text className="text-3xl mb-2">🏆</Text>
                 <Text className="font-semibold text-gray-900 dark:text-white">
-                  Profile
+                  Leaderboard
                 </Text>
               </View>
             </Card>
           </View>
         </View>
+
+        {/* Recent Badges */}
+        {state.stats.badges.length > 0 && (
+          <Card className="mb-6">
+            <View className="p-6">
+              <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                🏆 Recent Badges
+              </Text>
+              <View className="flex-row flex-wrap">
+                {state.stats.badges.slice(-3).map((badge, index) => (
+                  <View key={index} className="items-center mr-4 mb-2">
+                    <Text className="text-2xl mb-1">{badge.icon}</Text>
+                    <Text className="text-xs text-gray-600 dark:text-gray-400 text-center">
+                      {badge.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </Card>
+        )}
 
         {/* Bottom Section - Today's Goal */}
         <Card className="mb-6">

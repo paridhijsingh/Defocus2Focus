@@ -23,7 +23,8 @@
       "package": "com.defocus2focus.app"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "bundler": "metro"
+    },
+    "platforms": ["ios", "android", "web"]
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -11,111 +11,90 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring,
-  withTiming 
-} from 'react-native-reanimated';
 import { useApp } from '../context/AppContext';
 import Card from '../components/Card';
 import ActionButton from '../components/ActionButton';
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const moodEmojis = ['😊', '😌', '😐', '😔', '😴', '🤔', '💪', '🎯', '🌟', '❤️'];
 
 export default function JournalScreen() {
   const { state, actions } = useApp();
-  const [entry, setEntry] = useState('');
-  const [title, setTitle] = useState('');
+  const [currentEntry, setCurrentEntry] = useState('');
+  const [selectedMood, setSelectedMood] = useState('😊');
+  const [entryTitle, setEntryTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [currentEntry, setCurrentEntry] = useState(null);
-  const textInputRef = useRef(null);
-  
-  const scale = useSharedValue(1);
+  const [editingEntry, setEditingEntry] = useState(null);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
-
-  const handleSave = () => {
-    if (!entry.trim()) {
+  const handleSaveEntry = () => {
+    if (!currentEntry.trim()) {
       Alert.alert('Error', 'Please write something before saving');
       return;
     }
 
-    const entryData = {
-      title: title.trim() || `Journal Entry ${new Date().toLocaleDateString()}`,
-      content: entry.trim(),
-      wordCount: entry.trim().split(/\s+/).length,
+    const entry = {
+      title: entryTitle.trim() || `Journal Entry - ${new Date().toLocaleDateString()}`,
+      content: currentEntry.trim(),
+      mood: selectedMood,
+      timestamp: new Date().toISOString(),
     };
 
-    if (isEditing && currentEntry) {
+    if (isEditing && editingEntry) {
       // Update existing entry
-      const updatedEntries = state.journalEntries.map(item => 
-        item.id === currentEntry.id 
-          ? { ...item, ...entryData, timestamp: new Date().toISOString() }
-          : item
+      const updatedEntries = state.journalEntries.map(entry => 
+        entry.id === editingEntry.id ? { ...entry, ...entry } : entry
       );
-      // Update in context (you'd need to add an updateJournalEntry action)
-      Alert.alert('Success', 'Journal entry updated successfully!');
+      actions.setUser({ journalEntries: updatedEntries });
     } else {
       // Add new entry
-      actions.addJournalEntry(entryData);
-      Alert.alert('Success', 'Journal entry saved successfully!');
+      actions.addJournalEntry(entry);
     }
 
     // Reset form
-    setEntry('');
-    setTitle('');
+    setCurrentEntry('');
+    setEntryTitle('');
+    setSelectedMood('😊');
     setIsEditing(false);
-    setCurrentEntry(null);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setEditingEntry(null);
+    
+    Alert.alert('Success', 'Journal entry saved!');
   };
 
-  const handleEdit = (journalEntry) => {
-    setTitle(journalEntry.title);
-    setEntry(journalEntry.content);
-    setCurrentEntry(journalEntry);
+  const handleEditEntry = (entry) => {
+    setCurrentEntry(entry.content);
+    setEntryTitle(entry.title);
+    setSelectedMood(entry.mood);
     setIsEditing(true);
-    textInputRef.current?.focus();
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setEditingEntry(entry);
   };
 
-  const handleDelete = (journalEntry) => {
+  const handleDeleteEntry = (entryId) => {
     Alert.alert(
       'Delete Entry',
       'Are you sure you want to delete this journal entry?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
+        {
+          text: 'Delete',
           style: 'destructive',
           onPress: () => {
-            // You'd need to add a deleteJournalEntry action to the context
-            Alert.alert('Success', 'Journal entry deleted successfully!');
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            const updatedEntries = state.journalEntries.filter(entry => entry.id !== entryId);
+            actions.setUser({ journalEntries: updatedEntries });
           }
-        },
+        }
       ]
     );
   };
 
-  const handleNewEntry = () => {
-    setEntry('');
-    setTitle('');
-    setIsEditing(false);
-    setCurrentEntry(null);
-    textInputRef.current?.focus();
-    
-    scale.value = withSpring(0.95, {}, () => {
-      scale.value = withSpring(1);
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
-
-  const wordCount = entry.trim().split(/\s+/).filter(word => word.length > 0).length;
 
   return (
     <KeyboardAvoidingView 
@@ -131,103 +110,107 @@ export default function JournalScreen() {
           <View className="flex-row justify-between items-center mb-6">
             <View>
               <Text className="text-white text-2xl font-bold">
-                Journal 📝
+                📝 Journal
               </Text>
               <Text className="text-purple-100 text-sm">
-                {state.stats.journalEntries} entries • {state.stats.streak} day streak
+                {state.journalEntries.length} entries • Reflect & grow
               </Text>
             </View>
-            <AnimatedTouchableOpacity
-              style={animatedStyle}
-              onPress={handleNewEntry}
-              className="bg-white/20 rounded-full p-3"
-            >
-              <Ionicons name="add" size={24} color="white" />
-            </AnimatedTouchableOpacity>
-          </View>
-
-          {/* Stats */}
-          <View className="flex-row justify-around">
-            <View className="items-center">
-              <Text className="text-white font-bold text-xl">
-                {state.stats.journalEntries}
-              </Text>
-              <Text className="text-purple-100 text-sm">Total Entries</Text>
-            </View>
-            <View className="items-center">
-              <Text className="text-white font-bold text-xl">
-                {state.stats.streak}
-              </Text>
-              <Text className="text-purple-100 text-sm">Day Streak</Text>
-            </View>
-            <View className="items-center">
-              <Text className="text-white font-bold text-xl">
-                {wordCount}
-              </Text>
-              <Text className="text-purple-100 text-sm">Words Today</Text>
-            </View>
+            <TouchableOpacity className="bg-white/20 rounded-full p-2">
+              <Ionicons name="search-outline" size={24} color="white" />
+            </TouchableOpacity>
           </View>
         </LinearGradient>
 
         <View className="px-6 -mt-4">
-          {/* Writing Area */}
+          {/* New Entry Card */}
           <Card className="mb-6">
             <View className="p-6">
-              <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                {isEditing ? 'Edit Entry' : 'New Entry'}
+              <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                {isEditing ? 'Edit Entry' : 'New Journal Entry'}
               </Text>
-              
+
               {/* Title Input */}
-              <TextInput
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Entry title (optional)"
-                placeholderTextColor="#9ca3af"
-                className="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3 mb-4 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600"
-              />
-              
-              {/* Content Input */}
-              <TextInput
-                ref={textInputRef}
-                value={entry}
-                onChangeText={setEntry}
-                placeholder="What's on your mind today?"
-                placeholderTextColor="#9ca3af"
-                multiline
-                textAlignVertical="top"
-                className="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3 h-48 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600"
-                style={{ fontSize: 16, lineHeight: 24 }}
-              />
-              
-              {/* Word Count */}
-              <View className="flex-row justify-between items-center mt-4">
-                <Text className="text-sm text-gray-600 dark:text-gray-400">
-                  {wordCount} words
+              <View className="mb-4">
+                <Text className="text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                  Title (optional)
                 </Text>
-                <View className="flex-row space-x-2">
-                  {isEditing && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setEntry('');
-                        setTitle('');
-                        setIsEditing(false);
-                        setCurrentEntry(null);
-                      }}
-                      className="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-lg"
-                    >
-                      <Text className="text-gray-700 dark:text-gray-300 font-medium">
-                        Cancel
-                      </Text>
-                    </TouchableOpacity>
-                  )}
+                <TextInput
+                  value={entryTitle}
+                  onChangeText={setEntryTitle}
+                  placeholder="Give your entry a title..."
+                  placeholderTextColor="#9ca3af"
+                  className="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600"
+                />
+              </View>
+
+              {/* Mood Selection */}
+              <View className="mb-4">
+                <Text className="text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                  How are you feeling?
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View className="flex-row">
+                    {moodEmojis.map((mood) => (
+                      <TouchableOpacity
+                        key={mood}
+                        onPress={() => setSelectedMood(mood)}
+                        className={`mr-3 p-3 rounded-full ${
+                          selectedMood === mood
+                            ? 'bg-purple-100 dark:bg-purple-900'
+                            : 'bg-gray-100 dark:bg-gray-700'
+                        }`}
+                      >
+                        <Text className="text-2xl">{mood}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </ScrollView>
+              </View>
+
+              {/* Content Input */}
+              <View className="mb-6">
+                <Text className="text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                  What's on your mind?
+                </Text>
+                <TextInput
+                  value={currentEntry}
+                  onChangeText={setCurrentEntry}
+                  placeholder="Write your thoughts, reflections, or anything you'd like to remember..."
+                  placeholderTextColor="#9ca3af"
+                  multiline
+                  numberOfLines={8}
+                  textAlignVertical="top"
+                  className="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 min-h-[120px]"
+                />
+              </View>
+
+              {/* Action Buttons */}
+              <View className="flex-row justify-between">
+                {isEditing && (
                   <ActionButton
-                    title={isEditing ? 'Update' : 'Save'}
-                    onPress={handleSave}
-                    gradient
-                    gradientColors={['#8b5cf6', '#7c3aed']}
-                    disabled={!entry.trim()}
+                    title="Cancel"
+                    onPress={() => {
+                      setIsEditing(false);
+                      setEditingEntry(null);
+                      setCurrentEntry('');
+                      setEntryTitle('');
+                      setSelectedMood('😊');
+                    }}
+                    variant="outline"
+                    size="md"
+                    className="flex-1 mr-2"
                   />
-                </View>
+                )}
+                <ActionButton
+                  title={isEditing ? 'Update Entry' : 'Save Entry'}
+                  onPress={handleSaveEntry}
+                  gradient
+                  gradientColors={['#8b5cf6', '#7c3aed']}
+                  size="md"
+                  icon="💾"
+                  className={isEditing ? 'flex-1 ml-2' : 'w-full'}
+                />
               </View>
             </View>
           </Card>
@@ -240,57 +223,100 @@ export default function JournalScreen() {
             
             {state.journalEntries.length === 0 ? (
               <Card>
-                <View className="p-6 items-center">
-                  <Text className="text-4xl mb-4">📝</Text>
+                <View className="p-8 items-center">
+                  <Text className="text-6xl mb-4">📝</Text>
+                  <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    No entries yet
+                  </Text>
                   <Text className="text-gray-600 dark:text-gray-400 text-center">
-                    No journal entries yet.{'\n'}Start writing to build your journaling habit!
+                    Start writing your first journal entry above to begin your reflection journey.
                   </Text>
                 </View>
               </Card>
             ) : (
-              state.journalEntries.slice(0, 5).map((journalEntry) => (
-                <Card key={journalEntry.id} className="mb-3">
+              state.journalEntries.slice(0, 5).map((entry, index) => (
+                <Card key={entry.id} className="mb-3">
                   <View className="p-4">
                     <View className="flex-row justify-between items-start mb-2">
-                      <Text className="font-semibold text-gray-900 dark:text-white flex-1">
-                        {journalEntry.title}
-                      </Text>
-                      <View className="flex-row space-x-2">
+                      <View className="flex-1">
+                        <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                          {entry.title}
+                        </Text>
+                        <Text className="text-sm text-gray-600 dark:text-gray-400">
+                          {formatDate(entry.timestamp)}
+                        </Text>
+                      </View>
+                      <View className="flex-row items-center">
+                        <Text className="text-2xl mr-2">{entry.mood}</Text>
                         <TouchableOpacity
-                          onPress={() => handleEdit(journalEntry)}
-                          className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg"
+                          onPress={() => handleEditEntry(entry)}
+                          className="bg-blue-100 dark:bg-blue-900 rounded-full p-2 mr-2"
                         >
-                          <Ionicons name="pencil" size={16} color="#3b82f6" />
+                          <Ionicons name="create-outline" size={16} color="#3b82f6" />
                         </TouchableOpacity>
                         <TouchableOpacity
-                          onPress={() => handleDelete(journalEntry)}
-                          className="p-2 bg-red-100 dark:bg-red-900 rounded-lg"
+                          onPress={() => handleDeleteEntry(entry.id)}
+                          className="bg-red-100 dark:bg-red-900 rounded-full p-2"
                         >
-                          <Ionicons name="trash" size={16} color="#ef4444" />
+                          <Ionicons name="trash-outline" size={16} color="#ef4444" />
                         </TouchableOpacity>
                       </View>
                     </View>
-                    
-                    <Text className="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                      {journalEntry.content.length > 100 
-                        ? `${journalEntry.content.substring(0, 100)}...`
-                        : journalEntry.content
+                    <Text className="text-gray-700 dark:text-gray-300 leading-6">
+                      {entry.content.length > 150 
+                        ? `${entry.content.substring(0, 150)}...` 
+                        : entry.content
                       }
                     </Text>
-                    
-                    <View className="flex-row justify-between items-center">
-                      <Text className="text-xs text-gray-500 dark:text-gray-500">
-                        {new Date(journalEntry.timestamp).toLocaleDateString()}
-                      </Text>
-                      <Text className="text-xs text-gray-500 dark:text-gray-500">
-                        {journalEntry.wordCount} words
-                      </Text>
-                    </View>
                   </View>
                 </Card>
               ))
             )}
           </View>
+
+          {/* Journal Stats */}
+          <Card className="mb-6">
+            <View className="p-6">
+              <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                📊 Journal Stats
+              </Text>
+              <View className="flex-row justify-around">
+                <View className="items-center">
+                  <Text className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {state.journalEntries.length}
+                  </Text>
+                  <Text className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Entries
+                  </Text>
+                </View>
+                <View className="items-center">
+                  <Text className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {state.journalEntries.filter(entry => {
+                      const entryDate = new Date(entry.timestamp);
+                      const today = new Date();
+                      return entryDate.toDateString() === today.toDateString();
+                    }).length}
+                  </Text>
+                  <Text className="text-sm text-gray-600 dark:text-gray-400">
+                    Today
+                  </Text>
+                </View>
+                <View className="items-center">
+                  <Text className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {state.journalEntries.filter(entry => {
+                      const entryDate = new Date(entry.timestamp);
+                      const weekAgo = new Date();
+                      weekAgo.setDate(weekAgo.getDate() - 7);
+                      return entryDate >= weekAgo;
+                    }).length}
+                  </Text>
+                  <Text className="text-sm text-gray-600 dark:text-gray-400">
+                    This Week
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </Card>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -18,6 +18,7 @@ export default function LoginScreen() {
   const { actions } = useApp();
   const navigation = useNavigation();
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +32,7 @@ export default function LoginScreen() {
     
     // Simulate API call
     setTimeout(() => {
-      actions.login(username.trim());
+      actions.login(username.trim(), '', 'username');
       setLoading(false);
       navigation.navigate('MainTabs');
     }, 1000);
@@ -43,14 +44,35 @@ export default function LoginScreen() {
       return;
     }
 
+    if (isSignUp && !email.trim()) {
+      Alert.alert('Error', 'Please enter an email address');
+      return;
+    }
+
     setLoading(true);
     
     // Simulate API call
     setTimeout(() => {
-      actions.login(username.trim());
+      actions.login(username.trim(), email.trim(), 'email');
       setLoading(false);
       navigation.navigate('MainTabs');
     }, 1000);
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    
+    // Simulate Google authentication
+    // In a real app, you would use Google Sign-In SDK here
+    setTimeout(() => {
+      // Simulate getting user info from Google
+      const mockEmail = 'user@gmail.com';
+      const mockName = 'Google User'; // In real app, this would come from Google profile
+      
+      actions.login(mockName, mockEmail, 'google');
+      setLoading(false);
+      navigation.navigate('MainTabs');
+    }, 1500);
   };
 
   return (
@@ -86,7 +108,7 @@ export default function LoginScreen() {
             </Text>
 
             {/* Username Input */}
-            <View className="mb-6">
+            <View className="mb-4">
               <Text className="text-gray-700 dark:text-gray-300 mb-2 font-medium">
                 Username
               </Text>
@@ -109,6 +131,33 @@ export default function LoginScreen() {
               </View>
             </View>
 
+            {/* Email Input - Only show for sign up */}
+            {isSignUp && (
+              <View className="mb-4">
+                <Text className="text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                  Email
+                </Text>
+                <View className="flex-row items-center bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3 border border-gray-200 dark:border-gray-600">
+                  <Ionicons 
+                    name="mail-outline" 
+                    size={20} 
+                    color="#6b7280" 
+                    className="mr-3"
+                  />
+                  <TextInput
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="Enter your email"
+                    placeholderTextColor="#9ca3af"
+                    className="flex-1 text-gray-900 dark:text-white text-base"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                  />
+                </View>
+              </View>
+            )}
+
             {/* Action Button */}
             <ActionButton
               title={isSignUp ? 'Create Account' : 'Sign In'}
@@ -119,6 +168,28 @@ export default function LoginScreen() {
               disabled={loading}
               className="mb-4"
             />
+
+            {/* Divider */}
+            <View className="flex-row items-center mb-4">
+              <View className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+              <Text className="mx-4 text-gray-500 dark:text-gray-400 text-sm">
+                or
+              </Text>
+              <View className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+            </View>
+
+            {/* Google Sign In Button */}
+            <TouchableOpacity
+              onPress={handleGoogleSignIn}
+              disabled={loading}
+              className="flex-row items-center justify-center bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-6 py-3 mb-4"
+              activeOpacity={0.8}
+            >
+              <Text className="text-2xl mr-3">🔍</Text>
+              <Text className="text-gray-900 dark:text-white font-semibold text-base">
+                Continue with Google
+              </Text>
+            </TouchableOpacity>
 
             {/* Toggle Sign Up/Sign In */}
             <TouchableOpacity

@@ -25,33 +25,37 @@ const onboardingData = [
     id: 1,
     title: 'Welcome to Defocus2Focus! 🎯',
     subtitle: 'Where Productivity Meets Play',
-    description: 'Transform your productivity journey with our gamified approach to focus and mindful breaks.',
+    description: 'Transform your productivity journey with our gamified approach to focus and mindful breaks. Reset your mind, boost your concentration, and achieve more.',
     icon: '🎯',
     gradient: ['#3b82f6', '#1d4ed8'],
+    features: ['Smart Focus Sessions', 'Mindful Breaks', 'Progress Tracking'],
   },
   {
     id: 2,
     title: 'Balance Focus & Play ⚖️',
     subtitle: 'Smart Work-Life Integration',
-    description: 'Master the art of focused work sessions followed by purposeful breaks to maintain peak performance.',
+    description: 'Master the art of focused work sessions followed by purposeful breaks. Our defocus mode helps you reset your mind and return with renewed energy.',
     icon: '⚖️',
     gradient: ['#10b981', '#059669'],
+    features: ['Defocus Timer', 'Breathing Exercises', 'Mindful Activities'],
   },
   {
     id: 3,
     title: 'Gamified Productivity 🏆',
     subtitle: 'Earn Rewards & Level Up',
-    description: 'Complete sessions, earn XP, unlock achievements, and track your progress with our engaging reward system.',
+    description: 'Complete sessions, earn XP, unlock achievements, and track your progress with our engaging reward system. Make productivity fun and sustainable.',
     icon: '🏆',
     gradient: ['#f59e0b', '#d97706'],
+    features: ['XP & Coins', 'Achievement Badges', 'Streak Tracking'],
   },
   {
     id: 4,
     title: 'Track Your Progress 📊',
     subtitle: 'Data-Driven Improvement',
-    description: 'Monitor your focus patterns, journal your thoughts, and build lasting habits with detailed analytics.',
+    description: 'Monitor your focus patterns, journal your thoughts, and build lasting habits with detailed analytics. See your growth over time.',
     icon: '📊',
     gradient: ['#8b5cf6', '#7c3aed'],
+    features: ['Analytics Dashboard', 'Journal Entries', 'AI Therapist'],
   },
 ];
 
@@ -121,7 +125,7 @@ export default function OnboardingScreen() {
         <Animated.View style={animatedStyle} className="items-center">
           <LinearGradient
             colors={item.gradient}
-            className="w-32 h-32 rounded-full items-center justify-center mb-8"
+            className="w-32 h-32 rounded-full items-center justify-center mb-8 shadow-lg"
           >
             <Text className="text-6xl">{item.icon}</Text>
           </LinearGradient>
@@ -134,9 +138,21 @@ export default function OnboardingScreen() {
             {item.subtitle}
           </Text>
           
-          <Text className="text-lg text-center text-gray-600 dark:text-gray-300 leading-7">
+          <Text className="text-lg text-center text-gray-600 dark:text-gray-300 leading-7 mb-8">
             {item.description}
           </Text>
+
+          {/* Features list */}
+          <View className="w-full">
+            {item.features.map((feature, featureIndex) => (
+              <View key={featureIndex} className="flex-row items-center mb-3">
+                <View className="w-2 h-2 bg-blue-500 rounded-full mr-3" />
+                <Text className="text-gray-700 dark:text-gray-300 font-medium">
+                  {feature}
+                </Text>
+              </View>
+            ))}
+          </View>
         </Animated.View>
       </View>
     );
