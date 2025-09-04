@@ -14,12 +14,12 @@ const WelcomeScreen = ({ onGetStarted, onLearnMore }) => {
       {/* Logo */}
       <div className="w-full flex flex-col items-center pt-16 sm:pt-20 md:pt-24 animate-fade-in-up">
         <img
-          src="assets/logo/defocus2focus-hero.png"
+          src="/assets/logo/defocus2focus-hero.png"
           alt="Defocus2Focus Logo"
           className="h-24 w-auto sm:h-28 md:h-32 drop-shadow-[0_10px_25px_rgba(236,72,153,0.35)]"
           loading="eager"
           onError={(e) => {
-            e.currentTarget.src = 'assets/logo/defocus2focus-icon.svg';
+            e.currentTarget.src = '/assets/logo/defocus2focus-icon.png';
           }}
         />
       </div>
