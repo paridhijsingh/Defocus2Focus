@@ -1,0 +1,23 @@
+<svg width="320" height="64" viewBox="0 0 320 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Defocus2Focus wordmark">
+  <defs>
+    <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="blurPart" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.2" />
+    </filter>
+  </defs>
+  <!-- Icon left -->
+  <g transform="translate(0,0)">
+    <circle cx="28" cy="32" r="20" fill="url(#markGrad)" filter="url(#blurPart)"/>
+    <circle cx="36" cy="32" r="8" fill="#111827"/>
+  </g>
+  <!-- Wordmark -->
+  <g font-family="'Inter', 'Poppins', 'Nunito', system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#111827" transform="translate(64,39)">
+    <text opacity="0.7">De</text>
+    <text x="30" fill="#111827" font-weight="800">focus2</text>
+    <text x="140" fill="#111827" font-weight="800">Focus</text>
+  </g>
+</svg>
+

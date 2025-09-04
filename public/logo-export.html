@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Defocus2Focus Logo Export</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Poppins, Nunito, sans-serif; }
+    </style>
+  </head>
+  <body class="min-h-screen bg-gray-50 p-6">
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow p-6">
+      <h1 class="text-2xl font-bold mb-4">Defocus2Focus Logo Export</h1>
+      <p class="text-sm text-gray-600 mb-6">Click a size to download PNG with transparent background.</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <button class="px-4 py-2 rounded-lg bg-indigo-600 text-white" onclick="exportPNG(64)">64px</button>
+        <button class="px-4 py-2 rounded-lg bg-indigo-600 text-white" onclick="exportPNG(128)">128px</button>
+        <button class="px-4 py-2 rounded-lg bg-indigo-600 text-white" onclick="exportPNG(256)">256px</button>
+        <button class="px-4 py-2 rounded-lg bg-indigo-600 text-white" onclick="exportPNG(512)">512px</button>
+      </div>
+      <canvas id="canvas" width="512" height="512" class="mt-6 border rounded"></canvas>
+    </div>
+
+    <script>
+      const iconPath = './assets/logo/defocus2focus-icon.svg';
+      async function exportPNG(size) {
+        const svgText = await fetch(iconPath).then(r => r.text());
+        const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.getElementById('canvas');
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, size, size);
+          ctx.drawImage(img, 0, 0, size, size);
+          canvas.toBlob((blob) => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `defocus2focus-icon-${size}.png`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+          }, 'image/png');
+          URL.revokeObjectURL(url);
+        };
+        img.src = url;
+      }
+    </script>
+  </body>
+  </html>
+
