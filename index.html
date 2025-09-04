@@ -736,166 +736,173 @@
         );
       };
 
-             // Audio Player Component
-       const AudioPlayer = ({
-         audioFiles,
-         currentTrack,
-         setCurrentTrack,
-         isPlaying,
-         setIsPlaying,
-       }) => {
-         const audioRef = useRef(null);
-         const [selectedCategory, setSelectedCategory] = useState("All");
+      // Audio Player Component
+      const AudioPlayer = ({
+        audioFiles,
+        currentTrack,
+        setCurrentTrack,
+        isPlaying,
+        setIsPlaying,
+      }) => {
+        const audioRef = useRef(null);
+        const [selectedCategory, setSelectedCategory] = useState("All");
 
-         useEffect(() => {
-           if (audioRef.current) {
-             if (isPlaying) {
-               audioRef.current.play().catch(console.error);
-             } else {
-               audioRef.current.pause();
-             }
-           }
-         }, [isPlaying, currentTrack]);
+        useEffect(() => {
+          if (audioRef.current) {
+            if (isPlaying) {
+              audioRef.current.play().catch(console.error);
+            } else {
+              audioRef.current.pause();
+            }
+          }
+        }, [isPlaying, currentTrack]);
 
-         const playPause = () => {
-           setIsPlaying(!isPlaying);
-         };
+        const playPause = () => {
+          setIsPlaying(!isPlaying);
+        };
 
-         const nextTrack = () => {
-           const filteredFiles = getFilteredFiles();
-           const currentIndex = filteredFiles.findIndex(
-             (file) => file.name === currentTrack
-           );
-           const nextIndex = (currentIndex + 1) % filteredFiles.length;
-           setCurrentTrack(filteredFiles[nextIndex].name);
-         };
+        const nextTrack = () => {
+          const filteredFiles = getFilteredFiles();
+          const currentIndex = filteredFiles.findIndex(
+            (file) => file.name === currentTrack
+          );
+          const nextIndex = (currentIndex + 1) % filteredFiles.length;
+          setCurrentTrack(filteredFiles[nextIndex].name);
+        };
 
-         const prevTrack = () => {
-           const filteredFiles = getFilteredFiles();
-           const currentIndex = filteredFiles.findIndex(
-             (file) => file.name === currentTrack
-           );
-           const prevIndex =
-             currentIndex === 0 ? filteredFiles.length - 1 : currentIndex - 1;
-           setCurrentTrack(filteredFiles[prevIndex].name);
-         };
+        const prevTrack = () => {
+          const filteredFiles = getFilteredFiles();
+          const currentIndex = filteredFiles.findIndex(
+            (file) => file.name === currentTrack
+          );
+          const prevIndex =
+            currentIndex === 0 ? filteredFiles.length - 1 : currentIndex - 1;
+          setCurrentTrack(filteredFiles[prevIndex].name);
+        };
 
-         const getFilteredFiles = () => {
-           if (selectedCategory === "All") return audioFiles;
-           return audioFiles.filter(file => file.category === selectedCategory);
-         };
+        const getFilteredFiles = () => {
+          if (selectedCategory === "All") return audioFiles;
+          return audioFiles.filter(
+            (file) => file.category === selectedCategory
+          );
+        };
 
-         const getCategories = () => {
-           const categories = ["All", ...new Set(audioFiles.map(file => file.category))];
-           return categories;
-         };
+        const getCategories = () => {
+          const categories = [
+            "All",
+            ...new Set(audioFiles.map((file) => file.category)),
+          ];
+          return categories;
+        };
 
-         const currentFile = audioFiles.find(
-           (file) => file.name === currentTrack
-         );
+        const currentFile = audioFiles.find(
+          (file) => file.name === currentTrack
+        );
 
-         const filteredFiles = getFilteredFiles();
+        const filteredFiles = getFilteredFiles();
 
-         return (
-           <div className="bg-white rounded-xl shadow-lg p-6">
-             <h3 className="text-xl font-bold text-gray-900 mb-4">
-               🎵 Music & Relax
-             </h3>
+        return (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              🎵 Music & Relax
+            </h3>
 
-             {/* Category Filter */}
-             <div className="mb-6">
-               <div className="flex flex-wrap gap-2">
-                 {getCategories().map((category) => (
-                   <button
-                     key={category}
-                     onClick={() => setSelectedCategory(category)}
-                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                       selectedCategory === category
-                         ? "bg-blue-600 text-white"
-                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                     }`}
-                   >
-                     {category}
-                   </button>
-                 ))}
-               </div>
-             </div>
+            {/* Category Filter */}
+            <div className="mb-6">
+              <div className="flex flex-wrap gap-2">
+                {getCategories().map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedCategory === category
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-             <div className="text-center mb-6">
-               <div className="text-4xl mb-2">🎧</div>
-               <h4 className="text-lg font-semibold text-gray-900">
-                 {currentFile?.name || "No track selected"}
-               </h4>
-               <p className="text-sm text-gray-600">
-                 {currentFile?.category || ""}
-               </p>
-             </div>
+            <div className="text-center mb-6">
+              <div className="text-4xl mb-2">🎧</div>
+              <h4 className="text-lg font-semibold text-gray-900">
+                {currentFile?.name || "No track selected"}
+              </h4>
+              <p className="text-sm text-gray-600">
+                {currentFile?.category || ""}
+              </p>
+            </div>
 
-             <div className="flex justify-center gap-4 mb-6">
-               <button
-                 onClick={prevTrack}
-                 className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-               >
-                 ⏮️
-               </button>
-               <button
-                 onClick={playPause}
-                 className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
-               >
-                 {isPlaying ? "⏸️" : "▶️"}
-               </button>
-               <button
-                 onClick={nextTrack}
-                 className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-               >
-                 ⏭️
-               </button>
-             </div>
+            <div className="flex justify-center gap-4 mb-6">
+              <button
+                onClick={prevTrack}
+                className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+              >
+                ⏮️
+              </button>
+              <button
+                onClick={playPause}
+                className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
+              >
+                {isPlaying ? "⏸️" : "▶️"}
+              </button>
+              <button
+                onClick={nextTrack}
+                className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+              >
+                ⏭️
+              </button>
+            </div>
 
-             <div className="space-y-2 max-h-64 overflow-y-auto">
-               {filteredFiles.length === 0 ? (
-                 <div className="text-center py-8 text-gray-500">
-                   <div className="text-4xl mb-2">🎵</div>
-                   <p>No tracks found in this category</p>
-                 </div>
-               ) : (
-                 filteredFiles.map((file, index) => (
-                   <button
-                     key={index}
-                     onClick={() => setCurrentTrack(file.name)}
-                     className={`w-full text-left p-3 rounded-lg transition-colors ${
-                       currentTrack === file.name
-                         ? "bg-blue-100 text-blue-900"
-                         : "bg-gray-50 hover:bg-gray-100 text-gray-700"
-                     }`}
-                   >
-                     <div className="flex items-center gap-3">
-                       <span className="text-lg">{file.icon}</span>
-                       <div>
-                         <div className="font-medium">{file.name}</div>
-                         <div className="text-sm opacity-75">{file.category}</div>
-                       </div>
-                     </div>
-                   </button>
-                 ))
-               )}
-             </div>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {filteredFiles.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-4xl mb-2">🎵</div>
+                  <p>No tracks found in this category</p>
+                </div>
+              ) : (
+                filteredFiles.map((file, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentTrack(file.name)}
+                    className={`w-full text-left p-3 rounded-lg transition-colors ${
+                      currentTrack === file.name
+                        ? "bg-blue-100 text-blue-900"
+                        : "bg-gray-50 hover:bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">{file.icon}</span>
+                      <div>
+                        <div className="font-medium">{file.name}</div>
+                        <div className="text-sm opacity-75">
+                          {file.category}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
 
-             {currentFile && (
-               <audio
-                 ref={audioRef}
-                 src={currentFile.url}
-                 onEnded={nextTrack}
-                 onError={(e) => {
-                   console.error("Audio error:", e);
-                   setIsPlaying(false);
-                 }}
-                 preload="metadata"
-               />
-             )}
-           </div>
-         );
-       };
+            {currentFile && (
+              <audio
+                ref={audioRef}
+                src={currentFile.url}
+                onEnded={nextTrack}
+                onError={(e) => {
+                  console.error("Audio error:", e);
+                  setIsPlaying(false);
+                }}
+                preload="metadata"
+              />
+            )}
+          </div>
+        );
+      };
 
       // Main Dashboard Component
       const Dashboard = ({ user, onLogout }) => {
