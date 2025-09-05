@@ -27,7 +27,7 @@ const WelcomeScreen = ({ onGetStarted, onLearnMore, logoSrc = '/assets/logo/defo
       {/* Headings */}
       <div className="mt-6 sm:mt-8 md:mt-10 text-center max-w-2xl animate-fade-in-up [animation-delay:120ms]">
         <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight" style={{ fontFamily: 'Montserrat, ui-sans-serif, system-ui' }}>
-          Welcome to <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 bg-clip-text text-transparent">Defocus2Focus</span>!
+          Welcome to <span className="logo-gradient-text">Defocus2Focus</span>!
         </h1>
         <p className="mt-3 sm:mt-4 md:mt-5 text-sm sm:text-base md:text-lg text-indigo-100/90">
           Your journey from distraction to clarity begins here.

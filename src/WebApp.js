@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingTutorial from './components/OnboardingTutorial';
 import WebAnalyticsDashboard from './components/WebAnalyticsDashboard';
+import DefocusSection from './components/defocus/DefocusSection';
 import WelcomeScreen from './components/WelcomeScreen';
 import '../global.css';
 
@@ -153,7 +154,7 @@ const WebApp = () => {
                 <span className="mr-2">🎯</span>
                 Start Focus Session
               </button>
-              <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center">
+              <button onClick={() => setCurrentScreen('defocus')} className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center">
                 <span className="mr-2">🌿</span>
                 Take Defocus Break
               </button>
@@ -230,6 +231,10 @@ const WebApp = () => {
           user={{ name: 'Paridhi', level: 12 }}
           onBack={() => setCurrentScreen('dashboard')}
         />
+      )}
+
+      {hasCompletedOnboarding && currentScreen === 'defocus' && (
+        <DefocusSection />
       )}
 
       {hasCompletedOnboarding && currentScreen === 'dashboard' && renderDashboard()}
