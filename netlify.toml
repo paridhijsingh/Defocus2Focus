@@ -1,9 +1,13 @@
 [build]
-  # Publish directory
-  publish = "."
+  # Publish the Expo web export directory
+  publish = "dist"
   
-  # Build command (none needed for static site)
-  command = "echo 'Static site - no build needed'"
+  # Build the Expo web app on Netlify
+  command = "npx --yes expo export --platform web"
+
+[build.environment]
+  # Ensure a modern Node for Expo
+  NODE_VERSION = "18"
 
 # Redirect all routes to index.html for SPA
 [[redirects]]
