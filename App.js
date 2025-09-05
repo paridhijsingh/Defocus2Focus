@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 // Simple web-compatible app without complex dependencies
 export default function App() {
+  if (Platform.OS === 'web') {
+    const WebApp = require('./src/WebApp').default;
+    return <WebApp />;
+  }
   const [currentScreen, setCurrentScreen] = useState('welcome');
   const [username, setUsername] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
