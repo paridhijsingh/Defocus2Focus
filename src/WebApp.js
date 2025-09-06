@@ -3,7 +3,7 @@ import OnboardingTutorial from './components/OnboardingTutorial';
 import WebAnalyticsDashboard from './components/WebAnalyticsDashboard';
 import DefocusSection from './components/defocus/DefocusSection';
 import WelcomeScreen from './components/WelcomeScreen';
-import '../global.css';
+// Global CSS import removed to avoid Metro parsing CSS
 
 const WebApp = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);

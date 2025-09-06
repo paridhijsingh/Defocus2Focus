@@ -3,7 +3,7 @@
   publish = "dist"
   
   # Build the Expo web app on Netlify
-  command = "npx --yes expo export --platform web"
+  command = "npm ci --legacy-peer-deps && npx --yes expo export --platform web"
 
 [build.environment]
   # Ensure a modern Node for Expo
