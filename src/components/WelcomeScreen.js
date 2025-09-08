@@ -8,7 +8,7 @@ import React from 'react';
  * - Primary and secondary actions with subtle hover animations
  * - Uses gradient accents matching the brand logo
  */
-const WelcomeScreen = ({ onGetStarted, onLearnMore, logoSrc = '/assets/logo/defocus2focus-hero-v3.png', logoAlt = 'Defocus2Focus' }) => {
+const WelcomeScreen = ({ onGetStarted, onLearnMore, logoSrc = 'https://defocus2focus.netlify.app/assets/logo/defocus2focus-hero-v3.png?v=4', logoAlt = 'Defocus2Focus' }) => {
   return (
     <div className="min-h-screen w-full bg-[#0A1B3A] text-white flex flex-col items-center px-6">
       {/* Logo */}
@@ -19,7 +19,7 @@ const WelcomeScreen = ({ onGetStarted, onLearnMore, logoSrc = '/assets/logo/defo
           className="h-24 w-auto sm:h-28 md:h-32 drop-shadow-[0_6px_18px_rgba(59,130,246,0.35)]"
           loading="eager"
           onError={(e) => {
-            e.currentTarget.src = '/assets/logo/defocus2focus-icon.svg';
+            e.currentTarget.src = 'https://defocus2focus.netlify.app/assets/logo/defocus2focus-icon.svg?v=4';
           }}
         />
       </div>
