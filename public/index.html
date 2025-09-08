@@ -85,11 +85,33 @@
           );
       }
     </style>
+    <style>
+      html, body { height: 100%; margin: 0; }
+      body {
+        background: linear-gradient(135deg, #93c5fd 0%, #a78bfa 100%);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      .container { max-width: 720px; padding: 24px; }
+      .logo { height: 120px; width: auto; filter: drop-shadow(0 10px 25px rgba(59,130,246,0.35)); }
+      h1 { font-size: 40px; margin: 16px 0 8px; }
+      p { font-size: 18px; opacity: 0.95; margin: 0 0 16px; }
+      .cta { display: inline-block; margin-top: 12px; padding: 12px 20px; background:#fff; color:#0f172a; border-radius: 12px; font-weight: 600; text-decoration: none; }
+    </style>
   </head>
-  <body class="bg-gray-50">
-    <div id="root"></div>
-
-    <script type="text/babel">
+  <body>
+    <div class="container">
+      <img class="logo" src="./assets/logo/defocus2focus-hero-v3.png" alt="Defocus2Focus" onerror="this.src='./assets/logo/defocus2focus-icon.svg'" />
+      <h1>Defocus2Focus</h1>
+      <p>Where Procrastination Meets Play – Gamified Focus & Productivity</p>
+      <a class="cta" href="#">Get Started</a>
+    </div>
+    <!-- removed inline React/Babel app for stability -->
+    <!-- <script type="text/babel"> -->
       const { useState, useEffect } = React;
       const Motion = (window.framerMotion && window.framerMotion.motion) || null;
       const MDiv = Motion ? Motion.div : 'div';
@@ -1391,6 +1413,6 @@
       ReactDOM.createRoot(document.getElementById("root")).render(
         React.createElement(WebApp)
       );
-    </script>
+    <!-- </script> -->
   </body>
 </html>
