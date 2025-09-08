@@ -1,8 +1,7 @@
 [build]
-  # Run the build from the public/ folder to avoid installing root deps
-  base = "public"
-  publish = "."
-  command = "echo 'Static deploy'"
+  # Serve prebuilt static site from dist/
+  publish = "dist"
+  command = "echo 'Static deploy from dist/'"
 
 [build.environment]
   # Ensure a modern Node for Expo
