@@ -214,8 +214,6 @@ const WebApp = () => {
         <WelcomeScreen
           onGetStarted={handleGetStarted}
           onLearnMore={() => setCurrentScreen('analytics')}
-          logoSrc="/assets/logo/defocus2focus-hero.png"
-          logoAlt="Defocus2Focus"
         />
       )}
 
