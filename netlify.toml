@@ -1,9 +1,8 @@
 [build]
-  # Publish the static web app directly from public/
-  publish = "public"
-  
-  # No build needed for static site
-  command = "echo 'Static deploy from public/'"
+  # Run the build from the public/ folder to avoid installing root deps
+  base = "public"
+  publish = "."
+  command = "echo 'Static deploy'"
 
 [build.environment]
   # Ensure a modern Node for Expo
