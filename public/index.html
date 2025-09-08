@@ -7,10 +7,11 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
+      window.tailwind = window.tailwind || {};
       tailwind.config = { darkMode: "class" };
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
     <style>
       /* Custom animations */
@@ -90,7 +91,9 @@
 
     <script type="text/babel">
       const { useState, useEffect } = React;
-      const { motion } = window.framerMotion || {};
+      const Motion = (window.framerMotion && window.framerMotion.motion) || null;
+      const MDiv = Motion ? Motion.div : 'div';
+      const MImg = Motion ? Motion.img : 'img';
 
       // Modern Welcome Screen Component
       const WelcomeScreen = ({ onStart }) => {
@@ -157,14 +160,14 @@
               </div>
             </div>
 
-            <motion.div
+            <MDiv
               className="flex-1 flex items-center justify-center p-6"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: isLeaving ? 0 : 1, y: isLeaving ? -10 : 0 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
               <div className="text-center text-white max-w-3xl">
-                <motion.img
+                <MImg
                   src="./assets/logo/defocus2focus-hero.png?v=2"
                   alt="Defocus2Focus"
                   className="mx-auto h-24 sm:h-28 md:h-32 mb-6 drop-shadow"
@@ -183,7 +186,7 @@
                   Productivity
                 </p>
 
-                <motion.svg
+                <MDiv as="svg"
                   width="240"
                   height="160"
                   viewBox="0 0 240 160"
@@ -211,10 +214,10 @@
                     d="M30 80 C 40 20, 120 20, 130 80 S 220 140, 210 90 C 190 30, 60 40, 30 80 Z"
                     fill="url(#heroGrad)"
                   />
-                </motion.svg>
+                </MDiv>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <motion.button
+                  <MDiv as="button"
                     whileHover={{
                       scale: 1.03,
                       boxShadow: "0 10px 25px rgba(59,130,246,0.35)",
@@ -225,8 +228,8 @@
                     className="px-10 py-4 rounded-2xl text-lg font-semibold bg-white text-slate-900 shadow-md"
                   >
                     Get Started
-                  </motion.button>
-                  <motion.button
+                  </MDiv>
+                  <MDiv as="button"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     aria-label="Learn more about Defocus2Focus"
@@ -239,7 +242,7 @@
                     }
                   >
                     Learn More
-                  </motion.button>
+                  </MDiv>
                 </div>
 
                 <p className="mt-10 text-sm text-white/80">
