@@ -159,7 +159,7 @@
   </head>
   <body class="bg-gray-50">
     <div id="root"></div>
-    <script type="text/babel">
+    <script type="text/babel" data-presets="env,react">
       const { useState, useEffect } = React;
       const Motion =
         (window.framerMotion && window.framerMotion.motion) || null;
@@ -368,8 +368,7 @@
                   Productivity
                 </p>
 
-                <MDiv
-                  as="svg"
+                <AnimatedSvg
                   width="240"
                   height="160"
                   viewBox="0 0 240 160"
@@ -397,7 +396,7 @@
                     d="M30 80 C 40 20, 120 20, 130 80 S 220 140, 210 90 C 190 30, 60 40, 30 80 Z"
                     fill="url(#heroGrad)"
                   />
-                </MDiv>
+                </AnimatedSvg>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <AnimatedButton
