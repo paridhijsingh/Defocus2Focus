@@ -3,7 +3,7 @@
   publish = "dist"
   
   # Build the Expo web app on Netlify
-  command = "npm ci --legacy-peer-deps && npx --yes expo export --platform web && mkdir -p dist/assets && cp -R public/assets/* dist/assets/ || true"
+  command = "npm ci --legacy-peer-deps && npx --yes expo export --platform web && mkdir -p dist/assets && cp -R public/assets/* dist/assets/"
 
 [build.environment]
   # Ensure a modern Node for Expo
