@@ -1,7 +1,7 @@
 [build]
-  # Serve prebuilt static site from dist/
-  publish = "dist"
-  command = "echo 'Static deploy from dist/'"
+f  # Serve static site from public/
+  publish = "public"
+  command = "echo 'Static deploy from public/'"
 
 [build.environment]
   # Ensure a modern Node for Expo
