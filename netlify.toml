@@ -1,9 +1,9 @@
 [build]
-  # Publish the Expo web export directory
-  publish = "dist"
+  # Publish the static web app directly from public/
+  publish = "public"
   
-  # Build the Expo web app on Netlify
-  command = "npm ci --legacy-peer-deps && npx --yes expo export --platform web && rsync -a public/ dist/ && ls -R dist/assets"
+  # No build needed for static site
+  command = "echo 'Static deploy from public/'"
 
 [build.environment]
   # Ensure a modern Node for Expo
@@ -25,10 +25,7 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
 
 # Cache static assets
-[[headers]]
-  for = "/_expo/static/js/web/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+# (Removed Expo-specific cache header)
 
 [[headers]]
   for = "/assets/logo/*"
