@@ -166,12 +166,41 @@
       const MDiv = Motion ? Motion.div : "div";
       const MImg = Motion ? Motion.img : "img";
 
+      // Safe wrappers so UI renders even if Framer Motion isn't available
+      const omitMotionProps = (props = {}) => {
+        const { initial, animate, transition, whileHover, whileTap, ...rest } =
+          props;
+        return rest;
+      };
+      const AnimatedDiv = ({ children, ...props }) =>
+        Motion ? (
+          <Motion.div {...props}>{children}</Motion.div>
+        ) : (
+          <div {...omitMotionProps(props)}>{children}</div>
+        );
+      const AnimatedSvg = ({ children, ...props }) =>
+        Motion ? (
+          <Motion.svg {...props}>{children}</Motion.svg>
+        ) : (
+          <svg {...omitMotionProps(props)}>{children}</svg>
+        );
+      const AnimatedG = ({ children, ...props }) =>
+        Motion ? (
+          <Motion.g {...props}>{children}</Motion.g>
+        ) : (
+          <g {...omitMotionProps(props)}>{children}</g>
+        );
+      const AnimatedButton = ({ children, ...props }) =>
+        Motion ? (
+          <Motion.button {...props}>{children}</Motion.button>
+        ) : (
+          <button {...omitMotionProps(props)}>{children}</button>
+        );
+
       // Vector logo component (animated with Framer Motion when available)
       const DefocusLogo = ({ size = 220 }) => {
-        const Svg = Motion ? Motion.svg : "svg";
-        const G = Motion ? Motion.g : "g";
         return (
-          <Svg
+          <AnimatedSvg
             width={size}
             height={size}
             viewBox="0 0 200 200"
@@ -221,7 +250,7 @@
             />
 
             {/* Animated accent arc */}
-            <G
+            <AnimatedG
               animate={{ rotate: [0, 6, 0] }}
               transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
             >
@@ -233,7 +262,7 @@
                 strokeLinecap="round"
                 opacity="0.8"
               />
-            </G>
+            </AnimatedG>
 
             {/* Wordmark hint */}
             <text
@@ -247,7 +276,7 @@
             >
               DEFOCUS2FOCUS
             </text>
-          </Svg>
+          </AnimatedSvg>
         );
       };
 
@@ -323,7 +352,7 @@
               </div>
             </div>
 
-            <MDiv
+            <AnimatedDiv
               className="relative z-10 flex-1 flex items-center justify-center p-6"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: isLeaving ? 0 : 1, y: isLeaving ? -10 : 0 }}
@@ -371,8 +400,7 @@
                 </MDiv>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <MDiv
-                    as="button"
+                  <AnimatedButton
                     whileHover={{
                       scale: 1.03,
                       boxShadow: "0 10px 25px rgba(59,130,246,0.35)",
@@ -383,9 +411,8 @@
                     className="px-10 py-4 rounded-2xl text-lg font-semibold bg-white text-slate-900 shadow-md"
                   >
                     Get Started
-                  </MDiv>
-                  <MDiv
-                    as="button"
+                  </AnimatedButton>
+                  <AnimatedButton
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     aria-label="Learn more about Defocus2Focus"
@@ -398,14 +425,14 @@
                     }
                   >
                     Learn More
-                  </MDiv>
+                  </AnimatedButton>
                 </div>
 
                 <p className="mt-10 text-sm text-white/80">
                   Take control of your focus. One step at a time.
                 </p>
               </div>
-            </MDiv>
+            </AnimatedDiv>
           </div>
         );
       };
