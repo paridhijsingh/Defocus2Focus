@@ -8,7 +8,7 @@ import React from 'react';
  * - Primary and secondary actions with subtle hover animations
  * - Uses gradient accents matching the brand logo
  */
-const WelcomeScreen = ({ onGetStarted, onLearnMore, logoSrc = '/assets/logo/defocus2focus-hero.png?v=3', logoAlt = 'Defocus2Focus' }) => {
+const WelcomeScreen = ({ onGetStarted, onLearnMore, logoSrc = '/assets/logo/defocus2focus-hero-v3.png', logoAlt = 'Defocus2Focus' }) => {
   return (
     <div className="min-h-screen w-full bg-[#0A1B3A] text-white flex flex-col items-center px-6">
       {/* Logo */}

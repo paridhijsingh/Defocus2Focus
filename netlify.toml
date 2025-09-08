@@ -29,3 +29,8 @@
   for = "/_expo/static/js/web/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/logo/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
