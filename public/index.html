@@ -163,8 +163,10 @@
       const { useState, useEffect } = React;
       const Motion =
         (window.framerMotion && window.framerMotion.motion) || null;
-      const MDiv = Motion ? Motion.div : "div";
-      const MImg = Motion ? Motion.img : "img";
+      console.log(
+        "Defocus2Focus inline app loaded - cache bust:",
+        new Date().toISOString()
+      );
 
       // Safe wrappers so UI renders even if Framer Motion isn't available
       const omitMotionProps = (props = {}) => {
