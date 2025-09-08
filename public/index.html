@@ -197,6 +197,12 @@
         ) : (
           <button {...omitMotionProps(props)}>{children}</button>
         );
+      const AnimatedImg = ({ ...props }) =>
+        Motion ? (
+          <Motion.img {...props} />
+        ) : (
+          <img {...omitMotionProps(props)} />
+        );
 
       // Vector logo component (animated with Framer Motion when available)
       const DefocusLogo = ({ size = 220 }) => {
@@ -310,13 +316,25 @@
         };
 
         return (
-          <div className="relative min-h-screen gradient-bg animated-soft-gradient flex flex-col overflow-hidden">
-            {/* Background layers */}
-            <div aria-hidden="true" className="hero-bg"></div>
+          <div className="relative min-h-screen flex flex-col overflow-hidden">
+            {/* Background: logo image + soft gradient */}
             <div
               aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-br from-sky-500/30 via-fuchsia-500/20 to-orange-400/25 dark:from-cyan-900/30 dark:via-indigo-900/25 dark:to-teal-900/25"
+              className="absolute inset-0 bg-no-repeat bg-cover bg-center"
+              style={{
+                backgroundImage:
+                  "url('./assets/logo/defocus2focus-hero-v3.png')",
+              }}
             ></div>
+            <AnimatedDiv
+              aria-hidden="true"
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.2 }}
+            >
+              <div className="w-full h-full bg-gradient-to-b from-slate-900/70 via-slate-900/40 to-slate-900/30"></div>
+            </AnimatedDiv>
 
             <div className="relative z-10 flex items-center justify-between px-6 py-4 text-white">
               {/* Logo (icon + wordmark) */}
@@ -354,49 +372,96 @@
             </div>
 
             <AnimatedDiv
-              className="relative z-10 flex-1 flex items-center justify-center p-6"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: isLeaving ? 0 : 1, y: isLeaving ? -10 : 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="relative z-10 flex-1 grid place-items-center p-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
             >
-              <div className="text-center text-white px-6">
-                {React.createElement(DefocusLogo, { size: 200 })}
-                <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-4">
-                  Defocus2Focus
-                </h1>
-                <p className="text-lg sm:text-2xl text-white/90 mb-8">
-                  Where Procrastination Meets Play – Gamified Focus &
-                  Productivity
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <AnimatedButton
-                    whileHover={{
-                      scale: 1.03,
-                      boxShadow: "0 10px 25px rgba(59,130,246,0.35)",
+              <div className="text-center text-white w-full max-w-3xl">
+                {/* Centered responsive logo image with bounce */}
+                <AnimatedImg
+                  src="./assets/logo/defocus2focus-hero-v3.png"
+                  alt="Defocus2Focus Logo"
+                  className="mx-auto w-2/3 sm:w-1/2 md:w-1/3 drop-shadow-xl"
+                  initial={{ opacity: 0, scale: 0.8, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.9, ease: "easeOut" }}
+                />
+
+                {/* Floating icons */}
+                <div className="relative h-0">
+                  <AnimatedDiv
+                    className="absolute left-[18%] -top-10 text-2xl"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 0.9, y: [0, -6, 0] }}
+                    transition={{
+                      delay: 0.4,
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
                     }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleStart}
-                    aria-label="Get Started"
-                    className="px-10 py-4 rounded-2xl text-lg font-semibold bg-white text-slate-900 shadow-md"
                   >
-                    Get Started
-                  </AnimatedButton>
-                  <AnimatedButton
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    aria-label="Learn more about Defocus2Focus"
-                    className="px-10 py-4 rounded-2xl text-lg font-semibold border border-white/70 text-white/95 hover:bg-white/10 transition"
-                    onClick={() =>
-                      window.scrollTo({
-                        top: document.body.scrollHeight,
-                        behavior: "smooth",
-                      })
-                    }
+                    ⭐
+                  </AnimatedDiv>
+                  <AnimatedDiv
+                    className="absolute right-[16%] -top-6 text-2xl"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 0.9, y: [0, -8, 0] }}
+                    transition={{
+                      delay: 0.6,
+                      duration: 3.4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
                   >
-                    Learn More
-                  </AnimatedButton>
+                    ⚡
+                  </AnimatedDiv>
+                  <AnimatedDiv
+                    className="absolute left-1/2 -translate-x-1/2 -top-4 text-2xl"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 0.9, y: [0, -5, 0] }}
+                    transition={{
+                      delay: 0.8,
+                      duration: 3.2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    ✅
+                  </AnimatedDiv>
                 </div>
-                <p className="mt-8 text-sm text-white/80">
+
+                {/* Tagline */}
+                <AnimatedDiv
+                  className="mt-8 flex items-center justify-center gap-2 text-xl sm:text-2xl font-semibold"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                >
+                  <span className="text-white/95">🎯</span>
+                  <span className="text-white/95">
+                    Stay Focused. Play Smart.
+                  </span>
+                </AnimatedDiv>
+
+                {/* CTA */}
+                <AnimatedButton
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.7 }}
+                  onClick={handleStart}
+                  aria-label="Get Started"
+                  className="group mt-8 inline-flex items-center gap-2 px-8 py-3 rounded-2xl bg-white text-black font-bold shadow-lg focus:outline-none focus:ring-4 focus:ring-white/40"
+                >
+                  Get Started
+                  <span className="inline-block transform transition-transform duration-200 group-hover:translate-x-1">
+                    →
+                  </span>
+                </AnimatedButton>
+
+                <p className="mt-6 text-sm text-white/80">
                   Take control of your focus. One step at a time.
                 </p>
               </div>
