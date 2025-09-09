@@ -572,6 +572,7 @@
       const WelcomeScreen = ({ onStart }) => {
         console.log("Modern WelcomeScreen loaded!");
         console.log("Motion available:", !!Motion);
+        console.log("WelcomeScreen onStart prop:", onStart);
         const [theme, setTheme] = useState(
           localStorage.getItem("d2f_theme") || "auto"
         );
@@ -2460,26 +2461,65 @@
           setCurrentScreen("dashboard");
         };
 
-        return React.createElement("div", null, [
-          currentScreen === "welcome" &&
+        console.log(
+          "WebApp render - currentScreen:",
+          currentScreen,
+          "showOnboarding:",
+          showOnboarding,
+          "hasCompletedOnboarding:",
+          hasCompletedOnboarding
+        );
+
+        const elements = [];
+
+        if (currentScreen === "welcome") {
+          console.log("Rendering WelcomeScreen");
+          elements.push(
             React.createElement(WelcomeScreen, {
               key: "welcome",
               onStart: () => {
+                console.log("Welcome screen onStart called");
                 setCurrentScreen("onboarding");
                 setShowOnboarding(true);
               },
-            }),
-          showOnboarding &&
-            currentScreen === "onboarding" &&
+            })
+          );
+        }
+
+        if (showOnboarding && currentScreen === "onboarding") {
+          console.log("Rendering OnboardingTutorial");
+          elements.push(
             React.createElement(OnboardingTutorial, {
               key: "onboarding",
               onComplete: handleOnboardingComplete,
               onSkip: handleOnboardingSkip,
-            }),
-          hasCompletedOnboarding &&
-            currentScreen === "dashboard" &&
-            React.createElement("div", { key: "dashboard" }, renderDashboard()),
-        ]);
+            })
+          );
+        }
+
+        if (hasCompletedOnboarding && currentScreen === "dashboard") {
+          console.log("Rendering Dashboard");
+          elements.push(
+            React.createElement("div", { key: "dashboard" }, renderDashboard())
+          );
+        }
+
+        // Fallback if nothing renders
+        if (elements.length === 0) {
+          console.log("No elements to render, showing fallback");
+          elements.push(
+            React.createElement(
+              "div",
+              {
+                key: "fallback",
+                style: { padding: "20px", color: "white", background: "black" },
+              },
+              "Loading..."
+            )
+          );
+        }
+
+        return React.createElement("div", null, elements);
       };
 
       // Render the app (React 18)
