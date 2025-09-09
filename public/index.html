@@ -1910,9 +1910,9 @@
 
       const WebApp = () => {
         const [showOnboarding, setShowOnboarding] = useState(false);
-        const [currentScreen, setCurrentScreen] = useState("welcome");
+        const [currentScreen, setCurrentScreen] = useState("dashboard");
         const [hasCompletedOnboarding, setHasCompletedOnboarding] =
-          useState(false);
+          useState(true);
 
         useEffect(() => {
           // Check if user has completed onboarding before
@@ -1920,9 +1920,13 @@
             "defocus2focus_onboarding_completed"
           );
           if (!completed) {
-            setShowOnboarding(true);
+            // For demo purposes, show dashboard directly
+            // setShowOnboarding(true);
+            // setCurrentScreen("welcome");
+            // setHasCompletedOnboarding(false);
           } else {
             setHasCompletedOnboarding(true);
+            setCurrentScreen("dashboard");
           }
         }, []);
 
