@@ -2336,108 +2336,6 @@
         };
       };
 
-      return React.createElement(
-        "div",
-        {
-          className:
-            "min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white",
-        },
-        [
-          // Top Navigation
-          React.createElement(
-            "header",
-            {
-              key: "header",
-              className:
-                "bg-white/10 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-40",
-            },
-            React.createElement(
-              "div",
-              { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" },
-              React.createElement(
-                "div",
-                {
-                  className: "flex justify-between items-center h-16",
-                },
-                [
-                  React.createElement(
-                    "div",
-                    { key: "logo", className: "flex items-center space-x-3" },
-                    [
-                      React.createElement(
-                        "h1",
-                        {
-                          key: "title",
-                          className:
-                            "text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent",
-                        },
-                        "🎯 Defocus2Focus"
-                      ),
-                    ]
-                  ),
-                  React.createElement(
-                    "div",
-                    {
-                      key: "header-actions",
-                      className: "flex items-center space-x-4",
-                    },
-                    [
-                      React.createElement(
-                        "button",
-                        {
-                          key: "reset-button",
-                          onClick: () => window.location.reload(),
-                          className:
-                            "px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors",
-                        },
-                        "🔄 Reset"
-                      ),
-                      React.createElement(
-                        "div",
-                        {
-                          key: "user-avatar",
-                          className: "flex items-center space-x-2",
-                        },
-                        [
-                          React.createElement(
-                            "div",
-                            {
-                              key: "avatar",
-                              className:
-                                "w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold",
-                            },
-                            "U"
-                          ),
-                          React.createElement(
-                            "div",
-                            {
-                              key: "settings",
-                              className:
-                                "text-white/70 hover:text-white cursor-pointer",
-                            },
-                            "⚙️"
-                          ),
-                        ]
-                      ),
-                    ]
-                  ),
-                ]
-              )
-            )
-          ),
-
-          // Main Content
-          React.createElement(
-            "main",
-            {
-              key: "main",
-              className: "w-full p-6 lg:p-8",
-            },
-            renderScreen()
-          ),
-        ]
-      );
-
       const renderDashboard = () => React.createElement(ModernDashboard);
 
       const WebApp = () => {
@@ -2461,114 +2359,32 @@
           setCurrentScreen("dashboard");
         };
 
-        console.log(
-          "WebApp render - currentScreen:",
-          currentScreen,
-          "showOnboarding:",
-          showOnboarding,
-          "hasCompletedOnboarding:",
-          hasCompletedOnboarding
-        );
-
-        const elements = [];
-
-        if (currentScreen === "welcome") {
-          console.log("Rendering WelcomeScreen");
-          elements.push(
+        return React.createElement("div", null, [
+          currentScreen === "welcome" &&
             React.createElement(WelcomeScreen, {
               key: "welcome",
               onStart: () => {
-                console.log("Welcome screen onStart called");
                 setCurrentScreen("onboarding");
                 setShowOnboarding(true);
               },
-            })
-          );
-        }
-
-        if (showOnboarding && currentScreen === "onboarding") {
-          console.log("Rendering OnboardingTutorial");
-          elements.push(
+            }),
+          showOnboarding &&
+            currentScreen === "onboarding" &&
             React.createElement(OnboardingTutorial, {
               key: "onboarding",
               onComplete: handleOnboardingComplete,
               onSkip: handleOnboardingSkip,
-            })
-          );
-        }
-
-        if (hasCompletedOnboarding && currentScreen === "dashboard") {
-          console.log("Rendering Dashboard");
-          elements.push(
-            React.createElement("div", { key: "dashboard" }, renderDashboard())
-          );
-        }
-
-        // Fallback if nothing renders
-        if (elements.length === 0) {
-          console.log("No elements to render, showing fallback");
-          elements.push(
-            React.createElement(
-              "div",
-              {
-                key: "fallback",
-                style: { padding: "20px", color: "white", background: "black" },
-              },
-              "Loading..."
-            )
-          );
-        }
-
-        return React.createElement("div", null, elements);
-      };
-
-      // Test if React is working
-      console.log("React available:", !!React);
-      console.log("ReactDOM available:", !!ReactDOM);
-      console.log("WebApp function:", typeof WebApp);
-
-      // Simple test component
-      const TestComponent = () => {
-        console.log("TestComponent rendering");
-        return React.createElement(
-          "div",
-          {
-            style: { padding: "20px", color: "white", background: "green" },
-          },
-          "Test Component Working!"
-        );
+            }),
+          hasCompletedOnboarding &&
+            currentScreen === "dashboard" &&
+            React.createElement("div", { key: "dashboard" }, renderDashboard()),
+        ]);
       };
 
       // Render the app (React 18)
-      try {
-        // Test with simple component first
-        ReactDOM.createRoot(document.getElementById("root")).render(
-          React.createElement(TestComponent)
-        );
-        console.log("Test component rendered successfully");
-
-        // After 2 seconds, try the full app
-        setTimeout(() => {
-          try {
-            ReactDOM.createRoot(document.getElementById("root")).render(
-              React.createElement(WebApp)
-            );
-            console.log("Full app rendered successfully");
-          } catch (error) {
-            console.error("Error rendering full app:", error);
-          }
-        }, 2000);
-      } catch (error) {
-        console.error("Error rendering test component:", error);
-        // Fallback rendering
-        document.getElementById("root").innerHTML = `
-          <div style="padding: 20px; color: white; background: red;">
-            <h1>Error Loading App</h1>
-            <p>Error: ${error.message}</p>
-            <p>Check console for details</p>
-          </div>
-        `;
-      }
+      ReactDOM.createRoot(document.getElementById("root")).render(
+        React.createElement(WebApp)
+      );
     </script>
   </body>
 </html>
