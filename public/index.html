@@ -1154,7 +1154,48 @@
         const [timeLeft, setTimeLeft] = useState(timerDuration * 60);
         const [tasks, setTasks] = useState([]);
         const [newTask, setNewTask] = useState("");
+
+        // Enhanced Defocus Mode state
+        const [defocusDuration, setDefocusDuration] = useState(15);
+        const [defocusRunning, setDefocusRunning] = useState(false);
+        const [defocusTimeLeft, setDefocusTimeLeft] = useState(15 * 60);
+        const [defocusSessionsToday, setDefocusSessionsToday] = useState(3);
+        const [defocusTotalTime, setDefocusTotalTime] = useState(45);
+        const [showPuzzleModal, setShowPuzzleModal] = useState(false);
+        const [showScribbleModal, setShowScribbleModal] = useState(false);
+        const [showMemoryModal, setShowMemoryModal] = useState(false);
         const [currentMusic, setCurrentMusic] = useState(null);
+
+        // Defocus timer effect
+        useEffect(() => {
+          let interval = null;
+          if (defocusRunning && defocusTimeLeft > 0) {
+            interval = setInterval(() => {
+              setDefocusTimeLeft((time) => {
+                if (time <= 1) {
+                  setDefocusRunning(false);
+                  setDefocusSessionsToday((prev) => prev + 1);
+                  setDefocusTotalTime((prev) => prev + defocusDuration);
+                  // Show completion message
+                  alert("Break complete! Ready to focus again 🎉");
+                  return defocusDuration * 60; // Reset to selected duration
+                }
+                return time - 1;
+              });
+            }, 1000);
+          } else if (
+            !defocusRunning &&
+            defocusTimeLeft !== defocusDuration * 60
+          ) {
+            clearInterval(interval);
+          }
+          return () => clearInterval(interval);
+        }, [defocusRunning, defocusTimeLeft, defocusDuration]);
+
+        // Reset timer when duration changes
+        useEffect(() => {
+          setDefocusTimeLeft(defocusDuration * 60);
+        }, [defocusDuration]);
         const [breakTime, setBreakTime] = useState(5);
         const [rewards, setRewards] = useState([]);
         const [showSupport, setShowSupport] = useState(false);
@@ -1406,7 +1447,7 @@
                     "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10",
                 },
                 [
-                  // Defocus Mode Card
+                  // Enhanced Defocus Mode Card
                   React.createElement(
                     "div",
                     {
@@ -1421,31 +1462,447 @@
                       style: { animationDelay: "0.5s" },
                     },
                     [
+                      // Header
                       React.createElement(
                         "div",
-                        { key: "defocus-icon", className: "text-5xl mb-4" },
-                        "🎯"
-                      ),
-                      React.createElement(
-                        "h3",
                         {
-                          key: "defocus-title",
-                          className: "text-xl font-semibold text-white mb-2",
+                          key: "defocus-header",
+                          className: "flex items-center mb-4",
                         },
-                        "Defocus Mode"
+                        [
+                          React.createElement(
+                            "div",
+                            { key: "defocus-icon", className: "text-5xl mr-4" },
+                            "🎯"
+                          ),
+                          React.createElement(
+                            "div",
+                            { key: "defocus-title-section" },
+                            [
+                              React.createElement(
+                                "h3",
+                                {
+                                  key: "defocus-title",
+                                  className:
+                                    "text-xl font-semibold text-white mb-1",
+                                },
+                                "Defocus Mode"
+                              ),
+                              React.createElement(
+                                "p",
+                                {
+                                  key: "defocus-desc",
+                                  className: "text-white/70 text-sm",
+                                },
+                                "Take a break from focused work. Engage in light activities to refresh your mind."
+                              ),
+                            ]
+                          ),
+                        ]
                       ),
+
+                      // Timer Section
                       React.createElement(
-                        "p",
-                        {
-                          key: "defocus-desc",
-                          className: "text-white/70 mb-4",
-                        },
-                        "Take a break from focused work. Engage in light activities to refresh your mind."
+                        "div",
+                        { key: "timer-section", className: "mb-6" },
+                        [
+                          React.createElement(
+                            "div",
+                            {
+                              key: "timer-controls",
+                              className: "flex items-center gap-3 mb-4",
+                            },
+                            [
+                              React.createElement(
+                                "select",
+                                {
+                                  key: "defocus-duration",
+                                  value: defocusDuration,
+                                  onChange: (e) =>
+                                    setDefocusDuration(Number(e.target.value)),
+                                  className:
+                                    "px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white text-sm",
+                                },
+                                [
+                                  React.createElement(
+                                    "option",
+                                    {
+                                      key: "5",
+                                      value: "5",
+                                      className: "bg-slate-800",
+                                    },
+                                    "5 minutes"
+                                  ),
+                                  React.createElement(
+                                    "option",
+                                    {
+                                      key: "10",
+                                      value: "10",
+                                      className: "bg-slate-800",
+                                    },
+                                    "10 minutes"
+                                  ),
+                                  React.createElement(
+                                    "option",
+                                    {
+                                      key: "15",
+                                      value: "15",
+                                      className: "bg-slate-800",
+                                    },
+                                    "15 minutes"
+                                  ),
+                                  React.createElement(
+                                    "option",
+                                    {
+                                      key: "20",
+                                      value: "20",
+                                      className: "bg-slate-800",
+                                    },
+                                    "20 minutes"
+                                  ),
+                                  React.createElement(
+                                    "option",
+                                    {
+                                      key: "25",
+                                      value: "25",
+                                      className: "bg-slate-800",
+                                    },
+                                    "25 minutes"
+                                  ),
+                                  React.createElement(
+                                    "option",
+                                    {
+                                      key: "30",
+                                      value: "30",
+                                      className: "bg-slate-800",
+                                    },
+                                    "30 minutes"
+                                  ),
+                                ]
+                              ),
+                              React.createElement(
+                                "button",
+                                {
+                                  key: "defocus-start",
+                                  onClick: () =>
+                                    setDefocusRunning(!defocusRunning),
+                                  className: `px-4 py-2 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
+                                    defocusRunning
+                                      ? "bg-red-500 hover:bg-red-600 text-white"
+                                      : "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                                  }`,
+                                },
+                                defocusRunning ? "⏸️ Pause" : "▶️ Start"
+                              ),
+                            ]
+                          ),
+
+                          // Progress Ring
+                          React.createElement(
+                            "div",
+                            {
+                              key: "progress-ring",
+                              className: "relative w-20 h-20 mx-auto mb-4",
+                            },
+                            [
+                              React.createElement(
+                                "svg",
+                                {
+                                  key: "progress-svg",
+                                  className: "w-20 h-20 transform -rotate-90",
+                                  viewBox: "0 0 100 100",
+                                },
+                                [
+                                  React.createElement("circle", {
+                                    key: "progress-bg",
+                                    cx: "50",
+                                    cy: "50",
+                                    r: "35",
+                                    stroke: "currentColor",
+                                    strokeWidth: "6",
+                                    fill: "none",
+                                    className: "text-white/20",
+                                  }),
+                                  React.createElement("circle", {
+                                    key: "progress-fill",
+                                    cx: "50",
+                                    cy: "50",
+                                    r: "35",
+                                    stroke: "currentColor",
+                                    strokeWidth: "6",
+                                    fill: "none",
+                                    strokeDasharray: "220",
+                                    strokeDashoffset: `${
+                                      220 -
+                                      (defocusTimeLeft / defocusDuration) * 220
+                                    }`,
+                                    className:
+                                      "text-blue-400 transition-all duration-1000 ease-out",
+                                    strokeLinecap: "round",
+                                  }),
+                                ]
+                              ),
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "timer-text",
+                                  className:
+                                    "absolute inset-0 flex items-center justify-center",
+                                },
+                                React.createElement(
+                                  "span",
+                                  {
+                                    className: "text-sm font-bold text-white",
+                                  },
+                                  `${Math.floor(defocusTimeLeft / 60)
+                                    .toString()
+                                    .padStart(2, "0")}:${(defocusTimeLeft % 60)
+                                    .toString()
+                                    .padStart(2, "0")}`
+                                )
+                              ),
+                            ]
+                          ),
+                        ]
                       ),
+
+                      // Mini-Features Grid
+                      React.createElement(
+                        "div",
+                        {
+                          key: "mini-features",
+                          className: "grid grid-cols-1 gap-3 mb-4",
+                        },
+                        [
+                          // Puzzle Games
+                          React.createElement(
+                            "div",
+                            {
+                              key: "puzzle-mini",
+                              className:
+                                "bg-white/5 rounded-lg p-3 border border-white/10 hover:bg-white/10 transition-colors",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "puzzle-mini-header",
+                                  className:
+                                    "flex items-center justify-between mb-2",
+                                },
+                                [
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "puzzle-mini-title",
+                                      className: "flex items-center",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "puzzle-mini-icon",
+                                          className: "text-2xl mr-2",
+                                        },
+                                        "🧩"
+                                      ),
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "puzzle-mini-text",
+                                          className:
+                                            "text-white font-medium text-sm",
+                                        },
+                                        "Puzzle Games"
+                                      ),
+                                    ]
+                                  ),
+                                  React.createElement(
+                                    "button",
+                                    {
+                                      key: "puzzle-mini-btn",
+                                      className:
+                                        "px-3 py-1 bg-orange-500/20 hover:bg-orange-500/30 text-orange-200 rounded text-xs transition-colors border border-orange-400/30",
+                                      onClick: () => setShowPuzzleModal(true),
+                                    },
+                                    "Start"
+                                  ),
+                                ]
+                              ),
+                            ]
+                          ),
+
+                          // Scribble Pad
+                          React.createElement(
+                            "div",
+                            {
+                              key: "scribble-mini",
+                              className:
+                                "bg-white/5 rounded-lg p-3 border border-white/10 hover:bg-white/10 transition-colors",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "scribble-mini-header",
+                                  className:
+                                    "flex items-center justify-between mb-2",
+                                },
+                                [
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "scribble-mini-title",
+                                      className: "flex items-center",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "scribble-mini-icon",
+                                          className: "text-2xl mr-2",
+                                        },
+                                        "✏️"
+                                      ),
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "scribble-mini-text",
+                                          className:
+                                            "text-white font-medium text-sm",
+                                        },
+                                        "Scribble Pad"
+                                      ),
+                                    ]
+                                  ),
+                                  React.createElement(
+                                    "button",
+                                    {
+                                      key: "scribble-mini-btn",
+                                      className:
+                                        "px-3 py-1 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-200 rounded text-xs transition-colors border border-yellow-400/30",
+                                      onClick: () => setShowScribbleModal(true),
+                                    },
+                                    "Open"
+                                  ),
+                                ]
+                              ),
+                            ]
+                          ),
+
+                          // Memory Games
+                          React.createElement(
+                            "div",
+                            {
+                              key: "memory-mini",
+                              className:
+                                "bg-white/5 rounded-lg p-3 border border-white/10 hover:bg-white/10 transition-colors",
+                            },
+                            [
+                              React.createElement(
+                                "div",
+                                {
+                                  key: "memory-mini-header",
+                                  className:
+                                    "flex items-center justify-between mb-2",
+                                },
+                                [
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "memory-mini-title",
+                                      className: "flex items-center",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "memory-mini-icon",
+                                          className: "text-2xl mr-2",
+                                        },
+                                        "🧠"
+                                      ),
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "memory-mini-text",
+                                          className:
+                                            "text-white font-medium text-sm",
+                                        },
+                                        "Memory Games"
+                                      ),
+                                    ]
+                                  ),
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "memory-mini-stats",
+                                      className: "flex items-center gap-2",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "span",
+                                        {
+                                          key: "memory-streak",
+                                          className: "text-xs text-white/60",
+                                        },
+                                        "Streak: 5"
+                                      ),
+                                      React.createElement(
+                                        "button",
+                                        {
+                                          key: "memory-mini-btn",
+                                          className:
+                                            "px-3 py-1 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 rounded text-xs transition-colors border border-indigo-400/30",
+                                          onClick: () =>
+                                            setShowMemoryModal(true),
+                                        },
+                                        "Play"
+                                      ),
+                                    ]
+                                  ),
+                                ]
+                              ),
+                            ]
+                          ),
+                        ]
+                      ),
+
+                      // Session Stats
+                      React.createElement(
+                        "div",
+                        {
+                          key: "session-stats",
+                          className:
+                            "flex justify-between text-xs text-white/60 mb-4",
+                        },
+                        [
+                          React.createElement(
+                            "span",
+                            {
+                              key: "sessions-today",
+                              className:
+                                "bg-blue-500/20 px-2 py-1 rounded border border-blue-400/30",
+                            },
+                            `Sessions Today: ${defocusSessionsToday}`
+                          ),
+                          React.createElement(
+                            "span",
+                            {
+                              key: "total-time",
+                              className:
+                                "bg-purple-500/20 px-2 py-1 rounded border border-purple-400/30",
+                            },
+                            `Total Time: ${defocusTotalTime}m`
+                          ),
+                        ]
+                      ),
+
+                      // Main Action Button
                       React.createElement(
                         "button",
                         {
-                          key: "defocus-btn",
+                          key: "defocus-main-btn",
                           className:
                             "w-full py-3 px-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg group relative",
                           title:
@@ -1455,7 +1912,9 @@
                           React.createElement(
                             "span",
                             { key: "defocus-btn-text" },
-                            "Start Defocus"
+                            defocusRunning
+                              ? "Defocus in Progress..."
+                              : "Start Defocus Session"
                           ),
                           React.createElement(
                             "div",
@@ -2333,6 +2792,502 @@
                     ),
                 ]
               ),
+
+              // Puzzle Games Modal
+              showPuzzleModal &&
+                React.createElement(
+                  "div",
+                  {
+                    key: "puzzle-modal",
+                    className:
+                      "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4",
+                    onClick: () => setShowPuzzleModal(false),
+                  },
+                  [
+                    React.createElement(
+                      "div",
+                      {
+                        key: "puzzle-modal-content",
+                        className:
+                          "bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-md w-full border border-white/20",
+                        onClick: (e) => e.stopPropagation(),
+                      },
+                      [
+                        React.createElement(
+                          "div",
+                          {
+                            key: "puzzle-modal-header",
+                            className: "flex items-center justify-between mb-6",
+                          },
+                          [
+                            React.createElement(
+                              "h2",
+                              {
+                                key: "puzzle-modal-title",
+                                className:
+                                  "text-2xl font-bold text-white flex items-center",
+                              },
+                              [
+                                React.createElement(
+                                  "span",
+                                  {
+                                    key: "puzzle-modal-icon",
+                                    className: "text-3xl mr-3",
+                                  },
+                                  "🧩"
+                                ),
+                                "Puzzle Games",
+                              ]
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "puzzle-modal-close",
+                                onClick: () => setShowPuzzleModal(false),
+                                className:
+                                  "text-white/70 hover:text-white text-2xl",
+                              },
+                              "×"
+                            ),
+                          ]
+                        ),
+                        React.createElement(
+                          "div",
+                          {
+                            key: "puzzle-options",
+                            className: "grid grid-cols-2 gap-3 mb-6",
+                          },
+                          [
+                            React.createElement(
+                              "button",
+                              {
+                                key: "sudoku",
+                                className:
+                                  "p-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-200 rounded-lg text-center transition-colors border border-orange-400/30",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "sudoku-icon",
+                                    className: "text-2xl mb-2",
+                                  },
+                                  "🔢"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "sudoku-text",
+                                    className: "font-semibold",
+                                  },
+                                  "Sudoku"
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "crossword",
+                                className:
+                                  "p-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-200 rounded-lg text-center transition-colors border border-orange-400/30",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "crossword-icon",
+                                    className: "text-2xl mb-2",
+                                  },
+                                  "📝"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "crossword-text",
+                                    className: "font-semibold",
+                                  },
+                                  "Crossword"
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "word-search",
+                                className:
+                                  "p-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-200 rounded-lg text-center transition-colors border border-orange-400/30",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "word-search-icon",
+                                    className: "text-2xl mb-2",
+                                  },
+                                  "🔍"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "word-search-text",
+                                    className: "font-semibold",
+                                  },
+                                  "Word Search"
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "jigsaw",
+                                className:
+                                  "p-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-200 rounded-lg text-center transition-colors border border-orange-400/30",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "jigsaw-icon",
+                                    className: "text-2xl mb-2",
+                                  },
+                                  "🧩"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "jigsaw-text",
+                                    className: "font-semibold",
+                                  },
+                                  "Jigsaw"
+                                ),
+                              ]
+                            ),
+                          ]
+                        ),
+                        React.createElement(
+                          "button",
+                          {
+                            key: "puzzle-start-game",
+                            className:
+                              "w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105",
+                          },
+                          "Start Selected Puzzle"
+                        ),
+                      ]
+                    ),
+                  ]
+                ),
+
+              // Scribble Pad Modal
+              showScribbleModal &&
+                React.createElement(
+                  "div",
+                  {
+                    key: "scribble-modal",
+                    className:
+                      "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4",
+                    onClick: () => setShowScribbleModal(false),
+                  },
+                  [
+                    React.createElement(
+                      "div",
+                      {
+                        key: "scribble-modal-content",
+                        className:
+                          "bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-2xl w-full border border-white/20",
+                        onClick: (e) => e.stopPropagation(),
+                      },
+                      [
+                        React.createElement(
+                          "div",
+                          {
+                            key: "scribble-modal-header",
+                            className: "flex items-center justify-between mb-6",
+                          },
+                          [
+                            React.createElement(
+                              "h2",
+                              {
+                                key: "scribble-modal-title",
+                                className:
+                                  "text-2xl font-bold text-white flex items-center",
+                              },
+                              [
+                                React.createElement(
+                                  "span",
+                                  {
+                                    key: "scribble-modal-icon",
+                                    className: "text-3xl mr-3",
+                                  },
+                                  "✏️"
+                                ),
+                                "Scribble Pad",
+                              ]
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "scribble-modal-close",
+                                onClick: () => setShowScribbleModal(false),
+                                className:
+                                  "text-white/70 hover:text-white text-2xl",
+                              },
+                              "×"
+                            ),
+                          ]
+                        ),
+                        React.createElement(
+                          "div",
+                          {
+                            key: "scribble-tools",
+                            className: "flex gap-2 mb-4",
+                          },
+                          [
+                            React.createElement(
+                              "button",
+                              {
+                                key: "pen-tool",
+                                className:
+                                  "px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-200 rounded-lg text-sm transition-colors border border-yellow-400/30",
+                              },
+                              "🖊️ Pen"
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "eraser-tool",
+                                className:
+                                  "px-4 py-2 bg-gray-500/20 hover:bg-gray-500/30 text-gray-200 rounded-lg text-sm transition-colors border border-gray-400/30",
+                              },
+                              "🧽 Eraser"
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "color-tool",
+                                className:
+                                  "px-4 py-2 bg-pink-500/20 hover:bg-pink-500/30 text-pink-200 rounded-lg text-sm transition-colors border border-pink-400/30",
+                              },
+                              "🎨 Colors"
+                            ),
+                          ]
+                        ),
+                        React.createElement(
+                          "div",
+                          {
+                            key: "scribble-canvas",
+                            className:
+                              "w-full h-64 bg-white/5 rounded-lg border-2 border-dashed border-white/20 flex items-center justify-center mb-4",
+                          },
+                          [
+                            React.createElement(
+                              "span",
+                              {
+                                key: "scribble-placeholder",
+                                className: "text-white/40",
+                              },
+                              "Your canvas awaits... Start drawing!"
+                            ),
+                          ]
+                        ),
+                        React.createElement(
+                          "button",
+                          {
+                            key: "scribble-save",
+                            className:
+                              "w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105",
+                          },
+                          "Save Drawing"
+                        ),
+                      ]
+                    ),
+                  ]
+                ),
+
+              // Memory Games Modal
+              showMemoryModal &&
+                React.createElement(
+                  "div",
+                  {
+                    key: "memory-modal",
+                    className:
+                      "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4",
+                    onClick: () => setShowMemoryModal(false),
+                  },
+                  [
+                    React.createElement(
+                      "div",
+                      {
+                        key: "memory-modal-content",
+                        className:
+                          "bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-md w-full border border-white/20",
+                        onClick: (e) => e.stopPropagation(),
+                      },
+                      [
+                        React.createElement(
+                          "div",
+                          {
+                            key: "memory-modal-header",
+                            className: "flex items-center justify-between mb-6",
+                          },
+                          [
+                            React.createElement(
+                              "h2",
+                              {
+                                key: "memory-modal-title",
+                                className:
+                                  "text-2xl font-bold text-white flex items-center",
+                              },
+                              [
+                                React.createElement(
+                                  "span",
+                                  {
+                                    key: "memory-modal-icon",
+                                    className: "text-3xl mr-3",
+                                  },
+                                  "🧠"
+                                ),
+                                "Memory Games",
+                              ]
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "memory-modal-close",
+                                onClick: () => setShowMemoryModal(false),
+                                className:
+                                  "text-white/70 hover:text-white text-2xl",
+                              },
+                              "×"
+                            ),
+                          ]
+                        ),
+                        React.createElement(
+                          "div",
+                          {
+                            key: "memory-stats",
+                            className: "grid grid-cols-2 gap-4 mb-6",
+                          },
+                          [
+                            React.createElement(
+                              "div",
+                              {
+                                key: "memory-best",
+                                className:
+                                  "bg-indigo-500/20 p-4 rounded-lg text-center border border-indigo-400/30",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "memory-best-value",
+                                    className:
+                                      "text-2xl font-bold text-indigo-300",
+                                  },
+                                  "12"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "memory-best-label",
+                                    className: "text-sm text-white/70",
+                                  },
+                                  "Best Score"
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "memory-streak",
+                                className:
+                                  "bg-green-500/20 p-4 rounded-lg text-center border border-green-400/30",
+                              },
+                              [
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "memory-streak-value",
+                                    className:
+                                      "text-2xl font-bold text-green-300",
+                                  },
+                                  "5"
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "memory-streak-label",
+                                    className: "text-sm text-white/70",
+                                  },
+                                  "Current Streak"
+                                ),
+                              ]
+                            ),
+                          ]
+                        ),
+                        React.createElement(
+                          "div",
+                          { key: "memory-difficulty", className: "mb-6" },
+                          [
+                            React.createElement(
+                              "h3",
+                              {
+                                key: "memory-difficulty-title",
+                                className: "text-white font-semibold mb-3",
+                              },
+                              "Select Difficulty"
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "memory-difficulty-options",
+                                className: "grid grid-cols-3 gap-2",
+                              },
+                              [
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: "easy",
+                                    className:
+                                      "p-3 bg-green-500/20 hover:bg-green-500/30 text-green-200 rounded-lg text-sm transition-colors border border-green-400/30",
+                                  },
+                                  "Easy"
+                                ),
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: "medium",
+                                    className:
+                                      "p-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-200 rounded-lg text-sm transition-colors border border-yellow-400/30",
+                                  },
+                                  "Medium"
+                                ),
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: "hard",
+                                    className:
+                                      "p-3 bg-red-500/20 hover:bg-red-500/30 text-red-200 rounded-lg text-sm transition-colors border border-red-400/30",
+                                  },
+                                  "Hard"
+                                ),
+                              ]
+                            ),
+                          ]
+                        ),
+                        React.createElement(
+                          "button",
+                          {
+                            key: "memory-start-game",
+                            className:
+                              "w-full py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105",
+                          },
+                          "Start Memory Game"
+                        ),
+                      ]
+                    ),
+                  ]
+                ),
             ]
           );
         };
