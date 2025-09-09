@@ -110,6 +110,7 @@
 
       .animate-fade-in-up {
         animation: fade-in-up 0.8s ease-out forwards;
+        opacity: 0;
       }
 
       @keyframes scale-in {
@@ -125,6 +126,7 @@
 
       .animate-scale-in {
         animation: scale-in 0.6s ease-out forwards;
+        opacity: 0;
       }
 
       @keyframes slide-in-right {
@@ -140,6 +142,7 @@
 
       .animate-slide-in-right {
         animation: slide-in-right 0.5s ease-out forwards;
+        opacity: 0;
       }
 
       @keyframes float-icon {
@@ -204,6 +207,21 @@
 
       .animate-float-icon-4 {
         animation: float-icon-4 4.5s ease-in-out infinite;
+      }
+
+      /* Test animation to verify CSS is working */
+      .test-pulse {
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
       }
 
       /* Custom scrollbar */
