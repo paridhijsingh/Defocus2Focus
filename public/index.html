@@ -1983,8 +1983,8 @@
           console.log("Has completed onboarding:", hasCompletedOnboarding);
 
           if (!completed) {
-            console.log("Setting up for onboarding flow");
-            setShowOnboarding(true);
+            console.log("Setting up for welcome screen");
+            setShowOnboarding(false);
             setCurrentScreen("welcome");
             setHasCompletedOnboarding(false);
           } else {
@@ -2030,7 +2030,8 @@
                 setShowOnboarding(true);
               },
             }),
-          showOnboarding &&
+          currentScreen === "onboarding" &&
+            showOnboarding &&
             React.createElement(OnboardingTutorial, {
               key: "onboarding",
               onComplete: handleOnboardingComplete,
