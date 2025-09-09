@@ -1294,9 +1294,23 @@
                               "div",
                               {
                                 key: "stat-today-value",
-                                className: "text-xl font-bold text-white",
+                                className: "text-xl font-bold text-white mb-1",
                               },
                               `${productivityStats.today}%`
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "stat-today-bar",
+                                className:
+                                  "w-full bg-white/20 rounded-full h-1",
+                              },
+                              React.createElement("div", {
+                                key: "stat-today-progress",
+                                className:
+                                  "bg-gradient-to-r from-blue-400 to-purple-400 h-1 rounded-full transition-all duration-1000 ease-out",
+                                style: { width: `${productivityStats.today}%` },
+                              })
                             ),
                           ]
                         ),
@@ -1320,9 +1334,23 @@
                               "div",
                               {
                                 key: "stat-week-value",
-                                className: "text-xl font-bold text-white",
+                                className: "text-xl font-bold text-white mb-1",
                               },
                               `${productivityStats.week}%`
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "stat-week-bar",
+                                className:
+                                  "w-full bg-white/20 rounded-full h-1",
+                              },
+                              React.createElement("div", {
+                                key: "stat-week-progress",
+                                className:
+                                  "bg-gradient-to-r from-purple-400 to-pink-400 h-1 rounded-full transition-all duration-1000 ease-out",
+                                style: { width: `${productivityStats.week}%` },
+                              })
                             ),
                           ]
                         ),
@@ -1346,9 +1374,23 @@
                               "div",
                               {
                                 key: "stat-month-value",
-                                className: "text-xl font-bold text-white",
+                                className: "text-xl font-bold text-white mb-1",
                               },
                               `${productivityStats.month}%`
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "stat-month-bar",
+                                className:
+                                  "w-full bg-white/20 rounded-full h-1",
+                              },
+                              React.createElement("div", {
+                                key: "stat-month-progress",
+                                className:
+                                  "bg-gradient-to-r from-pink-400 to-red-400 h-1 rounded-full transition-all duration-1000 ease-out",
+                                style: { width: `${productivityStats.month}%` },
+                              })
                             ),
                           ]
                         ),
@@ -1407,9 +1449,26 @@
                           {
                             key: "defocus-btn",
                             className:
-                              "w-full py-3 px-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg",
+                              "w-full py-3 px-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg group relative",
+                            title:
+                              "Take a break from focused work and engage in light activities",
                           },
-                          "Start Defocus"
+                          [
+                            React.createElement(
+                              "span",
+                              { key: "defocus-btn-text" },
+                              "Start Defocus"
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "defocus-btn-tooltip",
+                                className:
+                                  "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-black/80 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap",
+                              },
+                              "Refresh your mind with light activities"
+                            ),
+                          ]
                         ),
                       ]
                     ),
@@ -3197,9 +3256,9 @@
 
       const WebApp = () => {
         const [showOnboarding, setShowOnboarding] = useState(false);
-        const [currentScreen, setCurrentScreen] = useState("welcome");
+        const [currentScreen, setCurrentScreen] = useState("dashboard");
         const [hasCompletedOnboarding, setHasCompletedOnboarding] =
-          useState(false);
+          useState(true);
 
         // Always start with welcome screen - no localStorage dependency
         // This ensures consistent behavior across all environments
