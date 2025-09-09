@@ -439,48 +439,6 @@
   </head>
   <body class="bg-gray-50">
     <div id="root"></div>
-
-    <!-- Debug Panel -->
-    <div
-      style="
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        z-index: 9999;
-        background: white;
-        padding: 10px;
-        border: 2px solid #ccc;
-        border-radius: 8px;
-      "
-    >
-      <button
-        onclick="localStorage.clear(); window.location.reload();"
-        style="
-          background: #ff4444;
-          color: white;
-          padding: 8px 12px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          margin-right: 8px;
-        "
-      >
-        🗑️ Clear All Data
-      </button>
-      <button
-        onclick="localStorage.removeItem('defocus2focus_onboarding_completed'); window.location.reload();"
-        style="
-          background: #4444ff;
-          color: white;
-          padding: 8px 12px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        "
-      >
-        🎯 Reset Onboarding
-      </button>
-    </div>
     <script type="text/babel" data-presets="env,react">
       const { useState, useEffect } = React;
       const Motion =
@@ -2170,46 +2128,26 @@
         const [hasCompletedOnboarding, setHasCompletedOnboarding] =
           useState(false);
 
-        useEffect(() => {
-          // Always start with welcome screen for fresh experience
-          console.log("Setting up for welcome screen");
-          setShowOnboarding(false);
-          setCurrentScreen("welcome");
-          setHasCompletedOnboarding(false);
-        }, []);
+        // Always start with welcome screen - no localStorage dependency
+        // This ensures consistent behavior across all environments
 
         const handleOnboardingComplete = () => {
-          localStorage.setItem("defocus2focus_onboarding_completed", "true");
           setShowOnboarding(false);
           setHasCompletedOnboarding(true);
           setCurrentScreen("dashboard");
         };
 
         const handleOnboardingSkip = () => {
-          localStorage.setItem("defocus2focus_onboarding_completed", "true");
           setShowOnboarding(false);
           setHasCompletedOnboarding(true);
           setCurrentScreen("dashboard");
         };
-
-        const resetOnboarding = () => {
-          localStorage.removeItem("defocus2focus_onboarding_completed");
-          setShowOnboarding(true);
-          setHasCompletedOnboarding(false);
-        };
-
-        console.log("Rendering with state:", {
-          currentScreen,
-          showOnboarding,
-          hasCompletedOnboarding,
-        });
 
         return React.createElement("div", null, [
           currentScreen === "welcome" &&
             React.createElement(WelcomeScreen, {
               key: "welcome",
               onStart: () => {
-                console.log("Welcome screen onStart clicked");
                 setCurrentScreen("onboarding");
                 setShowOnboarding(true);
               },
