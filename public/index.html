@@ -1147,6 +1147,7 @@
 
       // Modern Interactive Web Dashboard Component
       const ModernDashboard = () => {
+        console.log("ModernDashboard component rendering");
         const [currentView, setCurrentView] = useState("dashboard");
         const [timerDuration, setTimerDuration] = useState(25);
         const [timerRunning, setTimerRunning] = useState(false);
@@ -1216,6 +1217,7 @@
         ];
 
         const renderScreen = () => {
+          console.log("renderScreen called in ModernDashboard");
           return React.createElement(
             "div",
             { key: "main-dashboard", className: "p-6 relative" },
@@ -2334,9 +2336,130 @@
             ]
           );
         };
+
+        return React.createElement(
+          "div",
+          {
+            className:
+              "min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white",
+          },
+          [
+            // Top Navigation
+            React.createElement(
+              "header",
+              {
+                key: "header",
+                className:
+                  "bg-white/10 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-40",
+              },
+              React.createElement(
+                "div",
+                { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" },
+                React.createElement(
+                  "div",
+                  {
+                    className: "flex justify-between items-center h-16",
+                  },
+                  [
+                    React.createElement(
+                      "div",
+                      { key: "logo", className: "flex items-center space-x-3" },
+                      [
+                        React.createElement(
+                          "h1",
+                          {
+                            key: "title",
+                            className:
+                              "text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent",
+                          },
+                          "🎯 Defocus2Focus"
+                        ),
+                      ]
+                    ),
+                    React.createElement(
+                      "div",
+                      {
+                        key: "header-actions",
+                        className: "flex items-center space-x-4",
+                      },
+                      [
+                        React.createElement(
+                          "button",
+                          {
+                            key: "reset-button",
+                            onClick: () => window.location.reload(),
+                            className:
+                              "px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors",
+                          },
+                          "🔄 Reset"
+                        ),
+                        React.createElement(
+                          "div",
+                          {
+                            key: "user-avatar",
+                            className: "flex items-center space-x-2",
+                          },
+                          [
+                            React.createElement(
+                              "div",
+                              {
+                                key: "avatar",
+                                className:
+                                  "w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold",
+                              },
+                              "U"
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "settings",
+                                className:
+                                  "text-white/70 hover:text-white cursor-pointer",
+                              },
+                              "⚙️"
+                            ),
+                          ]
+                        ),
+                      ]
+                    ),
+                  ]
+                )
+              )
+            ),
+
+            // Main Content
+            React.createElement(
+              "main",
+              {
+                key: "main",
+                className: "w-full p-6 lg:p-8",
+              },
+              renderScreen()
+            ),
+          ]
+        );
       };
 
-      const renderDashboard = () => React.createElement(ModernDashboard);
+      const renderDashboard = () => {
+        console.log("renderDashboard called");
+        try {
+          return React.createElement(ModernDashboard);
+        } catch (error) {
+          console.error("Error in renderDashboard:", error);
+          return React.createElement(
+            "div",
+            {
+              style: {
+                padding: "20px",
+                color: "white",
+                background: "red",
+                textAlign: "center",
+              },
+            },
+            `Dashboard Error: ${error.message}`
+          );
+        }
+      };
 
       const WebApp = () => {
         const [showOnboarding, setShowOnboarding] = useState(false);
