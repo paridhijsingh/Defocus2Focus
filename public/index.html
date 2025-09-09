@@ -209,19 +209,88 @@
         animation: float-icon-4 4.5s ease-in-out infinite;
       }
 
-      /* Test animation to verify CSS is working */
-      .test-pulse {
-        animation: pulse 2s ease-in-out infinite;
-      }
-
-      @keyframes pulse {
+      /* Onboarding Carousel Animations */
+      @keyframes timer-pulse {
         0%,
         100% {
-          opacity: 1;
+          transform: scale(1) rotate(0deg);
         }
         50% {
-          opacity: 0.5;
+          transform: scale(1.1) rotate(5deg);
         }
+      }
+
+      .animate-timer-pulse {
+        animation: timer-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes game-float {
+        0%,
+        100% {
+          transform: translateY(0px) rotate(0deg);
+        }
+        25% {
+          transform: translateY(-10px) rotate(-5deg);
+        }
+        75% {
+          transform: translateY(-5px) rotate(5deg);
+        }
+      }
+
+      .animate-game-float {
+        animation: game-float 3s ease-in-out infinite;
+      }
+
+      @keyframes draw-scribble {
+        0% {
+          transform: scale(1) rotate(0deg);
+        }
+        25% {
+          transform: scale(1.05) rotate(-10deg);
+        }
+        50% {
+          transform: scale(1.1) rotate(10deg);
+        }
+        75% {
+          transform: scale(1.05) rotate(-5deg);
+        }
+        100% {
+          transform: scale(1) rotate(0deg);
+        }
+      }
+
+      .animate-draw-scribble {
+        animation: draw-scribble 4s ease-in-out infinite;
+      }
+
+      @keyframes chart-grow {
+        0%,
+        100% {
+          transform: scale(1) rotate(0deg);
+        }
+        50% {
+          transform: scale(1.15) rotate(2deg);
+        }
+      }
+
+      .animate-chart-grow {
+        animation: chart-grow 2.5s ease-in-out infinite;
+      }
+
+      @keyframes rocket-launch {
+        0% {
+          transform: translateY(0px) scale(1) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-15px) scale(1.1) rotate(5deg);
+        }
+        100% {
+          transform: translateY(0px) scale(1) rotate(0deg);
+        }
+      }
+
+      .animate-rocket-launch {
+        animation: rocket-launch 2s ease-in-out infinite;
       }
 
       /* Custom scrollbar */
@@ -748,356 +817,299 @@
         );
       };
 
+      // Modern Animated Onboarding Carousel
       const OnboardingTutorial = ({ onComplete, onSkip }) => {
-        const [currentStep, setCurrentStep] = useState(0);
+        const [currentSlide, setCurrentSlide] = useState(0);
         const [isVisible, setIsVisible] = useState(true);
+        const [isMuted, setIsMuted] = useState(false);
+        const [touchStart, setTouchStart] = useState(null);
+        const [touchEnd, setTouchEnd] = useState(null);
 
-        const steps = [
+        const slides = [
           {
-            id: "welcome",
-            title: "Welcome to Defocus2Focus! 🎯",
-            subtitle: "Where Procrastination Meets Play",
+            id: "focus-timer",
+            title: "Focus Timer",
+            subtitle: "Deep Work Made Simple",
             description:
-              "Transform your productivity with our gamified approach to focus and breaks.",
-            icon: "🎯",
+              "Set Pomodoro timers, track your focus sessions, and build productive habits with our intelligent timer system.",
+            icon: "⏰",
             color: "blue",
-            illustration: "✨",
-          },
-          {
-            id: "focus-mode",
-            title: "Focus Mode 🎯",
-            subtitle: "Deep Work Made Fun",
-            description:
-              "Set timers, track progress, and complete tasks while earning energy points and unlocking achievements.",
-            icon: "🎯",
-            color: "blue",
-            illustration: "⏰",
             features: [
-              "Pomodoro Timer",
-              "Task Management",
-              "Progress Tracking",
-              "Energy Points",
+              "25/5/15 minute cycles",
+              "Focus streak tracking",
+              "Break reminders",
+              "Productivity analytics",
             ],
+            animation: "timer-pulse",
           },
           {
-            id: "defocus-mode",
-            title: "Defocus Mode 🌿",
-            subtitle: "Mindful Breaks & Recovery",
+            id: "mini-games",
+            title: "Mini Games",
+            subtitle: "Fun Breaks & Mental Reset",
             description:
-              "Take purposeful breaks with guided activities, mini-games, and relaxation techniques.",
-            icon: "🌿",
-            color: "orange",
-            illustration: "🧘",
-            features: [
-              "Mini Games",
-              "Breathing Exercises",
-              "Journaling",
-              "AI Therapist",
-            ],
-          },
-          {
-            id: "switching-modes",
-            title: "Smart Mode Switching 🔄",
-            subtitle: "Seamless Transitions",
-            description:
-              "Easily switch between Focus and Defocus modes with our intuitive toggle system.",
-            icon: "🔄",
+              "Take engaging breaks with puzzle games, memory challenges, and quick brain teasers designed to refresh your mind.",
+            icon: "🎮",
             color: "purple",
-            illustration: "⚡",
             features: [
-              "One-Click Toggle",
-              "Smart Suggestions",
-              "Context Awareness",
-              "Smooth Transitions",
+              "Puzzle games",
+              "Memory challenges",
+              "Quick brain teasers",
+              "Relaxation activities",
             ],
+            animation: "game-float",
           },
           {
-            id: "rewards",
-            title: "Rewards & Motivation 🏆",
-            subtitle: "Stay Motivated",
+            id: "scribble-pad",
+            title: "Scribble Pad",
+            subtitle: "Quick Notes & Ideas",
             description:
-              "Earn badges, track streaks, and unlock achievements as you build better productivity habits.",
-            icon: "🏆",
+              "Capture thoughts, sketch ideas, and jot down notes with our intuitive drawing and note-taking interface.",
+            icon: "📝",
             color: "green",
-            illustration: "⭐",
             features: [
-              "Achievement Badges",
-              "Daily Streaks",
-              "Energy Points",
-              "Progress Analytics",
+              "Drawing tools",
+              "Quick notes",
+              "Idea capture",
+              "Voice memos",
             ],
+            animation: "draw-scribble",
+          },
+          {
+            id: "journal-insights",
+            title: "Journal & Insights",
+            subtitle: "Track Your Progress",
+            description:
+              "Reflect on your day, track your mood, and gain insights into your productivity patterns and growth.",
+            icon: "📊",
+            color: "orange",
+            features: [
+              "Daily reflections",
+              "Mood tracking",
+              "Progress analytics",
+              "Goal setting",
+            ],
+            animation: "chart-grow",
+          },
+          {
+            id: "get-started",
+            title: "Ready to Begin?",
+            subtitle: "Your Journey Starts Now",
+            description:
+              "You're all set! Start your first focus session and begin building better productivity habits today.",
+            icon: "🚀",
+            color: "gradient",
+            features: [
+              "Start first session",
+              "Set your goals",
+              "Track progress",
+              "Earn rewards",
+            ],
+            animation: "rocket-launch",
           },
         ];
 
-        const nextStep = () => {
-          if (currentStep < steps.length - 1) {
-            setCurrentStep(currentStep + 1);
+        const nextSlide = () => {
+          if (currentSlide < slides.length - 1) {
+            setCurrentSlide(currentSlide + 1);
           } else {
             handleComplete();
           }
         };
 
-        const prevStep = () => {
-          if (currentStep > 0) {
-            setCurrentStep(currentStep - 1);
+        const prevSlide = () => {
+          if (currentSlide > 0) {
+            setCurrentSlide(currentSlide - 1);
           }
+        };
+
+        const goToSlide = (index) => {
+          setCurrentSlide(index);
         };
 
         const handleComplete = () => {
           setIsVisible(false);
           setTimeout(() => {
             onComplete();
-          }, 300);
+          }, 500);
         };
 
         const handleSkip = () => {
           setIsVisible(false);
           setTimeout(() => {
             onSkip();
-          }, 300);
+          }, 500);
         };
 
-        const currentStepData = steps[currentStep];
-        const isLastStep = currentStep === steps.length - 1;
-        const isFirstStep = currentStep === 0;
+        const toggleMute = () => {
+          setIsMuted(!isMuted);
+        };
+
+        // Touch handlers for swipe support
+        const handleTouchStart = (e) => {
+          setTouchEnd(null);
+          setTouchStart(e.targetTouches[0].clientX);
+        };
+
+        const handleTouchMove = (e) => {
+          setTouchEnd(e.targetTouches[0].clientX);
+        };
+
+        const handleTouchEnd = () => {
+          if (!touchStart || !touchEnd) return;
+
+          const distance = touchStart - touchEnd;
+          const isLeftSwipe = distance > 50;
+          const isRightSwipe = distance < -50;
+
+          if (isLeftSwipe && currentSlide < slides.length - 1) {
+            nextSlide();
+          }
+          if (isRightSwipe && currentSlide > 0) {
+            prevSlide();
+          }
+        };
+
+        const currentSlideData = slides[currentSlide];
+        const isLastSlide = currentSlide === slides.length - 1;
+        const isFirstSlide = currentSlide === 0;
 
         if (!isVisible) return null;
 
-        return React.createElement(
-          "div",
-          {
-            className:
-              "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4",
-          },
-          React.createElement(
-            "div",
-            {
-              className:
-                "bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all duration-300 ease-in-out animate-fade-in",
-            },
-            [
-              // Header
-              React.createElement(
-                "div",
-                { key: "header", className: "relative" },
-                [
-                  React.createElement("div", {
-                    key: "progress-bar",
-                    className: `h-2 bg-gradient-to-r ${
-                      currentStepData.color === "blue"
-                        ? "from-blue-400 to-blue-600"
-                        : currentStepData.color === "orange"
-                        ? "from-orange-400 to-orange-600"
-                        : currentStepData.color === "purple"
-                        ? "from-purple-400 to-purple-600"
-                        : "from-green-400 to-green-600"
-                    }`,
-                    style: {
-                      width: `${((currentStep + 1) / steps.length) * 100}%`,
-                    },
-                  }),
-                  React.createElement(
-                    "button",
-                    {
-                      key: "skip-button",
-                      onClick: handleSkip,
-                      className:
-                        "absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 text-sm font-medium",
-                    },
-                    "Skip Tutorial"
-                  ),
-                ]
-              ),
+        return (
+          <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 z-50 flex items-center justify-center p-4">
+            {/* Background Music Toggle */}
+            <button
+              onClick={toggleMute}
+              className="absolute top-6 right-6 z-10 p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all duration-300"
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? "🔇" : "🔊"}
+            </button>
 
-              // Content
-              React.createElement(
-                "div",
-                { key: "content", className: "p-8 text-center" },
-                [
-                  // Illustration
-                  React.createElement(
-                    "div",
-                    { key: "illustration", className: "mb-6" },
-                    [
-                      React.createElement(
-                        "div",
-                        {
-                          key: "icon-container",
-                          className: `w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl mb-4 ${
-                            currentStepData.color === "blue"
-                              ? "bg-blue-100"
-                              : currentStepData.color === "orange"
-                              ? "bg-orange-100"
-                              : currentStepData.color === "purple"
-                              ? "bg-purple-100"
-                              : "bg-green-100"
-                          }`,
-                        },
-                        React.createElement(
-                          "span",
-                          { className: "text-4xl" },
-                          currentStepData.illustration
-                        )
-                      ),
-                      React.createElement(
-                        "div",
-                        { key: "main-icon", className: "text-6xl mb-2" },
-                        currentStepData.icon
-                      ),
-                    ]
-                  ),
+            {/* Skip Button */}
+            <button
+              onClick={handleSkip}
+              className="absolute top-6 left-6 z-10 px-4 py-2 text-white/70 hover:text-white transition-colors duration-300 text-sm font-medium"
+            >
+              Skip
+            </button>
 
-                  // Title
-                  React.createElement(
-                    "h2",
-                    {
-                      key: "title",
-                      className: "text-2xl font-bold text-gray-900 mb-2",
-                    },
-                    currentStepData.title
-                  ),
+            {/* Main Carousel Container */}
+            <div
+              className="relative w-full max-w-4xl mx-auto"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              {/* Slide Content */}
+              <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 md:p-12 text-center text-white overflow-hidden">
+                {/* Progress Bar */}
+                <div className="mb-8">
+                  <div className="w-full bg-white/20 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-blue-400 to-purple-400 h-2 rounded-full transition-all duration-500 ease-out"
+                      style={{
+                        width: `${((currentSlide + 1) / slides.length) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
 
-                  // Subtitle
-                  React.createElement(
-                    "h3",
-                    {
-                      key: "subtitle",
-                      className: `text-lg font-semibold mb-4 ${
-                        currentStepData.color === "blue"
-                          ? "text-blue-600"
-                          : currentStepData.color === "orange"
-                          ? "text-orange-600"
-                          : currentStepData.color === "purple"
-                          ? "text-purple-600"
-                          : "text-green-600"
-                      }`,
-                    },
-                    currentStepData.subtitle
-                  ),
+                {/* Animated Icon */}
+                <div className="mb-8">
+                  <div
+                    className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center text-5xl mb-4 animate-${currentSlideData.animation}`}
+                  >
+                    {currentSlideData.icon}
+                  </div>
+                </div>
 
-                  // Description
-                  React.createElement(
-                    "p",
-                    {
-                      key: "description",
-                      className: "text-gray-600 mb-6 leading-relaxed",
-                    },
-                    currentStepData.description
-                  ),
+                {/* Title */}
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in-up">
+                  {currentSlideData.title}
+                </h2>
 
-                  // Features List
-                  currentStepData.features &&
-                    React.createElement(
-                      "div",
-                      { key: "features", className: "mb-6" },
-                      [
-                        React.createElement(
-                          "div",
-                          {
-                            key: "features-grid",
-                            className: "grid grid-cols-2 gap-2",
-                          },
-                          currentStepData.features.map((feature, index) =>
-                            React.createElement(
-                              "div",
-                              {
-                                key: index,
-                                className:
-                                  "flex items-center justify-center p-2 bg-gray-50 rounded-lg",
-                              },
-                              React.createElement(
-                                "span",
-                                {
-                                  className:
-                                    "text-sm text-gray-700 font-medium",
-                                },
-                                feature
-                              )
-                            )
-                          )
-                        ),
-                      ]
-                    ),
+                {/* Subtitle */}
+                <h3
+                  className="text-xl md:text-2xl text-blue-200 mb-6 animate-fade-in-up"
+                  style={{ animationDelay: "0.2s" }}
+                >
+                  {currentSlideData.subtitle}
+                </h3>
 
-                  // Progress Dots
-                  React.createElement(
-                    "div",
-                    {
-                      key: "progress-dots",
-                      className: "flex justify-center space-x-2 mb-6",
-                    },
-                    steps.map((_, index) =>
-                      React.createElement("div", {
-                        key: index,
-                        className: `w-2 h-2 rounded-full transition-all duration-300 ${
-                          index === currentStep
-                            ? currentStepData.color === "blue"
-                              ? "bg-blue-500"
-                              : currentStepData.color === "orange"
-                              ? "bg-orange-500"
-                              : currentStepData.color === "purple"
-                              ? "bg-purple-500"
-                              : "bg-green-500"
-                            : "bg-gray-300"
-                        }`,
-                      })
-                    )
-                  ),
-                ]
-              ),
+                {/* Description */}
+                <p
+                  className="text-lg text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed animate-fade-in-up"
+                  style={{ animationDelay: "0.4s" }}
+                >
+                  {currentSlideData.description}
+                </p>
 
-              // Footer
-              React.createElement(
-                "div",
-                { key: "footer", className: "px-8 pb-8" },
-                [
-                  React.createElement(
-                    "div",
-                    {
-                      key: "footer-buttons",
-                      className: "flex justify-between items-center",
-                    },
-                    [
-                      // Back Button
-                      React.createElement(
-                        "button",
-                        {
-                          key: "back-button",
-                          onClick: prevStep,
-                          disabled: isFirstStep,
-                          className: `px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                            isFirstStep
-                              ? "text-gray-300 cursor-not-allowed"
-                              : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
-                          }`,
-                        },
-                        "Back"
-                      ),
+                {/* Features Grid */}
+                {currentSlideData.features && (
+                  <div
+                    className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 animate-fade-in-up"
+                    style={{ animationDelay: "0.6s" }}
+                  >
+                    {currentSlideData.features.map((feature, index) => (
+                      <div
+                        key={index}
+                        className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300"
+                        style={{ animationDelay: `${0.8 + index * 0.1}s` }}
+                      >
+                        <div className="text-sm font-medium text-white">
+                          {feature}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                      // Next/Complete Button
-                      React.createElement(
-                        "button",
-                        {
-                          key: "next-button",
-                          onClick: nextStep,
-                          className: `px-8 py-3 rounded-xl font-medium text-white transition-all duration-200 transform hover:scale-105 ${
-                            currentStepData.color === "blue"
-                              ? "bg-blue-500 hover:bg-blue-600"
-                              : currentStepData.color === "orange"
-                              ? "bg-orange-500 hover:bg-orange-600"
-                              : currentStepData.color === "purple"
-                              ? "bg-purple-500 hover:bg-purple-600"
-                              : "bg-green-500 hover:bg-green-600"
-                          }`,
-                        },
-                        isLastStep ? "Start My Journey" : "Next"
-                      ),
-                    ]
-                  ),
-                ]
-              ),
-            ]
-          )
+                {/* Progress Dots */}
+                <div className="flex justify-center space-x-3 mb-8">
+                  {slides.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        index === currentSlide
+                          ? "bg-white scale-125"
+                          : "bg-white/40 hover:bg-white/60"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between items-center">
+                  {/* Back Button */}
+                  <button
+                    onClick={prevSlide}
+                    disabled={isFirstSlide}
+                    className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
+                      isFirstSlide
+                        ? "text-white/30 cursor-not-allowed"
+                        : "text-white hover:bg-white/20 bg-white/10"
+                    }`}
+                  >
+                    ← Back
+                  </button>
+
+                  {/* Next/Get Started Button */}
+                  <button
+                    onClick={nextSlide}
+                    className={`px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
+                      isLastSlide
+                        ? "bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:shadow-lg hover:shadow-purple-500/50"
+                        : "bg-gradient-to-r from-blue-500 to-purple-500 hover:shadow-lg hover:shadow-blue-500/50"
+                    }`}
+                  >
+                    {isLastSlide ? "🚀 Get Started" : "Next →"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         );
       };
 
