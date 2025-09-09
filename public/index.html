@@ -1448,6 +1448,7 @@
                 },
                 [
                   // Enhanced Defocus Mode Card
+                  console.log("Rendering Enhanced Defocus Mode Card"),
                   React.createElement(
                     "div",
                     {
@@ -1484,9 +1485,20 @@
                                 {
                                   key: "defocus-title",
                                   className:
-                                    "text-xl font-semibold text-white mb-1",
+                                    "text-xl font-semibold text-white mb-1 flex items-center",
                                 },
-                                "Defocus Mode"
+                                [
+                                  "Defocus Mode",
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      key: "enhanced-badge",
+                                      className:
+                                        "ml-2 px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-400/30",
+                                    },
+                                    "Enhanced"
+                                  ),
+                                ]
                               ),
                               React.createElement(
                                 "p",
