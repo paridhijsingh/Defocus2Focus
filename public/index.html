@@ -1144,6 +1144,770 @@
         );
       };
 
+      // Simple Modern Dashboard Component
+      const ModernDashboard = () => {
+        const [sidebarOpen, setSidebarOpen] = useState(false);
+        const [timerDuration, setTimerDuration] = useState(25);
+        const [timerRunning, setTimerRunning] = useState(false);
+        const [timeLeft, setTimeLeft] = useState(timerDuration * 60);
+        const [feedbackExpanded, setFeedbackExpanded] = useState(false);
+        const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
+        const productivityData = [
+          { day: "Mon", score: 85 },
+          { day: "Tue", score: 92 },
+          { day: "Wed", score: 78 },
+          { day: "Thu", score: 88 },
+          { day: "Fri", score: 95 },
+          { day: "Sat", score: 70 },
+          { day: "Sun", score: 82 },
+        ];
+
+        const journalEntries = [
+          {
+            id: 1,
+            mood: "😊",
+            note: "Great focus session today!",
+            time: "2 hours ago",
+          },
+          {
+            id: 2,
+            mood: "😌",
+            note: "Feeling calm after meditation",
+            time: "5 hours ago",
+          },
+          {
+            id: 3,
+            mood: "🎯",
+            note: "Completed all tasks ahead of schedule",
+            time: "1 day ago",
+          },
+        ];
+
+        return React.createElement(
+          "div",
+          {
+            className:
+              "min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100",
+          },
+          [
+            // Top Navigation
+            React.createElement(
+              "header",
+              {
+                key: "header",
+                className:
+                  "bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 sticky top-0 z-40",
+              },
+              React.createElement(
+                "div",
+                {
+                  className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className: "flex justify-between items-center py-4",
+                  },
+                  [
+                    React.createElement(
+                      "div",
+                      {
+                        key: "logo",
+                        className: "flex items-center space-x-3",
+                      },
+                      [
+                        React.createElement(
+                          "button",
+                          {
+                            key: "menu-button",
+                            onClick: () => setSidebarOpen(!sidebarOpen),
+                            className:
+                              "lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors",
+                          },
+                          React.createElement(
+                            "span",
+                            { className: "text-2xl" },
+                            "☰"
+                          )
+                        ),
+                        React.createElement(
+                          "h1",
+                          {
+                            key: "title",
+                            className:
+                              "text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent",
+                          },
+                          "🎯 Defocus2Focus"
+                        ),
+                      ]
+                    ),
+                    React.createElement(
+                      "div",
+                      {
+                        key: "user-actions",
+                        className: "flex items-center space-x-4",
+                      },
+                      [
+                        React.createElement(
+                          "button",
+                          {
+                            key: "reset-button",
+                            onClick: () => window.location.reload(),
+                            className:
+                              "px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors",
+                          },
+                          "🔄 Reset"
+                        ),
+                        React.createElement(
+                          "div",
+                          {
+                            key: "avatar",
+                            className:
+                              "w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm",
+                          },
+                          "U"
+                        ),
+                      ]
+                    ),
+                  ]
+                )
+              )
+            ),
+
+            // Main Content
+            React.createElement(
+              "main",
+              {
+                key: "main",
+                className: "flex-1 p-6 lg:p-8",
+              },
+              React.createElement(
+                "div",
+                {
+                  className: "max-w-7xl mx-auto",
+                },
+                [
+                  // Welcome Section
+                  React.createElement(
+                    "div",
+                    {
+                      key: "welcome",
+                      className: "mb-8 animate-fade-in-up",
+                    },
+                    [
+                      React.createElement(
+                        "h2",
+                        {
+                          key: "welcome-title",
+                          className: "text-3xl font-bold text-gray-900 mb-2",
+                        },
+                        "Welcome back! 👋"
+                      ),
+                      React.createElement(
+                        "p",
+                        {
+                          key: "welcome-subtitle",
+                          className: "text-gray-600",
+                        },
+                        "Ready to focus and achieve your goals today?"
+                      ),
+                    ]
+                  ),
+
+                  // Dashboard Grid
+                  React.createElement(
+                    "div",
+                    {
+                      key: "dashboard-grid",
+                      className: "grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8",
+                    },
+                    [
+                      // Focus Timer Widget
+                      React.createElement(
+                        "div",
+                        {
+                          key: "focus-timer",
+                          className:
+                            "lg:col-span-1 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 animate-fade-in-up",
+                          style: { animationDelay: "0.1s" },
+                        },
+                        React.createElement(
+                          "div",
+                          {
+                            className: "text-center",
+                          },
+                          [
+                            React.createElement(
+                              "h3",
+                              {
+                                key: "timer-title",
+                                className:
+                                  "text-xl font-semibold text-gray-900 mb-4",
+                              },
+                              "Focus Timer"
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "timer-circle",
+                                className: "relative w-32 h-32 mx-auto mb-6",
+                              },
+                              [
+                                React.createElement(
+                                  "svg",
+                                  {
+                                    key: "timer-svg",
+                                    className: "w-32 h-32 transform -rotate-90",
+                                    viewBox: "0 0 100 100",
+                                  },
+                                  [
+                                    React.createElement("circle", {
+                                      key: "timer-bg",
+                                      cx: "50",
+                                      cy: "50",
+                                      r: "45",
+                                      stroke: "currentColor",
+                                      strokeWidth: "8",
+                                      fill: "none",
+                                      className: "text-gray-200",
+                                    }),
+                                    React.createElement("circle", {
+                                      key: "timer-progress",
+                                      cx: "50",
+                                      cy: "50",
+                                      r: "45",
+                                      stroke: "currentColor",
+                                      strokeWidth: "8",
+                                      fill: "none",
+                                      strokeDasharray: "283",
+                                      strokeDashoffset: "141",
+                                      className:
+                                        "text-blue-500 transition-all duration-1000",
+                                      strokeLinecap: "round",
+                                    }),
+                                  ]
+                                ),
+                                React.createElement(
+                                  "div",
+                                  {
+                                    key: "timer-text",
+                                    className:
+                                      "absolute inset-0 flex items-center justify-center",
+                                  },
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      className:
+                                        "text-2xl font-bold text-gray-900",
+                                    },
+                                    "25:00"
+                                  )
+                                ),
+                              ]
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "timer-controls",
+                                className: "space-y-4",
+                              },
+                              [
+                                React.createElement(
+                                  "select",
+                                  {
+                                    key: "timer-select",
+                                    className:
+                                      "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                                    defaultValue: "25",
+                                  },
+                                  [
+                                    React.createElement(
+                                      "option",
+                                      { key: "5", value: "5" },
+                                      "5 minutes"
+                                    ),
+                                    React.createElement(
+                                      "option",
+                                      { key: "10", value: "10" },
+                                      "10 minutes"
+                                    ),
+                                    React.createElement(
+                                      "option",
+                                      { key: "15", value: "15" },
+                                      "15 minutes"
+                                    ),
+                                    React.createElement(
+                                      "option",
+                                      { key: "20", value: "20" },
+                                      "20 minutes"
+                                    ),
+                                    React.createElement(
+                                      "option",
+                                      { key: "25", value: "25" },
+                                      "25 minutes"
+                                    ),
+                                    React.createElement(
+                                      "option",
+                                      { key: "30", value: "30" },
+                                      "30 minutes"
+                                    ),
+                                  ]
+                                ),
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: "timer-button",
+                                    onClick: () =>
+                                      setTimerRunning(!timerRunning),
+                                    className: `w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
+                                      timerRunning
+                                        ? "bg-red-500 hover:bg-red-600 text-white"
+                                        : "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                                    }`,
+                                  },
+                                  timerRunning ? "⏸️ Pause" : "▶️ Start Focus"
+                                ),
+                              ]
+                            ),
+                          ]
+                        )
+                      ),
+
+                      // Productivity Chart
+                      React.createElement(
+                        "div",
+                        {
+                          key: "productivity-chart",
+                          className:
+                            "lg:col-span-2 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 animate-fade-in-up",
+                          style: { animationDelay: "0.2s" },
+                        },
+                        [
+                          React.createElement(
+                            "h3",
+                            {
+                              key: "chart-title",
+                              className:
+                                "text-xl font-semibold text-gray-900 mb-6",
+                            },
+                            "Daily Productivity Score"
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "chart-container",
+                              className:
+                                "flex items-end justify-between h-48 space-x-2",
+                            },
+                            productivityData.map((data, index) =>
+                              React.createElement(
+                                "div",
+                                {
+                                  key: `bar-${index}`,
+                                  className:
+                                    "flex flex-col items-center flex-1",
+                                },
+                                [
+                                  React.createElement("div", {
+                                    key: `bar-${index}-fill`,
+                                    className:
+                                      "w-full bg-gradient-to-t from-blue-500 to-purple-500 rounded-t-lg transition-all duration-1000 hover:scale-105",
+                                    style: {
+                                      height: `${(data.score / 100) * 180}px`,
+                                    },
+                                  }),
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      key: `bar-${index}-day`,
+                                      className: "text-xs text-gray-600 mt-2",
+                                    },
+                                    data.day
+                                  ),
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      key: `bar-${index}-score`,
+                                      className:
+                                        "text-xs font-semibold text-blue-600",
+                                    },
+                                    data.score
+                                  ),
+                                ]
+                              )
+                            )
+                          ),
+                        ]
+                      ),
+                    ]
+                  ),
+
+                  // Bottom Grid
+                  React.createElement(
+                    "div",
+                    {
+                      key: "bottom-grid",
+                      className:
+                        "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6",
+                    },
+                    [
+                      // Journal Highlights
+                      React.createElement(
+                        "div",
+                        {
+                          key: "journal-highlights",
+                          className:
+                            "bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 animate-fade-in-up",
+                          style: { animationDelay: "0.3s" },
+                        },
+                        [
+                          React.createElement(
+                            "h3",
+                            {
+                              key: "journal-title",
+                              className:
+                                "text-xl font-semibold text-gray-900 mb-4",
+                            },
+                            "Recent Journal Highlights"
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "journal-entries",
+                              className: "space-y-4",
+                            },
+                            journalEntries.map((entry) =>
+                              React.createElement(
+                                "div",
+                                {
+                                  key: `entry-${entry.id}`,
+                                  className:
+                                    "flex items-start space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors",
+                                },
+                                [
+                                  React.createElement(
+                                    "span",
+                                    {
+                                      key: `entry-${entry.id}-mood`,
+                                      className: "text-2xl",
+                                    },
+                                    entry.mood
+                                  ),
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: `entry-${entry.id}-content`,
+                                      className: "flex-1",
+                                    },
+                                    [
+                                      React.createElement(
+                                        "p",
+                                        {
+                                          key: `entry-${entry.id}-note`,
+                                          className: "text-sm text-gray-800",
+                                        },
+                                        entry.note
+                                      ),
+                                      React.createElement(
+                                        "p",
+                                        {
+                                          key: `entry-${entry.id}-time`,
+                                          className:
+                                            "text-xs text-gray-500 mt-1",
+                                        },
+                                        entry.time
+                                      ),
+                                    ]
+                                  ),
+                                ]
+                              )
+                            )
+                          ),
+                        ]
+                      ),
+
+                      // Mini Games
+                      React.createElement(
+                        "div",
+                        {
+                          key: "mini-games",
+                          className:
+                            "bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 animate-fade-in-up",
+                          style: { animationDelay: "0.4s" },
+                        },
+                        [
+                          React.createElement(
+                            "h3",
+                            {
+                              key: "games-title",
+                              className:
+                                "text-xl font-semibold text-gray-900 mb-4",
+                            },
+                            "Mini Games"
+                          ),
+                          React.createElement(
+                            "div",
+                            {
+                              key: "games-grid",
+                              className: "grid grid-cols-3 gap-3",
+                            },
+                            [
+                              {
+                                icon: "🧩",
+                                name: "Puzzle",
+                                color: "from-purple-500 to-pink-500",
+                              },
+                              {
+                                icon: "🧠",
+                                name: "Memory",
+                                color: "from-green-500 to-teal-500",
+                              },
+                              {
+                                icon: "⚡",
+                                name: "Quick",
+                                color: "from-orange-500 to-red-500",
+                              },
+                            ].map((game, index) =>
+                              React.createElement(
+                                "button",
+                                {
+                                  key: `game-${index}`,
+                                  className: `p-4 rounded-xl bg-gradient-to-br ${game.color} text-white hover:scale-105 transition-all duration-300 transform`,
+                                },
+                                [
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: `game-${index}-icon`,
+                                      className: "text-2xl mb-2",
+                                    },
+                                    game.icon
+                                  ),
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: `game-${index}-name`,
+                                      className: "text-xs font-medium",
+                                    },
+                                    game.name
+                                  ),
+                                ]
+                              )
+                            )
+                          ),
+                        ]
+                      ),
+
+                      // Scribble Pad
+                      React.createElement(
+                        "div",
+                        {
+                          key: "scribble-pad",
+                          className:
+                            "bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 animate-fade-in-up",
+                          style: { animationDelay: "0.5s" },
+                        },
+                        React.createElement(
+                          "div",
+                          {
+                            className: "text-center",
+                          },
+                          [
+                            React.createElement(
+                              "h3",
+                              {
+                                key: "scribble-title",
+                                className:
+                                  "text-xl font-semibold text-gray-900 mb-4",
+                              },
+                              "Scribble Pad"
+                            ),
+                            React.createElement(
+                              "div",
+                              {
+                                key: "scribble-icon",
+                                className:
+                                  "w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center text-3xl animate-draw-scribble",
+                              },
+                              "✏️"
+                            ),
+                            React.createElement(
+                              "p",
+                              {
+                                key: "scribble-desc",
+                                className: "text-gray-600 mb-4",
+                              },
+                              "Quick notes and doodles"
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                key: "scribble-button",
+                                className:
+                                  "w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105",
+                              },
+                              "Open Scribble Pad"
+                            ),
+                          ]
+                        )
+                      ),
+                    ]
+                  ),
+
+                  // Contact & Feedback
+                  React.createElement(
+                    "div",
+                    {
+                      key: "feedback-section",
+                      className:
+                        "mt-8 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 animate-fade-in-up",
+                      style: { animationDelay: "0.6s" },
+                    },
+                    [
+                      React.createElement(
+                        "div",
+                        {
+                          key: "feedback-header",
+                          className: "flex items-center justify-between mb-6",
+                        },
+                        [
+                          React.createElement(
+                            "h3",
+                            {
+                              key: "feedback-title",
+                              className: "text-xl font-semibold text-gray-900",
+                            },
+                            "Contact & Feedback"
+                          ),
+                          React.createElement(
+                            "button",
+                            {
+                              key: "feedback-button",
+                              onClick: () =>
+                                setFeedbackExpanded(!feedbackExpanded),
+                              className:
+                                "px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105",
+                            },
+                            feedbackExpanded ? "Close" : "Send Feedback"
+                          ),
+                        ]
+                      ),
+                      feedbackExpanded &&
+                        React.createElement(
+                          "div",
+                          {
+                            key: "feedback-form",
+                            className: "animate-fade-in-up",
+                          },
+                          feedbackSubmitted
+                            ? React.createElement(
+                                "div",
+                                {
+                                  key: "feedback-success",
+                                  className: "text-center py-8",
+                                },
+                                [
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "success-icon",
+                                      className: "text-6xl mb-4",
+                                    },
+                                    "✅"
+                                  ),
+                                  React.createElement(
+                                    "h4",
+                                    {
+                                      key: "success-title",
+                                      className:
+                                        "text-xl font-semibold text-green-600 mb-2",
+                                    },
+                                    "Thank you!"
+                                  ),
+                                  React.createElement(
+                                    "p",
+                                    {
+                                      key: "success-message",
+                                      className: "text-gray-600",
+                                    },
+                                    "Your feedback has been submitted successfully."
+                                  ),
+                                ]
+                              )
+                            : React.createElement(
+                                "form",
+                                {
+                                  key: "feedback-form",
+                                  onSubmit: (e) => {
+                                    e.preventDefault();
+                                    setFeedbackSubmitted(true);
+                                    setTimeout(() => {
+                                      setFeedbackExpanded(false);
+                                      setFeedbackSubmitted(false);
+                                    }, 2000);
+                                  },
+                                  className: "space-y-4",
+                                },
+                                [
+                                  React.createElement(
+                                    "div",
+                                    {
+                                      key: "form-grid",
+                                      className:
+                                        "grid grid-cols-1 md:grid-cols-2 gap-4",
+                                    },
+                                    [
+                                      React.createElement("input", {
+                                        key: "name-input",
+                                        type: "text",
+                                        placeholder: "Your Name",
+                                        className:
+                                          "px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                                        required: true,
+                                      }),
+                                      React.createElement("input", {
+                                        key: "email-input",
+                                        type: "email",
+                                        placeholder: "Your Email",
+                                        className:
+                                          "px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                                        required: true,
+                                      }),
+                                    ]
+                                  ),
+                                  React.createElement("textarea", {
+                                    key: "message-input",
+                                    placeholder: "Your message...",
+                                    rows: 4,
+                                    className:
+                                      "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                                    required: true,
+                                  }),
+                                  React.createElement(
+                                    "button",
+                                    {
+                                      key: "submit-button",
+                                      type: "submit",
+                                      className:
+                                        "w-full py-3 px-6 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105",
+                                    },
+                                    "Send Feedback"
+                                  ),
+                                ]
+                              )
+                        ),
+                    ]
+                  ),
+                ]
+              )
+            ),
+          ]
+        );
+      };
+
+      const renderDashboard = () => React.createElement(ModernDashboard);
+
       const WebApp = () => {
         const [showOnboarding, setShowOnboarding] = useState(false);
         const [currentScreen, setCurrentScreen] = useState("welcome");
@@ -1182,8 +1946,6 @@
           setHasCompletedOnboarding(false);
         };
 
-        const renderDashboard = () => React.createElement(ModernDashboard);
-
         return React.createElement("div", null, [
           currentScreen === "welcome" &&
             React.createElement(WelcomeScreen, {
@@ -1210,6 +1972,5 @@
         React.createElement(WebApp)
       );
     </script>
-    <script src="./dashboard.js"></script>
   </body>
 </html>
