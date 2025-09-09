@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Defocus2Focus - Where Procrastination Meets Play</title>
+    <title>Defocus2Focus - Where Procrastination Meets Play v2.0</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -35,12 +35,47 @@
         }
       }
 
+      @keyframes float {
+        0% {
+          transform: translateY(0px) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-10px) rotate(2deg);
+        }
+        100% {
+          transform: translateY(0px) rotate(0deg);
+        }
+      }
+
+      @keyframes pulse-glow {
+        0% {
+          opacity: 0.2;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.4;
+          transform: scale(1.1);
+        }
+        100% {
+          opacity: 0.2;
+          transform: scale(1);
+        }
+      }
+
       .animate-fade-in {
         animation: fadeIn 0.5s ease-out;
       }
 
       .animate-slide-in {
         animation: slideIn 0.3s ease-out;
+      }
+
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .animate-pulse-glow {
+        animation: pulse-glow 4s ease-in-out infinite;
       }
 
       /* Custom scrollbar */
@@ -289,6 +324,7 @@
 
       // Modern Animated Welcome Screen Component
       const WelcomeScreen = ({ onStart }) => {
+        console.log("New WelcomeScreen loaded!");
         const [theme, setTheme] = useState(
           localStorage.getItem("d2f_theme") || "auto"
         );
