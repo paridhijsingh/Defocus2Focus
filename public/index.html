@@ -2359,32 +2359,94 @@
           setCurrentScreen("dashboard");
         };
 
-        return React.createElement("div", null, [
-          currentScreen === "welcome" &&
+        console.log(
+          "WebApp render - currentScreen:",
+          currentScreen,
+          "showOnboarding:",
+          showOnboarding,
+          "hasCompletedOnboarding:",
+          hasCompletedOnboarding
+        );
+
+        const elements = [];
+
+        if (currentScreen === "welcome") {
+          console.log("Rendering WelcomeScreen");
+          elements.push(
             React.createElement(WelcomeScreen, {
               key: "welcome",
               onStart: () => {
+                console.log("Welcome screen onStart called");
                 setCurrentScreen("onboarding");
                 setShowOnboarding(true);
               },
-            }),
-          showOnboarding &&
-            currentScreen === "onboarding" &&
+            })
+          );
+        }
+
+        if (showOnboarding && currentScreen === "onboarding") {
+          console.log("Rendering OnboardingTutorial");
+          elements.push(
             React.createElement(OnboardingTutorial, {
               key: "onboarding",
               onComplete: handleOnboardingComplete,
               onSkip: handleOnboardingSkip,
-            }),
-          hasCompletedOnboarding &&
-            currentScreen === "dashboard" &&
-            React.createElement("div", { key: "dashboard" }, renderDashboard()),
-        ]);
+            })
+          );
+        }
+
+        if (hasCompletedOnboarding && currentScreen === "dashboard") {
+          console.log("Rendering Dashboard");
+          elements.push(
+            React.createElement("div", { key: "dashboard" }, renderDashboard())
+          );
+        }
+
+        // Fallback if nothing renders
+        if (elements.length === 0) {
+          console.log("No elements to render, showing fallback");
+          elements.push(
+            React.createElement(
+              "div",
+              {
+                key: "fallback",
+                style: {
+                  padding: "20px",
+                  color: "white",
+                  background: "orange",
+                  textAlign: "center",
+                },
+              },
+              "No content to display - check console logs"
+            )
+          );
+        }
+
+        console.log("Elements to render:", elements.length);
+        return React.createElement("div", null, elements);
       };
 
-      // Render the app (React 18)
-      ReactDOM.createRoot(document.getElementById("root")).render(
-        React.createElement(WebApp)
-      );
+      // Debug and render the app
+      console.log("Starting app render...");
+      console.log("React available:", !!React);
+      console.log("ReactDOM available:", !!ReactDOM);
+      console.log("WebApp function:", typeof WebApp);
+
+      try {
+        ReactDOM.createRoot(document.getElementById("root")).render(
+          React.createElement(WebApp)
+        );
+        console.log("App rendered successfully");
+      } catch (error) {
+        console.error("Error rendering app:", error);
+        document.getElementById("root").innerHTML = `
+          <div style="padding: 20px; color: white; background: red; text-align: center;">
+            <h1>App Error</h1>
+            <p>Error: ${error.message}</p>
+            <p>Check console for details</p>
+          </div>
+        `;
+      }
     </script>
   </body>
 </html>
