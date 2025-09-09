@@ -1260,6 +1260,21 @@
                           "🔄 Reset"
                         ),
                         React.createElement(
+                          "button",
+                          {
+                            key: "reset-onboarding-button",
+                            onClick: () => {
+                              localStorage.removeItem(
+                                "defocus2focus_onboarding_completed"
+                              );
+                              window.location.reload();
+                            },
+                            className:
+                              "px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-colors",
+                          },
+                          "🎯 Reset Onboarding"
+                        ),
+                        React.createElement(
                           "div",
                           {
                             key: "avatar",
@@ -1911,9 +1926,9 @@
 
       const WebApp = () => {
         const [showOnboarding, setShowOnboarding] = useState(false);
-        const [currentScreen, setCurrentScreen] = useState("dashboard");
+        const [currentScreen, setCurrentScreen] = useState("welcome");
         const [hasCompletedOnboarding, setHasCompletedOnboarding] =
-          useState(true);
+          useState(false);
 
         useEffect(() => {
           // Check if user has completed onboarding before
@@ -1921,10 +1936,9 @@
             "defocus2focus_onboarding_completed"
           );
           if (!completed) {
-            // For demo purposes, show dashboard directly
-            // setShowOnboarding(true);
-            // setCurrentScreen("welcome");
-            // setHasCompletedOnboarding(false);
+            setShowOnboarding(true);
+            setCurrentScreen("welcome");
+            setHasCompletedOnboarding(false);
           } else {
             setHasCompletedOnboarding(true);
             setCurrentScreen("dashboard");
