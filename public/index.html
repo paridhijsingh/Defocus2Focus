@@ -2441,9 +2441,9 @@
 
       const WebApp = () => {
         const [showOnboarding, setShowOnboarding] = useState(false);
-        const [currentScreen, setCurrentScreen] = useState("dashboard");
+        const [currentScreen, setCurrentScreen] = useState("welcome");
         const [hasCompletedOnboarding, setHasCompletedOnboarding] =
-          useState(true);
+          useState(false);
 
         // Always start with welcome screen - no localStorage dependency
         // This ensures consistent behavior across all environments
