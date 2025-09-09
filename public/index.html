@@ -10,7 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       window.tailwind = window.tailwind || {};
-      tailwind.config = { darkMode: "class" };
+      window.tailwind.config = { darkMode: "class" };
     </script>
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
     <style>
@@ -3285,6 +3285,17 @@
       console.log("React available:", !!React);
       console.log("ReactDOM available:", !!ReactDOM);
       console.log("WebApp function:", typeof WebApp);
+
+      // Test if JavaScript is running
+      console.log("JavaScript is running - checking for errors...");
+
+      // Check if root element exists
+      const rootElement = document.getElementById("root");
+      console.log("Root element found:", !!rootElement);
+      if (!rootElement) {
+        console.error("Root element not found!");
+        return;
+      }
 
       try {
         ReactDOM.createRoot(document.getElementById("root")).render(
