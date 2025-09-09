@@ -439,6 +439,48 @@
   </head>
   <body class="bg-gray-50">
     <div id="root"></div>
+
+    <!-- Debug Panel -->
+    <div
+      style="
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 9999;
+        background: white;
+        padding: 10px;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+      "
+    >
+      <button
+        onclick="localStorage.clear(); window.location.reload();"
+        style="
+          background: #ff4444;
+          color: white;
+          padding: 8px 12px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          margin-right: 8px;
+        "
+      >
+        🗑️ Clear All Data
+      </button>
+      <button
+        onclick="localStorage.removeItem('defocus2focus_onboarding_completed'); window.location.reload();"
+        style="
+          background: #4444ff;
+          color: white;
+          padding: 8px 12px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        "
+      >
+        🎯 Reset Onboarding
+      </button>
+    </div>
     <script type="text/babel" data-presets="env,react">
       const { useState, useEffect } = React;
       const Motion =
@@ -1935,11 +1977,18 @@
           const completed = localStorage.getItem(
             "defocus2focus_onboarding_completed"
           );
+          console.log("Onboarding completed status:", completed);
+          console.log("Current screen:", currentScreen);
+          console.log("Show onboarding:", showOnboarding);
+          console.log("Has completed onboarding:", hasCompletedOnboarding);
+
           if (!completed) {
+            console.log("Setting up for onboarding flow");
             setShowOnboarding(true);
             setCurrentScreen("welcome");
             setHasCompletedOnboarding(false);
           } else {
+            console.log("Setting up for dashboard");
             setHasCompletedOnboarding(true);
             setCurrentScreen("dashboard");
           }
@@ -1965,11 +2014,18 @@
           setHasCompletedOnboarding(false);
         };
 
+        console.log("Rendering with state:", {
+          currentScreen,
+          showOnboarding,
+          hasCompletedOnboarding,
+        });
+
         return React.createElement("div", null, [
           currentScreen === "welcome" &&
             React.createElement(WelcomeScreen, {
               key: "welcome",
               onStart: () => {
+                console.log("Welcome screen onStart clicked");
                 setCurrentScreen("onboarding");
                 setShowOnboarding(true);
               },
